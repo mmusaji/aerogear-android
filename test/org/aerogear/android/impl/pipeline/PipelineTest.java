@@ -57,7 +57,7 @@ public class PipelineTest {
         Pipeline pipeline = new Pipeline(url);
         Pipe newPipe = pipeline.pipe(Data.class);
 
-        assertEquals("verifying the given URL", "http://server.com/context/data/", newPipe.getUrl().toString());
+        assertEquals("verifying the given URL", "http://server.com/context/data", newPipe.getUrl().toString());
         assertEquals("verifying the type", REST, newPipe.getType());
     }
 
@@ -69,7 +69,7 @@ public class PipelineTest {
         config.setEndpoint("foo");
         Pipe newPipe = pipeline.pipe(Data.class, config);
 
-        assertEquals("verifying the given URL", "http://server.com/context/foo/", newPipe.getUrl().toString());
+        assertEquals("verifying the given URL", "http://server.com/context/foo", newPipe.getUrl().toString());
     }
 
     @Test
@@ -92,7 +92,7 @@ public class PipelineTest {
         config.setName("foo");
         Pipe newPipe = pipeline.pipe(Data.class, config);
 
-        assertEquals("verifying the given URL", "http://server.com/otherContext/data/", newPipe.getUrl().toString());
+        assertEquals("verifying the given URL", "http://server.com/otherContext/data", newPipe.getUrl().toString());
     }
 
 
@@ -101,7 +101,7 @@ public class PipelineTest {
         Pipeline pipeline = new Pipeline(url);
         final PipeConfig config = new PipeConfig(url, Data.class);
         config.setName("foo");
-        config.setEndpoint("bar");
+        config.setEndpoint("bar/");
         config.setType(REST);
         Pipe newPipe = pipeline.pipe(Data.class, config);
 
@@ -116,7 +116,7 @@ public class PipelineTest {
         Pipeline pipeline = new Pipeline(url);
         final PipeConfig config = new PipeConfig(otherURL, Data.class);
         config.setName("bad name");
-        config.setEndpoint("foo");
+        config.setEndpoint("foo/");
         Pipe newPipe = pipeline.pipe(Data.class, config);
 
         assertEquals("verifying the given URL", "http://server.com/otherContext/foo/", newPipe.getUrl().toString());
@@ -132,7 +132,7 @@ public class PipelineTest {
         Pipe newPipe = pipeline.pipe(Data.class, config);
 
         assertEquals("verifying the type", REST, newPipe.getType());
-        assertEquals("verifying the given URL", "http://server.com/otherContext/data/", newPipe.getUrl().toString());
+        assertEquals("verifying the given URL", "http://server.com/otherContext/data", newPipe.getUrl().toString());
     }
 
     @Test
@@ -176,4 +176,14 @@ public class PipelineTest {
         assertNull("Not deleted pipe", fooPipe);
     }
 
+    @Test
+    public void testPipeConfigEndpointIsSetCorrectly() {
+        Pipeline pipeline = new Pipeline(url);
+        PipeConfig pipeConfig = new PipeConfig(url, Data.class);
+        pipeConfig.setEndpoint("EndPoint");
+        Pipe<Data> pipe = pipeline.pipe(Data.class, pipeConfig);
+        assertEquals("http://server.com/context/EndPoint",pipe.getUrl().toString());
+                
+    }
+    
 }

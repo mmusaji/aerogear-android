@@ -57,7 +57,7 @@ public final class DefaultPipeFactory implements PipeFactory {
             if( !baseURL.toString().endsWith("/")) {
                 endpoint = "/" + endpoint;
             }
-            return new URL(baseURL + endpoint + "/");
+            return new URL(baseURL + endpoint );
         } catch (MalformedURLException e) {
             Log.e("AeroGear", e.getMessage());
             return null;
