@@ -99,6 +99,42 @@ public class RestAdapterTest {
         gson.toJson(new ListClassId());
         
     }
+   
+     @Test
+    public void testSingleObjectRead() throws ParseException, InterruptedException {
+        GsonBuilder builder = new GsonBuilder().registerTypeAdapter(Point.class, new RestAdapterTest.PointTypeAdapter());
+
+        HttpStubProvider provider = new HttpStubProvider(url) {
+
+            @Override
+            public HeaderAndBody get() {
+                return new HeaderAndBody(SERIALIZED_POINTS.getBytes(), new HashMap<String, Object>());
+            }
+            
+        };
+
+        Pipe<RestAdapterTest.ListClassId> restPipe = new RestAdapter<RestAdapterTest.ListClassId>(RestAdapterTest.ListClassId.class, provider, builder);
+        final CountDownLatch latch = new CountDownLatch(1);
+        final List<Point> returnedPoints = new ArrayList<Point>(10);
+        
+        
+        restPipe.read(new Callback<List<RestAdapterTest.ListClassId>>() {
+            @Override
+            public void onSuccess(List<RestAdapterTest.ListClassId> data) {
+                returnedPoints.addAll(data.get(0).points);
+                latch.countDown();
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
+
+
+        latch.await(2, TimeUnit.SECONDS);
+        assertEquals(10, returnedPoints.size());
+    }
     
     @Test
     public void testGsonBuilderProperty() throws ParseException, InterruptedException {

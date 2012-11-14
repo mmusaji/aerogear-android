@@ -20,6 +20,8 @@ package org.aerogear.android.impl.pipeline;
 import android.os.AsyncTask;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
 import org.aerogear.android.Callback;
 import org.aerogear.android.authentication.AuthenticationModule;
 import org.aerogear.android.core.HeaderAndBody;
@@ -30,6 +32,7 @@ import org.aerogear.android.pipeline.Pipe;
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -100,9 +103,18 @@ public final class RestAdapter<T> implements Pipe<T> {
                     applyAuthToken();
                     byte[] responseBody = httpProvider.get().getBody();
                     String responseAsString = new String(responseBody, "utf-8");
-                    T[] resultArray = gson.fromJson(responseAsString, arrayKlass);
-
-                    return new AsyncTaskResult(Arrays.asList(resultArray));
+                    JsonParser parser = new JsonParser();
+                    JsonElement result = parser.parse(responseAsString);
+                    if (result.isJsonArray()) {
+                    	T[] resultArray = gson.fromJson(responseAsString, arrayKlass);
+                    	return new AsyncTaskResult(Arrays.asList(resultArray));
+                    } else {
+                    	T resultObject = gson.fromJson(responseAsString, klass);
+                    	List<T> resultList = new ArrayList<T>(1);
+                    	resultList.add(resultObject);
+                    	return new AsyncTaskResult(resultList);
+                    	
+                    }
                 } catch (Exception e) {
                     return new AsyncTaskResult(e);
                 }
