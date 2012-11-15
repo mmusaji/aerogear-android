@@ -22,19 +22,6 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import org.aerogear.android.Callback;
 import org.aerogear.android.core.HeaderAndBody;
-import org.apache.http.Header;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpEntityEnclosingRequest;
-import org.apache.http.HttpRequest;
-import org.apache.http.HttpResponse;
-import org.apache.http.ProtocolVersion;
-import org.apache.http.StatusLine;
-import org.apache.http.entity.BasicHttpEntity;
-import org.apache.http.message.BasicHeader;
-import org.apache.http.message.BasicHttpResponse;
-import org.apache.http.message.BasicStatusLine;
-import org.apache.http.util.EntityUtils;
-import org.json.JSONObject;
 
 /**
  * This interface sets up all of the static values for 
@@ -51,124 +38,8 @@ public interface AuthenticationModuleTest {
     static final String FAILING_USERNAME = "fail";
     static final String LOGIN_PASSWORD = "password";
     static final String ENROLL_PASSWORD = "spittman";
-
-    static final RequestMatcher LOGIN_MATCHER = new RequestMatcher() {
-        @Override
-        public boolean matches(HttpRequest request) {
-            if (request instanceof HttpEntityEnclosingRequest) {
-                try {
-                    HttpEntity entity = ((HttpEntityEnclosingRequest) request).getEntity();
-                    JSONObject data = new JSONObject(EntityUtils.toString(entity));
-                    return (data.getString("username").equalsIgnoreCase(PASSING_USERNAME)
-                            && data.getString("password").equalsIgnoreCase(LOGIN_PASSWORD));
-                        } catch (Throwable t) {
-                            return false;
-                        }
-                    }
-                    return false;
-                }
-    };
-    static final RequestMatcher ENROLL_PASS_MATCHER = new RequestMatcher() {
-        @Override
-        public boolean matches(HttpRequest request) {
-            if (request instanceof HttpEntityEnclosingRequest) {
-                try {
-                    HttpEntity entity = ((HttpEntityEnclosingRequest) request).getEntity();
-                    JSONObject data = new JSONObject(EntityUtils.toString(entity));
-                    return (data.getString("username").equalsIgnoreCase(PASSING_USERNAME)
-                            && data.getString("password").equalsIgnoreCase(ENROLL_PASSWORD));
-                        } catch (Throwable t) {
-                            return false;
-                        }
-                    }
-                    return false;
-                }
-    };
-
-    static final RequestMatcher ENROLL_FAIL_MATCHER = new RequestMatcher() {
-        @Override
-        public boolean matches(HttpRequest request) {
-            if (request instanceof HttpEntityEnclosingRequest) {
-                try {
-                    HttpEntity entity = ((HttpEntityEnclosingRequest) request).getEntity();
-                    JSONObject data = new JSONObject(EntityUtils.toString(entity));
-                    return (data.getString("username").equalsIgnoreCase(FAILING_USERNAME)
-                            && data.getString("password").equalsIgnoreCase(ENROLL_PASSWORD));
-                        } catch (Throwable t) {
-                            return false;
-                        }
-                    }
-                    return false;
-                }
-    };
-
-    static final HttpResponse VALID_LOGIN = new BasicHttpResponse(new StatusLineStub()) {
-        private String TOKEN_HEADER = "Auth-Token";
-
-        @Override
-        public Header getFirstHeader(String name) {
-            if (name.equals(TOKEN_HEADER)) {
-                return new BasicHeader(TOKEN_HEADER,
-                        TOKEN);//Magic Number
-
-            }
-            return super.getFirstHeader(name);
-        }
-
-        @Override
-        public Header[] getAllHeaders() {
-            return new Header[] {
-                        new BasicHeader(TOKEN_HEADER, TOKEN)
-                    };
-                }
-
-        @Override
-        public HttpEntity getEntity() {
-            return new BasicHttpEntity() {
-                @Override
-                public InputStream getContent() throws IllegalStateException {
-                    return new ByteArrayInputStream(("{\"username\":\"" + PASSING_USERNAME + "\","
-                            + "\"roles\":[\"admin\"],"
-                            + "\"logged\":\"true\"}").getBytes());
-                }
-            };
-        }
-
-        @Override
-        public StatusLine getStatusLine() {
-            return new BasicStatusLine(new ProtocolVersion("http", 1, 1), 200, "");
-        }
-    };
-
-    static final HttpResponse ENROLL_PASS = VALID_LOGIN;
-
-    static final HttpResponse ENROLL_FAIL = new BasicHttpResponse(new StatusLineStub()) {
-        @Override
-        public Header getFirstHeader(String name) {
-            return new BasicHeader("", "");
-        }
-
-        @Override
-        public Header[] getAllHeaders() {
-            return new Header[] {};
-        }
-
-        @Override
-        public HttpEntity getEntity() {
-            return new BasicHttpEntity() {
-                @Override
-                public InputStream getContent() throws IllegalStateException {
-                    return new ByteArrayInputStream(("").getBytes());
-                }
-            };
-        }
-
-        @Override
-        public StatusLine getStatusLine() {
-            return new BasicStatusLine(new ProtocolVersion("http", 1, 1), 400, "");
-        }
-    };
-
+    
+    
     final class SimpleCallback implements Callback<HeaderAndBody> {
 
         HeaderAndBody data;

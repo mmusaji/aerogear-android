@@ -25,7 +25,13 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import org.aerogear.android.Provider;
+import org.aerogear.android.core.HeaderAndBody;
 import org.aerogear.android.core.HttpException;
+import org.aerogear.android.core.HttpProvider;
+import org.aerogear.android.impl.core.HttpStubProvider;
+import org.aerogear.android.util.TestUtil;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -57,38 +63,67 @@ public class RestAuthenticationModuleTest implements AuthenticationModuleTest {
         Robolectric.clearPendingHttpResponses();
     }
 
-    @Test(timeout = 5000L)
-    public void loginFails() throws IOException {
+    @Test(timeout = 50L)
+    public void loginFails() throws Exception {
         RestAuthenticationModule module = new RestAuthenticationModule(SIMPLE_URL, new RestAuthenticationConfig());
+        final CountDownLatch latch = new CountDownLatch(1);
+        TestUtil.setPrivateField(module, "httpProviderProvider", new Provider<HttpProvider>() {
+            @Override
+            public HttpProvider get(Object... in) {
+                return new HttpStubProvider(SIMPLE_URL) {
+                    @Override
+                    public HeaderAndBody post(String ignore) throws RuntimeException {
+                        try {
+                            throw new HttpException(new byte[1], 403);
+                        } finally {
+                            latch.countDown();
+                        }
+                    }
+                };
+            }
+        });
+        
+        
         SimpleCallback callback = new SimpleCallback();
         module.login(PASSING_USERNAME, LOGIN_PASSWORD, callback);
-
-        while (!Robolectric.httpRequestWasMade()) {
-
-        }
-        ;
         Assert.assertNotNull(callback.exception);
         Assert.assertFalse(module.isLoggedIn());
     }
 
-    @Test(timeout = 50000L)
-    public void loginSucceeds() throws IOException {
+    @Test()
+    public void loginSucceeds() throws IOException, NoSuchFieldException, InterruptedException, IllegalArgumentException, IllegalAccessException {
         RestAuthenticationModule module = new RestAuthenticationModule(SIMPLE_URL, new RestAuthenticationConfig());
-        Robolectric.addHttpResponseRule(LOGIN_MATCHER, VALID_LOGIN);
+        final CountDownLatch latch = new CountDownLatch(1);
+        TestUtil.setPrivateField(module, "httpProviderProvider", new Provider<HttpProvider>() {
+            @Override
+            public HttpProvider get(Object... in) {
+                return new HttpStubProvider(SIMPLE_URL) {
+                    @Override
+                    public HeaderAndBody post(String ignore) throws RuntimeException {
+                        try {
+                            HashMap<String, Object> headers = new HashMap<String, Object>();
+                            headers.put("Auth-Token", TOKEN);
+                            return new HeaderAndBody(new byte[1], headers);
+                        } finally {
+                            latch.countDown();
+                        }
+                    }
+                };
+            }
+        });
+
+
         SimpleCallback callback = new SimpleCallback();
         module.login(PASSING_USERNAME, LOGIN_PASSWORD, callback);
+        latch.await();
 
-        while (!Robolectric.httpRequestWasMade()) {
-
-        }
-        ;
         Assert.assertNull(callback.exception);
         Assert.assertNotNull(callback.data);
         Assert.assertTrue(module.isLoggedIn());
         Assert.assertEquals(TOKEN, module.getAuthToken());
     }
-
-    @Test(timeout = 50000L)
+    
+    @Test(timeout=5000L)
     public void enrollSucceeds() throws IOException {
         RestAuthenticationModule module = new RestAuthenticationModule(SIMPLE_URL, new RestAuthenticationConfig());
         Robolectric.addHttpResponseRule(ENROLL_PASS_MATCHER, ENROLL_PASS);
@@ -118,8 +153,9 @@ public class RestAuthenticationModuleTest implements AuthenticationModuleTest {
         Assert.assertTrue(module.isLoggedIn());
         Assert.assertEquals(TOKEN, module.getAuthToken());
     }
-
-    @Test(timeout = 50000L)
+    
+    
+    @Test(timeout=5000L)
     public void enrollFails() throws IOException {
         RestAuthenticationModule module = new RestAuthenticationModule(SIMPLE_URL, new RestAuthenticationConfig());
         Robolectric.addHttpResponseRule(ENROLL_FAIL_MATCHER, ENROLL_FAIL);
@@ -143,8 +179,9 @@ public class RestAuthenticationModuleTest implements AuthenticationModuleTest {
         Assert.assertFalse(module.isLoggedIn());
         Assert.assertEquals(400, ((HttpException) callback.exception).getStatusCode());
     }
-
-    @Test(timeout = 50000L)
+    
+        
+    @Test(timeout=5000L)
     public void logoutSucceeds() throws IOException {
         RestAuthenticationModule module = new RestAuthenticationModule(SIMPLE_URL, new RestAuthenticationConfig());
         Robolectric.addHttpResponseRule(LOGIN_MATCHER, VALID_LOGIN);
@@ -168,5 +205,4 @@ public class RestAuthenticationModuleTest implements AuthenticationModuleTest {
         Assert.assertEquals("", module.getAuthToken());
 
     }
-
 }
