@@ -63,7 +63,7 @@ public class RestAuthenticationModuleTest implements AuthenticationModuleTest {
         Robolectric.clearPendingHttpResponses();
     }
 
-    @Test(timeout = 50L)
+    @Test(timeout = 500L)
     public void loginFails() throws Exception {
         RestAuthenticationModule module = new RestAuthenticationModule(SIMPLE_URL, new RestAuthenticationConfig());
         final CountDownLatch latch = new CountDownLatch(1);
@@ -124,9 +124,26 @@ public class RestAuthenticationModuleTest implements AuthenticationModuleTest {
     }
     
     @Test(timeout=5000L)
-    public void enrollSucceeds() throws IOException {
+    public void enrollSucceeds() throws Exception {
         RestAuthenticationModule module = new RestAuthenticationModule(SIMPLE_URL, new RestAuthenticationConfig());
-        Robolectric.addHttpResponseRule(ENROLL_PASS_MATCHER, ENROLL_PASS);
+        final CountDownLatch latch = new CountDownLatch(1);
+        TestUtil.setPrivateField(module, "httpProviderProvider", new Provider<HttpProvider>() {
+            @Override
+            public HttpProvider get(Object... in) {
+                return new HttpStubProvider(SIMPLE_URL) {
+                    @Override
+                    public HeaderAndBody post(String enrollData) throws RuntimeException {
+                        try {
+                            HashMap<String, Object> headers = new HashMap<String, Object>();
+                            headers.put("Auth-Token", TOKEN);
+                            return new HeaderAndBody(new byte[1], headers);
+                        } finally {
+                            latch.countDown();
+                        }
+                    }
+                };
+            }
+        });        
         SimpleCallback callback = new SimpleCallback();
 
         Map<String, String> userData = new HashMap<String, String>();
@@ -137,68 +154,77 @@ public class RestAuthenticationModuleTest implements AuthenticationModuleTest {
         userData.put("role", "admin");
 
         module.enroll(userData, callback);
-
-        while (!Robolectric.httpRequestWasMade()) {
-
-        }
-        ;
+        latch.await();
         Assert.assertNull(callback.exception);
         Assert.assertNotNull(callback.data);
-
-        String result = new String(callback.data.getBody(), "UTF-8");
-        JsonParser parser = new JsonParser();
-        JsonObject resultObject = (JsonObject) parser.parse(result);
-        Assert.assertEquals(PASSING_USERNAME, resultObject.get("username").getAsString());
-
+        
+        
         Assert.assertTrue(module.isLoggedIn());
         Assert.assertEquals(TOKEN, module.getAuthToken());
     }
     
-    
-    @Test(timeout=5000L)
-    public void enrollFails() throws IOException {
-        RestAuthenticationModule module = new RestAuthenticationModule(SIMPLE_URL, new RestAuthenticationConfig());
-        Robolectric.addHttpResponseRule(ENROLL_FAIL_MATCHER, ENROLL_FAIL);
-        SimpleCallback callback = new SimpleCallback();
-
-        Map<String, String> userData = new HashMap<String, String>();
-        userData.put("username", FAILING_USERNAME);
-        userData.put("password", ENROLL_PASSWORD);
-        userData.put("firstname", "Summers");
-        userData.put("lastname", "Pittman");
-        userData.put("role", "admin");
-
-        module.enroll(userData, callback);
-
-        while (!Robolectric.httpRequestWasMade()) {
-
-        }
-        ;
-        Assert.assertNotNull(callback.exception);
-        Assert.assertNull(callback.data);
-        Assert.assertFalse(module.isLoggedIn());
-        Assert.assertEquals(400, ((HttpException) callback.exception).getStatusCode());
-    }
+  
     
         
-    @Test(timeout=5000L)
-    public void logoutSucceeds() throws IOException {
+    @Test(timeout=50000L)
+    public void logoutSucceeds() throws Exception {
         RestAuthenticationModule module = new RestAuthenticationModule(SIMPLE_URL, new RestAuthenticationConfig());
-        Robolectric.addHttpResponseRule(LOGIN_MATCHER, VALID_LOGIN);
         SimpleCallback callback = new SimpleCallback();
+        
+        final CountDownLatch latch = new CountDownLatch(1);
+        TestUtil.setPrivateField(module, "httpProviderProvider", new Provider<HttpProvider>() {
+            @Override
+            public HttpProvider get(Object... in) {
+                return new HttpStubProvider(SIMPLE_URL) {
+                    @Override
+                    public HeaderAndBody post(String ignore) throws RuntimeException {
+                        try {
+                            HashMap<String, Object> headers = new HashMap<String, Object>();
+                            headers.put("Auth-Token", TOKEN);
+                            return new HeaderAndBody(new byte[1], headers);
+                        } finally {
+                            latch.countDown();
+                        }
+                    }
+                };
+            }
+        });
+
         module.login(PASSING_USERNAME, LOGIN_PASSWORD, callback);
 
+        
+        latch.await();
+        
         Assert.assertNull(callback.exception);
         Assert.assertNotNull(callback.data);
         Assert.assertTrue(module.isLoggedIn());
         Assert.assertEquals(TOKEN, module.getAuthToken());
-
-        //Reset
-        Robolectric.clearHttpResponseRules();
-        Robolectric.setDefaultHttpResponse(200, "");
+        
         VoidCallback voidCallback = new VoidCallback();
-
+        
+        final CountDownLatch latch2 = new CountDownLatch(1);
+        TestUtil.setPrivateField(module, "httpProviderProvider", new Provider<HttpProvider>() {
+            @Override
+            public HttpProvider get(Object... in) {
+                return new HttpStubProvider(SIMPLE_URL) {
+                    @Override
+                    public HeaderAndBody post(String ignore) throws RuntimeException {
+                        try {
+                            HashMap<String, Object> headers = new HashMap<String, Object>();
+                            
+                            return new HeaderAndBody(new byte[1], headers);
+                        } finally {
+                            latch2.countDown();
+                        }
+                    }
+                };
+            }
+        });
+        
         module.logout(voidCallback);
+        
+        latch2.await();
+
         Assert.assertNull(voidCallback.exception);
 
         Assert.assertFalse(module.isLoggedIn());
