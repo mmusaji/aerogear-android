@@ -143,6 +143,7 @@ public final class RestAuthenticationModule implements AuthenticationModule {
                     isLoggedIn = true;
 
                 } catch (Exception e) {
+                    Log.e(TAG, "error enrolling", e);
                     exception = e;
                 }
                 return null;
@@ -176,6 +177,7 @@ public final class RestAuthenticationModule implements AuthenticationModule {
                     authToken = result.getHeader(tokenHeaderName).toString();
                     isLoggedIn = true;
                 } catch (Exception e) {
+                    Log.e(TAG, "Error with Login", e);
                     exception = e;
                 }
                 return null;
