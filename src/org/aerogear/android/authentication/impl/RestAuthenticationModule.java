@@ -16,9 +16,10 @@
  */
 package org.aerogear.android.authentication.impl;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.Map;
+
+import android.os.AsyncTask;
+import android.util.Log;
+import com.google.gson.JsonObject;
 
 import org.aerogear.android.Callback;
 import org.aerogear.android.authentication.AuthenticationConfig;
@@ -34,11 +35,28 @@ import android.util.Log;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.Map;
+import org.aerogear.android.Provider;
+import org.aerogear.android.authentication.AuthenticationConfig;
+
+
 /**
  * A module for authenticating with restful AG services.
  */
 public final class RestAuthenticationModule implements AuthenticationModule {
 
+
+            private Provider<HttpProvider> httpProviderProvider = new Provider<HttpProvider>() {
+        @Override
+        public HttpProvider get(Object... in) {
+            
+            return new HttpRestProvider((URL)in[0]);
+        }
+    };
+
+        
     private final URL baseURL;
 
     private final static Gson gson = new Gson();
@@ -67,10 +85,11 @@ public final class RestAuthenticationModule implements AuthenticationModule {
     private static final String TAG = "RestAuthenticationModule";
 
     /**
+     *
      * @param baseURL
      * @param config
      * @throws IllegalArgumentException if an endpoint can not be appended to
-     *                                  baseURL
+     * baseURL
      */
     public RestAuthenticationModule(URL baseURL, AuthenticationConfig config) {
         this.baseURL = baseURL;
@@ -87,7 +106,6 @@ public final class RestAuthenticationModule implements AuthenticationModule {
         this.logoutURL = appendToBaseURL(logoutEndpoint);
         this.enrollURL = appendToBaseURL(enrollEndpoint);
     }
-
 
     @Override
     public URL getbaseURL() {
@@ -112,13 +130,12 @@ public final class RestAuthenticationModule implements AuthenticationModule {
     @Override
     public void enroll(final Map<String, String> userData, final Callback<HeaderAndBody> callback) {
         new AsyncTask<Void, Void, Void>() {
-
             HeaderAndBody result = null;
             Exception exception = null;
 
             @Override
             protected Void doInBackground(Void... params) {
-                HttpRestProvider provider = new HttpRestProvider(enrollURL);
+                HttpProvider provider = httpProviderProvider.get( enrollURL );
                 String enrollData = new JSONObject(userData).toString();
                 try {
                     result = provider.post(enrollData);
@@ -141,7 +158,6 @@ public final class RestAuthenticationModule implements AuthenticationModule {
                 }
             }
 
-
         }.execute((Void) null);
     }
 
@@ -153,7 +169,7 @@ public final class RestAuthenticationModule implements AuthenticationModule {
 
             @Override
             protected Void doInBackground(Void... params) {
-                HttpRestProvider provider = new HttpRestProvider(loginURL);
+                HttpProvider provider = httpProviderProvider.get( loginURL);
                 String loginData = buildLoginData(username, password);
                 try {
                     result = provider.post(loginData);
@@ -186,7 +202,7 @@ public final class RestAuthenticationModule implements AuthenticationModule {
 
             @Override
             protected Void doInBackground(Void... params) {
-                HttpRestProvider provider = new HttpRestProvider(logoutURL);
+                HttpProvider provider = httpProviderProvider.get( logoutURL );
                 try {
                     provider.post("");
                     authToken = "";
@@ -233,6 +249,7 @@ public final class RestAuthenticationModule implements AuthenticationModule {
     }
 
     /**
+     * 
      * @param endpoint
      * @return a new url baseUrl + endpoint
      * @throws IllegalArgumentException if baseUrl+endpoint is not a real url.

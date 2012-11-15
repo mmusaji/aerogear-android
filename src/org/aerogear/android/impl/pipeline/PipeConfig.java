@@ -24,7 +24,7 @@ import org.aerogear.android.pipeline.PipeType;
 
 import com.google.gson.GsonBuilder;
 
-public final class PipeConfig {
+public final class PipeConfig<T> {
 
     private URL baseURL;
     private String name;
@@ -33,7 +33,7 @@ public final class PipeConfig {
     private GsonBuilder gsonBuilder;
     private AuthenticationModule authModule;
 
-    public PipeConfig(URL baseURL, Class klass) {
+    public PipeConfig(URL baseURL, Class<T> klass) {
         this.baseURL = baseURL;
         this.name = klass.getSimpleName().toLowerCase();
         this.endpoint = name;
@@ -87,4 +87,5 @@ public final class PipeConfig {
     public void setAuthModule(AuthenticationModule authModule) {
         this.authModule = authModule;
     }
+
 }
