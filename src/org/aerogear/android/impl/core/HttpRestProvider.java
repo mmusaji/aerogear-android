@@ -149,10 +149,14 @@ public final class HttpRestProvider implements HttpProvider {
     private void addBodyRequest(HttpURLConnection urlConnection, String data) throws IOException {
         
         urlConnection.setDoOutput(true);
-        urlConnection.setChunkedStreamingMode(0);
+        urlConnection.setRequestMethod("POST");
 
-        OutputStream out = new BufferedOutputStream(urlConnection.getOutputStream());
-        out.write(data.getBytes());
+    	if (data != null) {
+    		OutputStream out = new BufferedOutputStream(urlConnection.getOutputStream());
+            out.write(data.getBytes());
+            out.flush();
+    	}        
+        
     }
 
 
@@ -167,11 +171,10 @@ public final class HttpRestProvider implements HttpProvider {
         }
             
         HttpURLConnection urlConnection = (HttpURLConnection) resourceURL.openConnection();
-        urlConnection.addRequestProperty("Accept", "application/json");
-        urlConnection.addRequestProperty("Content-type", "application/json");
-
+        urlConnection.setRequestProperty("Content-Type", "application/json");
+        
         for (Entry<String, String> entry : defaultHeaders.entrySet()) {
-            urlConnection.addRequestProperty(entry.getKey(), entry.getValue());
+            urlConnection.setRequestProperty(entry.getKey(), entry.getValue());
         }
 
         return urlConnection;
@@ -194,15 +197,22 @@ public final class HttpRestProvider implements HttpProvider {
     private HeaderAndBody getHeaderAndBody(HttpURLConnection urlConnection) throws IOException {
 
         int statusCode = urlConnection.getResponseCode();
-        InputStream in = new BufferedInputStream(urlConnection.getInputStream());
-        byte[] data = readBytes(in);
         
         if (statusCode != 200) {
-            throw new HttpException(data, statusCode);
+        	InputStream in = new BufferedInputStream(urlConnection.getErrorStream());
+            
+            byte[] errData = readBytes(in);
+            
+            throw new HttpException(errData, statusCode);
         }
 
+        InputStream in = new BufferedInputStream(urlConnection.getInputStream());
+        
+        byte[] responseData = readBytes(in);
+        
+        
         Map<String, List<String>> headers = urlConnection.getHeaderFields();
-        HeaderAndBody result = new HeaderAndBody(data, new HashMap<String, Object>(headers.size()));
+        HeaderAndBody result = new HeaderAndBody(responseData, new HashMap<String, Object>(headers.size()));
 
         for (Map.Entry<String, List<String>> header : headers.entrySet()) {
             result.setHeader(header.getKey(), header.getValue().get(0));
