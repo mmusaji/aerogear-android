@@ -20,7 +20,6 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-
 import org.aerogear.android.datamanager.IdGenerator;
 import org.aerogear.android.datamanager.Store;
 import org.aerogear.android.datamanager.StoreType;

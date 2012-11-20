@@ -20,7 +20,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
-
 import org.aerogear.android.impl.pipeline.DefaultPipeFactory;
 import org.aerogear.android.impl.pipeline.PipeConfig;
 import org.aerogear.android.pipeline.Pipe;

@@ -17,6 +17,11 @@
 
 package org.aerogear.android.impl.pipeline;
 
+import android.os.AsyncTask;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.net.URL;
@@ -24,20 +29,12 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
 import org.aerogear.android.Callback;
 import org.aerogear.android.authentication.AuthenticationModule;
 import org.aerogear.android.core.HeaderAndBody;
 import org.aerogear.android.core.HttpProvider;
 import org.aerogear.android.pipeline.Pipe;
 import org.aerogear.android.pipeline.PipeType;
-
-import android.os.AsyncTask;
-
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
 
 /**
  * Rest implementation of {@link Pipe}.

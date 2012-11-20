@@ -17,14 +17,12 @@
 
 package org.aerogear.android.impl.datamanager;
 
+import java.util.Collection;
 import static org.aerogear.android.impl.datamanager.StoreTypes.MEMORY;
+import org.aerogear.android.impl.helper.Data;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-
-import java.util.Collection;
-
-import org.aerogear.android.impl.helper.Data;
 import org.junit.Before;
 import org.junit.Test;
 

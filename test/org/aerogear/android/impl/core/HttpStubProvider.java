@@ -18,7 +18,6 @@
 package org.aerogear.android.impl.core;
 
 import java.net.URL;
-
 import org.aerogear.android.core.HeaderAndBody;
 import org.aerogear.android.core.HttpProvider;
 

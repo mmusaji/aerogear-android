@@ -16,14 +16,8 @@
  */
 package org.aerogear.android.authentication.impl;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-
 import org.aerogear.android.Callback;
 import org.aerogear.android.core.HeaderAndBody;
-
-import com.xtremelabs.robolectric.shadows.StatusLineStub;
-import com.xtremelabs.robolectric.tester.org.apache.http.RequestMatcher;
 
 /**
  * This interface sets up all of the static values for 

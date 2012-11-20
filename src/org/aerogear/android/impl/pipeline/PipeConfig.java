@@ -17,12 +17,10 @@
 
 package org.aerogear.android.impl.pipeline;
 
+import com.google.gson.GsonBuilder;
 import java.net.URL;
-
 import org.aerogear.android.authentication.AuthenticationModule;
 import org.aerogear.android.pipeline.PipeType;
-
-import com.google.gson.GsonBuilder;
 
 public final class PipeConfig<T> {
 

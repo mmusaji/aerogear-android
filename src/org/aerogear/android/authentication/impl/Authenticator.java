@@ -20,7 +20,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
-
 import org.aerogear.android.authentication.AuthenticationConfig;
 import org.aerogear.android.authentication.AuthenticationModule;
 

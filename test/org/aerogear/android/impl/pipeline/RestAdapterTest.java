@@ -16,33 +16,9 @@
  */
 package org.aerogear.android.impl.pipeline;
 
-import static junit.framework.Assert.assertEquals;
-
-import java.lang.reflect.Field;
-import java.lang.reflect.Type;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-
-import junit.framework.Assert;
-
-import org.aerogear.android.Callback;
-import org.aerogear.android.core.HeaderAndBody;
-import org.aerogear.android.impl.core.HttpStubProvider;
-import org.aerogear.android.impl.helper.Data;
-import org.aerogear.android.pipeline.Pipe;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import android.graphics.Point;
-
 import com.google.gson.Gson;
+
 import com.google.gson.GsonBuilder;
 import com.google.gson.InstanceCreator;
 import com.google.gson.JsonDeserializationContext;
@@ -53,6 +29,26 @@ import com.google.gson.JsonParseException;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 import com.xtremelabs.robolectric.RobolectricTestRunner;
+import java.lang.reflect.Field;
+import java.lang.reflect.Type;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import junit.framework.Assert;
+import static junit.framework.Assert.assertEquals;
+import org.aerogear.android.Callback;
+import org.aerogear.android.core.HeaderAndBody;
+import org.aerogear.android.impl.core.HttpStubProvider;
+import org.aerogear.android.impl.helper.Data;
+import org.aerogear.android.pipeline.Pipe;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 @RunWith(RobolectricTestRunner.class)
 public class RestAdapterTest {
