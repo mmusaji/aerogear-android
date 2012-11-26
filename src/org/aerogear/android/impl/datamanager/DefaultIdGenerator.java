@@ -21,7 +21,7 @@ import java.util.UUID;
 import org.aerogear.android.datamanager.IdGenerator;
 
 /**
- * Id Generate using a Universally Unique IDentifier (UUID).
+ * Id Generate using a Universally Unique Identifier (UUID).
  */
 public class DefaultIdGenerator implements IdGenerator {
 
