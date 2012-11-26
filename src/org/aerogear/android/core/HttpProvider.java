@@ -27,14 +27,14 @@ public interface HttpProvider {
 
     public URL getUrl();
 
-    /**
-     * Issues an HTTP request, consumes the content, and cleans up
-     * after itself.
-     *
-     * @return
-     * @throws HttpException if the http request doesn't return status 200
-     */
-    public HeaderAndBody get() throws HttpException, Exception;
+	/**
+	 * Issues an HTTP request, consumes the content, and cleans up
+	 * after itself.
+	 *
+	 * @return
+	 * @throws HttpException if the http request doesn't return status 200
+	 */
+	public HeaderAndBody get() throws HttpException;
 
 	/**
 	 * Issues an HTTP request, consumes the content, and cleans up
@@ -45,24 +45,23 @@ public interface HttpProvider {
 	 */
 	public HeaderAndBody post(String data) throws HttpException;
 
-    /**
-     * Issues an HTTP request, consumes the content, and cleans up
-     * after itself.
-     *
-     * @return
-     * @throws HttpException if the http request doesn't return status 200
-     */
-    public HeaderAndBody put(String id, String data) throws RuntimeException;
+	/**
+	 * Issues an HTTP request, consumes the content, and cleans up
+	 * after itself.
+	 *
+	 * @return
+	 * @throws HttpException if the http request doesn't return status 200
+	 */
+	public HeaderAndBody put(String id, String data) throws HttpException;
 
-    /**
-     * Issues an HTTP request, consumes the content, and cleans up
-     * after itself.
-     *
-     * @return
-     * @throws HttpException if the http request doesn't return status 200
-     */
-    public HeaderAndBody delete(String id) throws RuntimeException;
-
+	/**
+	 * Issues an HTTP request, consumes the content, and cleans up
+	 * after itself.
+	 *
+	 * @return
+	 * @throws HttpException if the http request doesn't return status 200
+	 */
+	public HeaderAndBody delete(String id) throws HttpException;
 
 	/**
 	 * Will set a default header value to be used on all calls

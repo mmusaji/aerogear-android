@@ -65,7 +65,7 @@ public final class HttpRestProvider implements HttpProvider {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public HeaderAndBody get() throws RuntimeException {
+	public HeaderAndBody get() throws HttpException {
 		HttpURLConnection urlConnection = null;
 		try {
 			urlConnection = prepareConnection();
