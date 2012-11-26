@@ -24,11 +24,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.aerogear.android.Provider;
 import org.aerogear.android.core.HeaderAndBody;
 import org.aerogear.android.core.HttpException;
 import org.aerogear.android.core.HttpProvider;
@@ -48,6 +52,54 @@ public final class HttpRestProvider implements HttpProvider {
 	private static final String TAG = "AeroGear";
 	private final URL url;
 	private final Map<String, String> defaultHeaders = new HashMap<String, String>();
+
+	/**
+	 * Set at the bottom of this 
+	 */
+	private Provider<HttpURLConnection> connectionPreparer = new Provider<HttpURLConnection>() {
+		@Override
+		public HttpURLConnection get(Object... in) {
+			String id = null;
+
+			if (in != null) {
+				id = (String) in[0];
+			}
+
+			URL resourceURL = HttpRestProvider.this.url;
+
+			if (id != null) {
+				try {
+					resourceURL = new URL(HttpRestProvider.this
+							.appendIdToURL(id));
+				} catch (MalformedURLException ex) {
+					Log.e(TAG, String.format("Failed to append %s to %s", id,
+							resourceURL.toString()), ex);
+					throw new RuntimeException(ex);
+				}
+			}
+
+			HttpURLConnection urlConnection;
+			try {
+				urlConnection = (HttpURLConnection) resourceURL
+						.openConnection();
+			} catch (IOException ex) {
+				Log.e(TAG, String.format("Failed to open %s", resourceURL
+						.toString()), ex);
+				throw new RuntimeException(ex);
+			}
+
+			urlConnection
+					.setRequestProperty("Content-Type", "application/json");
+
+			for (Entry<String, String> entry : defaultHeaders.entrySet()) {
+				urlConnection.setRequestProperty(entry.getKey(), entry
+						.getValue());
+			}
+
+			return urlConnection;
+
+		}
+	};
 
 	public HttpRestProvider(URL url) {
 		this.url = url;
@@ -112,8 +164,8 @@ public final class HttpRestProvider implements HttpProvider {
 
 		try {
 			urlConnection = prepareConnection(id);
-			urlConnection.setRequestMethod("PUT");
 			addBodyRequest(urlConnection, data);
+			urlConnection.setRequestMethod("PUT");
 			return getHeaderAndBody(urlConnection);
 		} catch (IOException e) {
 			Log.e(TAG, "Error on PUT of " + url, e);
@@ -134,6 +186,7 @@ public final class HttpRestProvider implements HttpProvider {
 		HttpURLConnection urlConnection = null;
 		try {
 			urlConnection = prepareConnection(id);
+			urlConnection.setRequestMethod("DELETE");
 			return getHeaderAndBody(urlConnection);
 		} catch (IOException e) {
 			Log.e(TAG, "Error on DELETE of " + url, e);
@@ -165,21 +218,7 @@ public final class HttpRestProvider implements HttpProvider {
 	}
 
 	private HttpURLConnection prepareConnection(String id) throws IOException {
-		URL resourceURL = this.url;
-		if (id != null) {
-			resourceURL = new URL(appendIdToURL(id));
-		}
-
-		HttpURLConnection urlConnection = (HttpURLConnection) resourceURL
-				.openConnection();
-		urlConnection.setRequestProperty("Content-Type", "application/json");
-
-		for (Entry<String, String> entry : defaultHeaders.entrySet()) {
-			urlConnection.setRequestProperty(entry.getKey(), entry.getValue());
-		}
-
-		return urlConnection;
-
+		return connectionPreparer.get(id);
 	}
 
 	private String appendIdToURL(String id) {
@@ -195,6 +234,7 @@ public final class HttpRestProvider implements HttpProvider {
 	public void setDefaultHeader(String headerName, String headerValue) {
 		defaultHeaders.put(headerName, headerValue);
 	}
+
 	private HeaderAndBody getHeaderAndBody(HttpURLConnection urlConnection)
 			throws IOException {
 
@@ -241,4 +281,5 @@ public final class HttpRestProvider implements HttpProvider {
 		// and then we can return your byte array.
 		return byteBuffer.toByteArray();
 	}
+
 }

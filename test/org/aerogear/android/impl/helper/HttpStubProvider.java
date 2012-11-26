@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.aerogear.android.impl.core;
+package org.aerogear.android.impl.helper;
 
 import java.net.URL;
 import org.aerogear.android.core.HeaderAndBody;

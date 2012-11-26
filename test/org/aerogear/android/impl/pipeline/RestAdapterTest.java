@@ -44,10 +44,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import junit.framework.Assert;
 import static junit.framework.Assert.assertEquals;
 import org.aerogear.android.Callback;
+import org.aerogear.android.Pipeline;
 import org.aerogear.android.RecordId;
 import org.aerogear.android.core.HeaderAndBody;
-import org.aerogear.android.impl.core.HttpStubProvider;
+import org.aerogear.android.impl.helper.HttpStubProvider;
 import org.aerogear.android.impl.helper.Data;
+import org.aerogear.android.impl.helper.TestUtil;
 import org.aerogear.android.pipeline.Pipe;
 import org.junit.Before;
 import org.junit.Test;
@@ -56,148 +58,194 @@ import org.junit.runner.RunWith;
 @RunWith(RobolectricTestRunner.class)
 public class RestAdapterTest {
 
-    private static final String SERIALIZED_POINTS = "{\"points\":[{\"x\":0,\"y\":0},{\"x\":1,\"y\":2},{\"x\":2,\"y\":4},{\"x\":3,\"y\":6},{\"x\":4,\"y\":8},{\"x\":5,\"y\":10},{\"x\":6,\"y\":12},{\"x\":7,\"y\":14},{\"x\":8,\"y\":16},{\"x\":9,\"y\":18}],\"id\":\"1\"}";
-    private URL url;
+	private static final String SERIALIZED_POINTS = "{\"points\":[{\"x\":0,\"y\":0},{\"x\":1,\"y\":2},{\"x\":2,\"y\":4},{\"x\":3,\"y\":6},{\"x\":4,\"y\":8},{\"x\":5,\"y\":10},{\"x\":6,\"y\":12},{\"x\":7,\"y\":14},{\"x\":8,\"y\":16},{\"x\":9,\"y\":18}],\"id\":\"1\"}";
+	private URL url;
 
-    @Before
-    public void setup() throws MalformedURLException {
-        url = new URL("http://server.com/context/");
-    }
+	@Before
+	public void setup() throws MalformedURLException {
+		url = new URL("http://server.com/context/");
+	}
 
-    @Test
-    public void testPipeTypeProperty() {
-        Pipe<Data> restPipe = new RestAdapter<Data>(Data.class, new HttpStubProvider(url));
-        Assert.assertEquals("verifying the (default) type", PipeTypes.REST, restPipe.getType());
-    }
+	@Test
+	public void testPipeTypeProperty() {
+		Pipe<Data> restPipe = new RestAdapter<Data>(Data.class,
+				new HttpStubProvider(url));
+		Assert.assertEquals("verifying the (default) type", PipeTypes.REST,
+				restPipe.getType());
+	}
 
-    @Test
-    public void testPipeURLProperty() {
-        Pipe<Data> restPipe = new RestAdapter<Data>(Data.class, new HttpStubProvider(url));
-        assertEquals("verifying the given URL", "http://server.com/context/", restPipe.getUrl().toString());
-    }
+	@Test
+	public void testPipeURLProperty() {
+		Pipe<Data> restPipe = new RestAdapter<Data>(Data.class,
+				new HttpStubProvider(url));
+		assertEquals("verifying the given URL", "http://server.com/context/",
+				restPipe.getUrl().toString());
+	}
 
-    @Test
-    public void testPipeFactorPipeConfigGson() throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
-        GsonBuilder builder = new GsonBuilder().registerTypeAdapter(Point.class, new RestAdapterTest.PointTypeAdapter());
+	@Test(expected = IllegalArgumentException.class)
+	public void testPipeFactorPipeConfigEncoding() {
+		PipeConfig config = new PipeConfig(url, Data.class);
+		config.setEncoding("UTF-16");
+		assertEquals(Charset.forName("UTF-16"), config.getEncoding());
+		config.setEncoding((Charset) null);
+	}
 
-        DefaultPipeFactory factory = new DefaultPipeFactory();
-        PipeConfig pc = new PipeConfig(url, ListClassId.class);
+	@Test
+	public void testPipeFactorPipeConfigGson() throws NoSuchFieldException,
+			IllegalArgumentException, IllegalAccessException {
+		GsonBuilder builder = new GsonBuilder().registerTypeAdapter(
+				Point.class, new RestAdapterTest.PointTypeAdapter());
 
-        pc.setGsonBuilder(builder);
-        Pipe<ListClassId> restPipe = factory.createPipe(ListClassId.class, pc);
+		DefaultPipeFactory factory = new DefaultPipeFactory();
+		PipeConfig pc = new PipeConfig(url, ListClassId.class);
 
-        Field gsonField = restPipe.getClass().getDeclaredField("gson");
-        gsonField.setAccessible(true);
-        Gson gson = (Gson) gsonField.get(restPipe);
+		pc.setGsonBuilder(builder);
+		Pipe<ListClassId> restPipe = factory.createPipe(ListClassId.class, pc);
 
-        gson.toJson(new ListClassId());
+		Field gsonField = restPipe.getClass().getDeclaredField("gson");
+		gsonField.setAccessible(true);
+		Gson gson = (Gson) gsonField.get(restPipe);
 
-    }
+		gson.toJson(new ListClassId());
 
-    @Test(timeout = 500L)
-    public void setEncoding() throws InterruptedException {
-        GsonBuilder builder = new GsonBuilder().registerTypeAdapter(Point.class, new RestAdapterTest.PointTypeAdapter());
-        final Charset utf_16 = Charset.forName("UTF-16");
-        HttpStubProvider provider = new HttpStubProvider(url, new HeaderAndBody(SERIALIZED_POINTS.getBytes(utf_16), new HashMap<String, Object>()));
+	}
 
-        RestAdapter<ListClassId> restPipe = new RestAdapter<ListClassId>(ListClassId.class, provider, builder);
-        restPipe.setEncoding(utf_16);
+	@Test(timeout = 500L)
+	public void testEncoding() throws InterruptedException {
+		GsonBuilder builder = new GsonBuilder().registerTypeAdapter(
+				Point.class, new RestAdapterTest.PointTypeAdapter());
+		final Charset utf_16 = Charset.forName("UTF-16");
+		HttpStubProvider provider = new HttpStubProvider(url,
+				new HeaderAndBody(SERIALIZED_POINTS.getBytes(utf_16),
+						new HashMap<String, Object>()));
 
-        runRead(restPipe);
+		RestAdapter<ListClassId> restPipe = new RestAdapter<ListClassId>(
+				ListClassId.class, provider, builder);
+		restPipe.setEncoding(utf_16);
 
-    }
+		runRead(restPipe);
 
-    @Test
-    public void testSingleObjectRead() throws ParseException, InterruptedException {
-        GsonBuilder builder = new GsonBuilder().registerTypeAdapter(Point.class, new RestAdapterTest.PointTypeAdapter());
-        HeaderAndBody response = new HeaderAndBody(SERIALIZED_POINTS.getBytes(), new HashMap<String, Object>());
-        HttpStubProvider provider = new HttpStubProvider(url, response);
-        RestAdapter<ListClassId> restPipe = new RestAdapter<ListClassId>(ListClassId.class, provider, builder);
+	}
 
-        List<ListClassId> result = runRead(restPipe);
+	@Test(timeout = 500L)
+	public void testConfigSetEncoding() throws Exception {
+		GsonBuilder builder = new GsonBuilder().registerTypeAdapter(
+				Point.class, new RestAdapterTest.PointTypeAdapter());
+		final Charset utf_16 = Charset.forName("UTF-16");
 
-        List<Point> returnedPoints = result.get(0).points;
-        assertEquals(10, returnedPoints.size());
+		Pipeline pipeline = new Pipeline(url);
+		PipeConfig config = new PipeConfig(url, ListClassId.class);
+		config.setEncoding(utf_16);
+		config.setGsonBuilder(builder);
 
-    }
+		RestAdapter<ListClassId> restPipe = (RestAdapter<ListClassId>) pipeline
+				.pipe(ListClassId.class, config);
 
-    @Test
-    public void testGsonBuilderProperty() throws ParseException, InterruptedException {
-        GsonBuilder builder = new GsonBuilder().registerTypeAdapter(Point.class, new RestAdapterTest.PointTypeAdapter());
+		assertEquals(utf_16, TestUtil.getPrivateField(restPipe, "encoding"));
 
-        final StringBuilder request = new StringBuilder("");
+	}
 
-        HttpStubProvider provider = new HttpStubProvider(url) {
-            @Override
-            public HeaderAndBody put(String id, String data) {
-                request.delete(0, request.length());
-                request.append(data);
-                return new HeaderAndBody(data.getBytes(), new HashMap<String, Object>());
-            }
+	@Test
+	public void testSingleObjectRead() throws ParseException,
+			InterruptedException {
+		GsonBuilder builder = new GsonBuilder().registerTypeAdapter(
+				Point.class, new RestAdapterTest.PointTypeAdapter());
+		HeaderAndBody response = new HeaderAndBody(
+				SERIALIZED_POINTS.getBytes(), new HashMap<String, Object>());
+		HttpStubProvider provider = new HttpStubProvider(url, response);
+		RestAdapter<ListClassId> restPipe = new RestAdapter<ListClassId>(
+				ListClassId.class, provider, builder);
 
-            @Override
-            public HeaderAndBody post(String data) {
-                request.delete(0, request.length());
-                request.append(data);
-                return new HeaderAndBody(data.getBytes(), new HashMap<String, Object>());
-            }
-        };
+		List<ListClassId> result = runRead(restPipe);
 
-        Pipe<ListClassId> restPipe = new RestAdapter<ListClassId>(ListClassId.class, provider, builder);
-        final CountDownLatch latch = new CountDownLatch(1);
-        final ListClassId listClass = new ListClassId();
-        final List<Point> returnedPoints = new ArrayList<Point>(10);
+		List<Point> returnedPoints = result.get(0).points;
+		assertEquals(10, returnedPoints.size());
 
-        restPipe.save(listClass, new Callback<ListClassId>() {
-            @Override
-            public void onSuccess(ListClassId data) {
-                returnedPoints.addAll(data.points);
-                latch.countDown();
-            }
+	}
 
-            @Override
-            public void onFailure(Exception e) {
-                throw new RuntimeException(e);
-            }
-        });
+	@Test
+	public void testGsonBuilderProperty() throws ParseException,
+			InterruptedException {
+		GsonBuilder builder = new GsonBuilder().registerTypeAdapter(
+				Point.class, new RestAdapterTest.PointTypeAdapter());
 
-        latch.await(2, TimeUnit.SECONDS);
-        assertEquals(SERIALIZED_POINTS, request.toString());
-        assertEquals(listClass.points, returnedPoints);
-    }
+		final StringBuilder request = new StringBuilder("");
 
-    /**
-     * Runs a read method, returns the result of the call back
-     * and makes sure no exceptions are thrown
-     *
-     * @param restPipe
-     */
-    private <T> List<T> runRead(RestAdapter<T> restPipe) throws InterruptedException {
-        final CountDownLatch latch = new CountDownLatch(1);
-        final AtomicBoolean hasException = new AtomicBoolean(false);
-        final List<T> returnedData = new ArrayList<T>();
+		HttpStubProvider provider = new HttpStubProvider(url) {
+			@Override
+			public HeaderAndBody put(String id, String data) {
+				request.delete(0, request.length());
+				request.append(data);
+				return new HeaderAndBody(data.getBytes(),
+						new HashMap<String, Object>());
+			}
 
-        restPipe.read(new Callback<List<T>>() {
-            @Override
-            public void onSuccess(List<T> data) {
-                returnedData.addAll(data);
-                latch.countDown();
-            }
+			@Override
+			public HeaderAndBody post(String data) {
+				request.delete(0, request.length());
+				request.append(data);
+				return new HeaderAndBody(data.getBytes(),
+						new HashMap<String, Object>());
+			}
+		};
 
-            @Override
-            public void onFailure(Exception e) {
-                hasException.set(true);
-                latch.countDown();
-            }
-        });
+		Pipe<ListClassId> restPipe = new RestAdapter<ListClassId>(
+				ListClassId.class, provider, builder);
+		final CountDownLatch latch = new CountDownLatch(1);
+		final ListClassId listClass = new ListClassId();
+		final List<Point> returnedPoints = new ArrayList<Point>(10);
 
-        latch.await(2, TimeUnit.SECONDS);
-        Assert.assertFalse(hasException.get());
+		restPipe.save(listClass, new Callback<ListClassId>() {
+			@Override
+			public void onSuccess(ListClassId data) {
+				returnedPoints.addAll(data.points);
+				latch.countDown();
+			}
 
-        return returnedData;
-    }
+			@Override
+			public void onFailure(Exception e) {
+				throw new RuntimeException(e);
+			}
+		});
 
-    public final static class ListClassId {
+		latch.await(2, TimeUnit.SECONDS);
+		assertEquals(SERIALIZED_POINTS, request.toString());
+		assertEquals(listClass.points, returnedPoints);
+	}
+
+	/**
+	 * Runs a read method, returns the result of the call back
+	 * and makes sure no exceptions are thrown
+	 *
+	 * @param restPipe
+	 */
+	private <T> List<T> runRead(RestAdapter<T> restPipe)
+			throws InterruptedException {
+		final CountDownLatch latch = new CountDownLatch(1);
+		final AtomicBoolean hasException = new AtomicBoolean(false);
+		final List<T> returnedData = new ArrayList<T>();
+
+		restPipe.read(new Callback<List<T>>() {
+			@Override
+			public void onSuccess(List<T> data) {
+				returnedData.addAll(data);
+				latch.countDown();
+			}
+
+			@Override
+			public void onFailure(Exception e) {
+				hasException.set(true);
+				latch.countDown();
+			}
+		});
+
+		latch.await(2, TimeUnit.SECONDS);
+		Assert.assertFalse(hasException.get());
+
+		return returnedData;
+	}
+
+public final static class ListClassId {
 
         List<Point> points = new ArrayList<Point>(10);
 
@@ -227,26 +275,32 @@ public class RestAdapterTest {
             }
         }
     }
+	private static class PointTypeAdapter
+			implements
+				InstanceCreator,
+				JsonSerializer,
+				JsonDeserializer {
 
-    private static class PointTypeAdapter implements InstanceCreator, JsonSerializer, JsonDeserializer {
+		@Override
+		public Object createInstance(Type type) {
+			return new Point();
+		}
 
-        @Override
-        public Object createInstance(Type type) {
-            return new Point();
-        }
+		@Override
+		public JsonElement serialize(Object src, Type typeOfSrc,
+				JsonSerializationContext context) {
+			JsonObject object = new JsonObject();
+			object.addProperty("x", ((Point) src).x);
+			object.addProperty("y", ((Point) src).y);
+			return object;
+		}
 
-        @Override
-        public JsonElement serialize(Object src, Type typeOfSrc, JsonSerializationContext context) {
-            JsonObject object = new JsonObject();
-            object.addProperty("x", ((Point) src).x);
-            object.addProperty("y", ((Point) src).y);
-            return object;
-        }
-
-        @Override
-        public Object deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
-            return new Point(json.getAsJsonObject().getAsJsonPrimitive("x").getAsInt(),
-                    json.getAsJsonObject().getAsJsonPrimitive("y").getAsInt());
-        }
-    }
+		@Override
+		public Object deserialize(JsonElement json, Type typeOfT,
+				JsonDeserializationContext context) throws JsonParseException {
+			return new Point(json.getAsJsonObject().getAsJsonPrimitive("x")
+					.getAsInt(), json.getAsJsonObject().getAsJsonPrimitive("y")
+					.getAsInt());
+		}
+	}
 }

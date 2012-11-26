@@ -94,7 +94,7 @@ public final class RestAuthenticationModule implements AuthenticationModule {
 	}
 
 	@Override
-	public URL getbaseURL() {
+	public URL getBaseURL() {
 		return baseURL;
 	}
 
