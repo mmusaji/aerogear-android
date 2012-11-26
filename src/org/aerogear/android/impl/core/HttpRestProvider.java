@@ -45,197 +45,200 @@ import org.aerogear.android.core.HttpProvider;
  */
 public final class HttpRestProvider implements HttpProvider {
 
-    private static final String TAG = "AeroGear";
-    private final URL url;
-    private Map<String, String> defaultHeaders = new HashMap<String, String>();
+	private static final String TAG = "AeroGear";
+	private final URL url;
+	private final Map<String, String> defaultHeaders = new HashMap<String, String>();
 
-    public HttpRestProvider(URL url) {
-        this.url = url;
-    }
+	public HttpRestProvider(URL url) {
+		this.url = url;
+	}
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public URL getUrl() {
-        return url;
-    }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public URL getUrl() {
+		return url;
+	}
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public HeaderAndBody get() throws RuntimeException {
-        HttpURLConnection urlConnection = null;
-        try {
-            urlConnection = prepareConnection();
-            return getHeaderAndBody(urlConnection);
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public HeaderAndBody get() throws RuntimeException {
+		HttpURLConnection urlConnection = null;
+		try {
+			urlConnection = prepareConnection();
+			return getHeaderAndBody(urlConnection);
 
-        } catch (IOException e) {
-            Log.e(TAG, "Error on GET of " + url, e);
-            throw new RuntimeException(e);
-        } finally {
-            if (urlConnection != null) {
-                urlConnection.disconnect();
-            }
-        }
-    }
+		} catch (IOException e) {
+			Log.e(TAG, "Error on GET of " + url, e);
+			throw new RuntimeException(e);
+		} finally {
+			if (urlConnection != null) {
+				urlConnection.disconnect();
+			}
+		}
+	}
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public HeaderAndBody post(String data) throws RuntimeException {
-        HttpURLConnection urlConnection = null;
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public HeaderAndBody post(String data) throws RuntimeException {
+		HttpURLConnection urlConnection = null;
 
-        try {
-            urlConnection = prepareConnection();
-            addBodyRequest(urlConnection, data); 
-            return getHeaderAndBody(urlConnection);
+		try {
+			urlConnection = prepareConnection();
+			addBodyRequest(urlConnection, data);
+			return getHeaderAndBody(urlConnection);
 
-        } catch (IOException e) {
-            Log.e(TAG, "Error on POST of " + url, e);
-            throw new RuntimeException(e);
-        } finally {
-            if (urlConnection != null) {
-                urlConnection.disconnect();
-            }
-        }
-    }
+		} catch (IOException e) {
+			Log.e(TAG, "Error on POST of " + url, e);
+			throw new RuntimeException(e);
+		} finally {
+			if (urlConnection != null) {
+				urlConnection.disconnect();
+			}
+		}
+	}
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public HeaderAndBody put(String id, String data) throws RuntimeException {
-        HttpURLConnection urlConnection = null;
-        
-        try {
-            urlConnection = prepareConnection(id);
-            urlConnection.setRequestMethod("PUT");
-            addBodyRequest(urlConnection, data);
-            return getHeaderAndBody(urlConnection);
-        } catch (IOException e) {
-            Log.e(TAG, "Error on PUT of " + url, e);
-            throw new RuntimeException(e);
-        } finally {
-            if (urlConnection != null) {
-                urlConnection.disconnect();
-            }
-        }
-    }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public HeaderAndBody put(String id, String data) throws RuntimeException {
+		HttpURLConnection urlConnection = null;
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public HeaderAndBody delete(String id) throws RuntimeException {
-        
-        
-        HttpURLConnection urlConnection = null;
-        try {
-            urlConnection = prepareConnection(id);
-            return getHeaderAndBody(urlConnection);
-        } catch (IOException e) {
-            Log.e(TAG, "Error on DELETE of " + url, e);
-            throw new RuntimeException(e);
-        }finally {
-            if (urlConnection != null) {
-                urlConnection.disconnect();
-            }
-        }
-    }
+		try {
+			urlConnection = prepareConnection(id);
+			urlConnection.setRequestMethod("PUT");
+			addBodyRequest(urlConnection, data);
+			return getHeaderAndBody(urlConnection);
+		} catch (IOException e) {
+			Log.e(TAG, "Error on PUT of " + url, e);
+			throw new RuntimeException(e);
+		} finally {
+			if (urlConnection != null) {
+				urlConnection.disconnect();
+			}
+		}
+	}
 
-    private void addBodyRequest(HttpURLConnection urlConnection, String data) throws IOException {
-        
-        urlConnection.setDoOutput(true);
-        urlConnection.setRequestMethod("POST");
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public HeaderAndBody delete(String id) throws RuntimeException {
 
-    	if (data != null) {
-    		OutputStream out = new BufferedOutputStream(urlConnection.getOutputStream());
-            out.write(data.getBytes());
-            out.flush();
-    	}        
-        
-    }
+		HttpURLConnection urlConnection = null;
+		try {
+			urlConnection = prepareConnection(id);
+			return getHeaderAndBody(urlConnection);
+		} catch (IOException e) {
+			Log.e(TAG, "Error on DELETE of " + url, e);
+			throw new RuntimeException(e);
+		} finally {
+			if (urlConnection != null) {
+				urlConnection.disconnect();
+			}
+		}
+	}
 
+	private void addBodyRequest(HttpURLConnection urlConnection, String data)
+			throws IOException {
 
-    private HttpURLConnection prepareConnection() throws IOException {
-        return prepareConnection(null);
-    }
-    
-    private HttpURLConnection prepareConnection(String id) throws IOException {
-        URL resourceURL = this.url;
-        if (id != null) {
-            resourceURL = new URL(appendIdToURL(id));
-        }
-            
-        HttpURLConnection urlConnection = (HttpURLConnection) resourceURL.openConnection();
-        urlConnection.setRequestProperty("Content-Type", "application/json");
-        
-        for (Entry<String, String> entry : defaultHeaders.entrySet()) {
-            urlConnection.setRequestProperty(entry.getKey(), entry.getValue());
-        }
+		urlConnection.setDoOutput(true);
+		urlConnection.setRequestMethod("POST");
 
-        return urlConnection;
+		if (data != null) {
+			OutputStream out = new BufferedOutputStream(urlConnection
+					.getOutputStream());
+			out.write(data.getBytes());
+			out.flush();
+		}
 
-    }
+	}
 
-    private String appendIdToURL(String id) {
-        StringBuilder newUrl = new StringBuilder(url.toString());
-        if (!url.toString().endsWith("/")) {
-            newUrl.append("/");
-        }
-        newUrl.append(id);
-        return newUrl.toString();
-    }
+	private HttpURLConnection prepareConnection() throws IOException {
+		return prepareConnection(null);
+	}
 
-    @Override
-    public void setDefaultHeader(String headerName, String headerValue) {
-        defaultHeaders.put(headerName, headerValue);
-    }
-    private HeaderAndBody getHeaderAndBody(HttpURLConnection urlConnection) throws IOException {
+	private HttpURLConnection prepareConnection(String id) throws IOException {
+		URL resourceURL = this.url;
+		if (id != null) {
+			resourceURL = new URL(appendIdToURL(id));
+		}
 
-        int statusCode = urlConnection.getResponseCode();
-        
-        if (statusCode != 200) {
-        	InputStream in = new BufferedInputStream(urlConnection.getErrorStream());
-            
-            byte[] errData = readBytes(in);
-            
-            throw new HttpException(errData, statusCode);
-        }
+		HttpURLConnection urlConnection = (HttpURLConnection) resourceURL
+				.openConnection();
+		urlConnection.setRequestProperty("Content-Type", "application/json");
 
-        InputStream in = new BufferedInputStream(urlConnection.getInputStream());
-        
-        byte[] responseData = readBytes(in);
-        
-        
-        Map<String, List<String>> headers = urlConnection.getHeaderFields();
-        HeaderAndBody result = new HeaderAndBody(responseData, new HashMap<String, Object>(headers.size()));
+		for (Entry<String, String> entry : defaultHeaders.entrySet()) {
+			urlConnection.setRequestProperty(entry.getKey(), entry.getValue());
+		}
 
-        for (Map.Entry<String, List<String>> header : headers.entrySet()) {
-            result.setHeader(header.getKey(), header.getValue().get(0));
-        }
+		return urlConnection;
 
-        return result;
-    }
+	}
 
-    private byte[] readBytes(InputStream inputStream) throws IOException {
-        // this dynamically extends to take the bytes you read
-        ByteArrayOutputStream byteBuffer = new ByteArrayOutputStream();
+	private String appendIdToURL(String id) {
+		StringBuilder newUrl = new StringBuilder(url.toString());
+		if (!url.toString().endsWith("/")) {
+			newUrl.append("/");
+		}
+		newUrl.append(id);
+		return newUrl.toString();
+	}
 
-        // this is storage overwritten on each iteration with bytes
-        int bufferSize = 1024;
-        byte[] buffer = new byte[bufferSize];
+	@Override
+	public void setDefaultHeader(String headerName, String headerValue) {
+		defaultHeaders.put(headerName, headerValue);
+	}
+	private HeaderAndBody getHeaderAndBody(HttpURLConnection urlConnection)
+			throws IOException {
 
-        // we need to know how may bytes were read to write them to the byteBuffer
-        int len = 0;
-        while ((len = inputStream.read(buffer)) != -1) {
-            byteBuffer.write(buffer, 0, len);
-        }
+		int statusCode = urlConnection.getResponseCode();
 
-        // and then we can return your byte array.
-        return byteBuffer.toByteArray();
-    }
+		if (statusCode != 200) {
+			InputStream in = new BufferedInputStream(urlConnection
+					.getErrorStream());
+
+			byte[] errData = readBytes(in);
+
+			throw new HttpException(errData, statusCode);
+		}
+
+		InputStream in = new BufferedInputStream(urlConnection.getInputStream());
+
+		byte[] responseData = readBytes(in);
+
+		Map<String, List<String>> headers = urlConnection.getHeaderFields();
+		HeaderAndBody result = new HeaderAndBody(responseData,
+				new HashMap<String, Object>(headers.size()));
+
+		for (Map.Entry<String, List<String>> header : headers.entrySet()) {
+			result.setHeader(header.getKey(), header.getValue().get(0));
+		}
+
+		return result;
+	}
+
+	private byte[] readBytes(InputStream inputStream) throws IOException {
+		// this dynamically extends to take the bytes you read
+		ByteArrayOutputStream byteBuffer = new ByteArrayOutputStream();
+
+		// this is storage overwritten on each iteration with bytes
+		int bufferSize = 1024;
+		byte[] buffer = new byte[bufferSize];
+
+		// we need to know how may bytes were read to write them to the byteBuffer
+		int len = 0;
+		while ((len = inputStream.read(buffer)) != -1) {
+			byteBuffer.write(buffer, 0, len);
+		}
+
+		// and then we can return your byte array.
+		return byteBuffer.toByteArray();
+	}
 }

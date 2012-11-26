@@ -37,223 +37,223 @@ import org.json.JSONObject;
  */
 public final class RestAuthenticationModule implements AuthenticationModule {
 
+	private final Provider<HttpProvider> httpProviderProvider = new Provider<HttpProvider>() {
+		@Override
+		public HttpProvider get(Object... in) {
 
-            private Provider<HttpProvider> httpProviderProvider = new Provider<HttpProvider>() {
-        @Override
-        public HttpProvider get(Object... in) {
-            
-            return new HttpRestProvider((URL)in[0]);
-        }
-    };
+			return new HttpRestProvider((URL) in[0]);
+		}
+	};
 
-        
-    private final URL baseURL;
+	private final URL baseURL;
 
-    private final static Gson gson = new Gson();
+	private final String loginEndpoint;
+	private final URL loginURL;
 
-    private final String loginEndpoint;
-    private final URL loginURL;
+	private final String logoutEndpoint;
+	private final URL logoutURL;
 
-    private final String logoutEndpoint;
-    private final URL logoutURL;
+	private final String enrollEndpoint;
+	private final URL enrollURL;
 
-    private final String enrollEndpoint;
-    private final URL enrollURL;
+	/**
+	 * This is the field which stores the AG security token.
+	 */
+	private String authToken = "";
 
-    /**
-     * This is the field which stores the AG security token.
-     */
-    private String authToken = "";
+	/**
+	 * This is the name of the header to set for the token.
+	 */
+	private final String tokenHeaderName;
 
-    /**
-     * This is the name of the header to set for the token.
-     */
-    private final String tokenHeaderName;
+	private boolean isLoggedIn = false;
+	private static final String TAG = "RestAuthenticationModule";
 
-    private boolean isLoggedIn = false;
-    private static final String TAG = "RestAuthenticationModule";
+	/**
+	 *
+	 * @param baseURL
+	 * @param config
+	 * @throws IllegalArgumentException if an endpoint can not be appended to
+	 * baseURL
+	 */
+	public RestAuthenticationModule(URL baseURL, AuthenticationConfig config) {
+		this.baseURL = baseURL;
+		this.loginEndpoint = config.getLoginEndpoint();
+		this.logoutEndpoint = config.getLogoutEndpoint();
+		this.enrollEndpoint = config.getEnrollEndpoint();
+		if (config instanceof RestAuthenticationConfig) {
+			this.tokenHeaderName = ((RestAuthenticationConfig) config)
+					.getTokenHeaderName();
+		} else {
+			this.tokenHeaderName = "Auth-Token";
+		}
 
-    /**
-     *
-     * @param baseURL
-     * @param config
-     * @throws IllegalArgumentException if an endpoint can not be appended to
-     * baseURL
-     */
-    public RestAuthenticationModule(URL baseURL, AuthenticationConfig config) {
-        this.baseURL = baseURL;
-        this.loginEndpoint = config.getLoginEndpoint();
-        this.logoutEndpoint = config.getLogoutEndpoint();
-        this.enrollEndpoint = config.getEnrollEndpoint();
-        if (config instanceof RestAuthenticationConfig) {
-            this.tokenHeaderName = ((RestAuthenticationConfig) config).getTokenHeaderName();
-        } else {
-            this.tokenHeaderName = "Auth-Token";
-        }
+		this.loginURL = appendToBaseURL(loginEndpoint);
+		this.logoutURL = appendToBaseURL(logoutEndpoint);
+		this.enrollURL = appendToBaseURL(enrollEndpoint);
+	}
 
-        this.loginURL = appendToBaseURL(loginEndpoint);
-        this.logoutURL = appendToBaseURL(logoutEndpoint);
-        this.enrollURL = appendToBaseURL(enrollEndpoint);
-    }
+	@Override
+	public URL getbaseURL() {
+		return baseURL;
+	}
 
-    @Override
-    public URL getbaseURL() {
-        return baseURL;
-    }
+	@Override
+	public String getLoginEndpoint() {
+		return loginEndpoint;
+	}
 
-    @Override
-    public String getLoginEndpoint() {
-        return loginEndpoint;
-    }
+	@Override
+	public String getLogoutEndpoint() {
+		return logoutEndpoint;
+	}
 
-    @Override
-    public String getLogoutEndpoint() {
-        return logoutEndpoint;
-    }
+	@Override
+	public String getEnrollEndpoint() {
+		return enrollEndpoint;
+	}
 
-    @Override
-    public String getEnrollEndpoint() {
-        return enrollEndpoint;
-    }
+	@Override
+	public void enroll(final Map<String, String> userData,
+			final Callback<HeaderAndBody> callback) {
+		new AsyncTask<Void, Void, Void>() {
+			HeaderAndBody result = null;
+			Exception exception = null;
 
-    @Override
-    public void enroll(final Map<String, String> userData, final Callback<HeaderAndBody> callback) {
-        new AsyncTask<Void, Void, Void>() {
-            HeaderAndBody result = null;
-            Exception exception = null;
+			@Override
+			protected Void doInBackground(Void... params) {
+				HttpProvider provider = httpProviderProvider.get(enrollURL);
+				String enrollData = new JSONObject(userData).toString();
+				try {
+					result = provider.post(enrollData);
+					authToken = result.getHeader(tokenHeaderName).toString();
+					isLoggedIn = true;
 
-            @Override
-            protected Void doInBackground(Void... params) {
-                HttpProvider provider = httpProviderProvider.get( enrollURL );
-                String enrollData = new JSONObject(userData).toString();
-                try {
-                    result = provider.post(enrollData);
-                    authToken = result.getHeader(tokenHeaderName).toString();
-                    isLoggedIn = true;
+				} catch (Exception e) {
+					Log.e(TAG, "error enrolling", e);
+					exception = e;
+				}
+				return null;
+			}
 
-                } catch (Exception e) {
-                    Log.e(TAG, "error enrolling", e);
-                    exception = e;
-                }
-                return null;
-            }
+			@Override
+			protected void onPostExecute(Void ignore) {
+				super.onPostExecute(ignore);
+				if (exception == null) {
+					callback.onSuccess(this.result);
+				} else {
+					callback.onFailure(exception);
+				}
+			}
 
-            @Override
-            protected void onPostExecute(Void ignore) {
-                super.onPostExecute(ignore);
-                if (exception == null) {
-                    callback.onSuccess(this.result);
-                } else {
-                    callback.onFailure(exception);
-                }
-            }
+		}.execute((Void) null);
+	}
 
-        }.execute((Void) null);
-    }
+	@Override
+	public void login(final String username, final String password,
+			final Callback<HeaderAndBody> callback) {
+		new AsyncTask<Void, Void, Void>() {
+			private Exception exception;
+			private HeaderAndBody result;
 
-    @Override
-    public void login(final String username, final String password, final Callback<HeaderAndBody> callback) {
-        new AsyncTask<Void, Void, Void>() {
-            private Exception exception;
-            private HeaderAndBody result;
+			@Override
+			protected Void doInBackground(Void... params) {
+				HttpProvider provider = httpProviderProvider.get(loginURL);
+				String loginData = buildLoginData(username, password);
+				try {
+					result = provider.post(loginData);
+					authToken = result.getHeader(tokenHeaderName).toString();
+					isLoggedIn = true;
+				} catch (Exception e) {
+					Log.e(TAG, "Error with Login", e);
+					exception = e;
+				}
+				return null;
+			}
 
-            @Override
-            protected Void doInBackground(Void... params) {
-                HttpProvider provider = httpProviderProvider.get( loginURL);
-                String loginData = buildLoginData(username, password);
-                try {
-                    result = provider.post(loginData);
-                    authToken = result.getHeader(tokenHeaderName).toString();
-                    isLoggedIn = true;
-                } catch (Exception e) {
-                    Log.e(TAG, "Error with Login", e);
-                    exception = e;
-                }
-                return null;
-            }
+			@Override
+			protected void onPostExecute(Void ignore) {
+				super.onPostExecute(ignore);
+				if (exception == null) {
+					callback.onSuccess(this.result);
+				} else {
+					callback.onFailure(exception);
+				}
+			}
 
-            @Override
-            protected void onPostExecute(Void ignore) {
-                super.onPostExecute(ignore);
-                if (exception == null) {
-                    callback.onSuccess(this.result);
-                } else {
-                    callback.onFailure(exception);
-                }
-            }
+		}.execute((Void) null);
 
-        }.execute((Void) null);
+	}
 
-    }
+	@Override
+	public void logout(final Callback<Void> callback) {
+		new AsyncTask<Void, Void, Void>() {
+			private Exception exception;
 
-    @Override
-    public void logout(final Callback<Void> callback) {
-        new AsyncTask<Void, Void, Void>() {
-            private Exception exception;
+			@Override
+			protected Void doInBackground(Void... params) {
+				HttpProvider provider = httpProviderProvider.get(logoutURL);
+				try {
+					provider.post("");
+					authToken = "";
+					isLoggedIn = false;
 
-            @Override
-            protected Void doInBackground(Void... params) {
-                HttpProvider provider = httpProviderProvider.get( logoutURL );
-                try {
-                    provider.post("");
-                    authToken = "";
-                    isLoggedIn = false;
+				} catch (Exception e) {
+					exception = e;
+				}
+				return null;
+			}
 
-                } catch (Exception e) {
-                    exception = e;
-                }
-                return null;
-            }
+			@Override
+			protected void onPostExecute(Void ignore) {
+				super.onPostExecute(ignore);
+				if (exception == null) {
+					callback.onSuccess(null);
+				} else {
+					callback.onFailure(exception);
+				}
+			}
 
-            @Override
-            protected void onPostExecute(Void ignore) {
-                super.onPostExecute(ignore);
-                if (exception == null) {
-                    callback.onSuccess(null);
-                } else {
-                    callback.onFailure(exception);
-                }
-            }
+		}.execute((Void) null);
+	}
 
-        }.execute((Void) null);
-    }
+	@Override
+	public boolean isLoggedIn() {
+		return isLoggedIn;
+	}
 
-    @Override
-    public boolean isLoggedIn() {
-        return isLoggedIn;
-    }
+	protected String getAuthToken() {
+		return authToken;
+	}
 
-    protected String getAuthToken() {
-        return authToken;
-    }
+	private String buildLoginData(String username, String password) {
+		JsonObject response = new JsonObject();
+		response.addProperty("username", username);
+		response.addProperty("password", password);
+		return response.toString();
+	}
 
-    private String buildLoginData(String username, String password) {
-        JsonObject response = new JsonObject();
-        response.addProperty("username", username);
-        response.addProperty("password", password);
-        return response.toString();
-    }
+	@Override
+	public void onSecurityApplicationRequested(HttpProvider httpProvider) {
+		httpProvider.setDefaultHeader(tokenHeaderName, authToken);
+	}
 
-    @Override
-    public void onSecurityApplicationRequested(HttpProvider httpProvider) {
-        httpProvider.setDefaultHeader(tokenHeaderName, authToken);
-    }
+	/**
+	 * 
+	 * @param endpoint
+	 * @return a new url baseUrl + endpoint
+	 * @throws IllegalArgumentException if baseUrl+endpoint is not a real url.
+	 */
+	private URL appendToBaseURL(String endpoint) {
+		try {
+			return new URL(baseURL.toString() + endpoint);
+		} catch (MalformedURLException ex) {
+			String message = "Could not append " + endpoint + " to "
+					+ baseURL.toString();
+			Log.e(TAG, message, ex);
+			throw new IllegalArgumentException(message, ex);
+		}
 
-    /**
-     * 
-     * @param endpoint
-     * @return a new url baseUrl + endpoint
-     * @throws IllegalArgumentException if baseUrl+endpoint is not a real url.
-     */
-    private URL appendToBaseURL(String endpoint) {
-        try {
-            return new URL(baseURL.toString() + endpoint);
-        } catch (MalformedURLException ex) {
-            String message = "Could not append " + endpoint + " to " + baseURL.toString();
-            Log.e(TAG, message, ex);
-            throw new IllegalArgumentException(message, ex);
-        }
-
-    }
+	}
 
 }
