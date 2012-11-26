@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.aerogear.android;
 
 import java.util.HashMap;
@@ -31,48 +30,73 @@ import org.aerogear.android.impl.datamanager.StoreTypes;
  * Represents an abstraction layer for a storage system.
  * <p/>
  * As a note, you should NOT extend this class for production or application
- * purposes.  This class is made non-final ONLY for testing/mocking/academic
+ * purposes. This class is made non-final ONLY for testing/mocking/academic
  * purposes.
  */
-
 public class DataManager {
 
     private final Map<String, Store> stores = new HashMap<String, Store>();
-
     /**
      * This will default to {@link DefaultIdGenerator} if not provided.
      */
     private final IdGenerator idGenerator;
-
     /**
      * This will default to {@link DefaultStoreFactory} if not provided.
      */
     private final StoreFactory storeFactory;
 
+    /**
+     * Creates a new DataManager using {@link  DefaultIdGenerator} and
+     * {@link DefaultStoreFactory}
+     */
     public DataManager() {
-        this(null, null);
+        this(new DefaultIdGenerator(), new DefaultStoreFactory());
     }
 
+    /**
+     * Creates a new DataManager using the idGenerator parameter and
+     * {@link DefaultStoreFactory}
+     *
+     * @param idGenerator
+     * @throws IllegalArgumentException if idGenerator is null
+     *
+     */
     public DataManager(IdGenerator idGenerator) {
-        this(idGenerator, null);
+        this(idGenerator, new DefaultStoreFactory());
     }
 
+    /**
+     * Creates a new DataManager using the storeFactory parameter and
+     * {@link DefaultIdGenerator}
+     *
+     * @param storeFactory
+     * @throws IllegalArgumentException if storeFactory is null
+     */
     public DataManager(StoreFactory storeFactory) {
-        this(null, storeFactory);
+        this(new DefaultIdGenerator(), storeFactory);
     }
 
+    /**
+     *
+     * Creates a DataManager using the supplied parameters
+     *
+     * @param idGenerator
+     * @param storeFactory
+     * @throws IllegalArgumentException if idGenerator is null
+     * @throws IllegalArgumentException if storeFactory is null
+     */
     public DataManager(IdGenerator idGenerator, StoreFactory storeFactory) {
         if (idGenerator == null) {
-            this.idGenerator = new DefaultIdGenerator();
-        } else {
-            this.idGenerator = idGenerator;
+            throw new IllegalArgumentException("Id Generator should not be null");
         }
 
         if (storeFactory == null) {
-            this.storeFactory = new DefaultStoreFactory();
-        } else {
-            this.storeFactory = storeFactory;
+            throw new IllegalArgumentException("StoreFactory should not be null");
         }
+
+        this.idGenerator = idGenerator;
+        this.storeFactory = storeFactory;
+
 
     }
 
@@ -86,10 +110,11 @@ public class DataManager {
     }
 
     /**
-     * Creates a new Store implemention. The actual type is determined by the type argument.
+     * Creates a new Store implemention. The actual type is determined by the
+     * type argument.
      *
      * @param storeName The name of the actual data store object.
-     * @param type      The type of the new data store object.
+     * @param type The type of the new data store object.
      */
     public Store store(String storeName, StoreType type) {
         Store store = storeFactory.createStore(type, idGenerator);
@@ -98,8 +123,8 @@ public class DataManager {
     }
 
     /**
-     * Removes a Store implemention from the DataManager. The store to be removed
-     * is determined by the storeName argument.
+     * Removes a Store implemention from the DataManager. The store to be
+     * removed is determined by the storeName argument.
      *
      * @param storeName The name of the actual data store object.
      */
@@ -115,5 +140,4 @@ public class DataManager {
     public Store get(String storeName) {
         return stores.get(storeName);
     }
-
 }
