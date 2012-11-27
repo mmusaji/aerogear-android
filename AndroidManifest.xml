@@ -3,7 +3,8 @@
           package="org.aerogear.stub"
           android:versionCode="1"
           android:versionName="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-          xsi:schemaLocation="http://schemas.android.com/apk/res/android ">
-    <application android:label="AeroGearLibrary">
+          xsi:schemaLocation="http://schemas.android.com/apk/res/android " >
+          <uses-sdk android:minSdkVersion="10" android:targetSdkVersion="10"/>
+    <application android:label="AeroGearLibrary" >
     </application>
 </manifest>

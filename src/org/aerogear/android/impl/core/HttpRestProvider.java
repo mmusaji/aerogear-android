@@ -16,7 +16,6 @@
  */
 package org.aerogear.android.impl.core;
 
-import android.util.Log;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
@@ -30,12 +29,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
 import org.aerogear.android.Provider;
 import org.aerogear.android.core.HeaderAndBody;
 import org.aerogear.android.core.HttpException;
 import org.aerogear.android.core.HttpProvider;
+import org.apache.http.HttpStatus;
+
+import android.util.Log;
 
 /**
  *
@@ -239,29 +240,44 @@ public final class HttpRestProvider implements HttpProvider {
 			throws IOException {
 
 		int statusCode = urlConnection.getResponseCode();
+		HeaderAndBody result;
+		Map<String, List<String>> headers;
+		byte[] responseData;
 
-		if (statusCode != 200) {
-			InputStream in = new BufferedInputStream(urlConnection
-					.getErrorStream());
+		switch (statusCode) {
+			case HttpStatus.SC_OK :
+				InputStream in = new BufferedInputStream(urlConnection
+						.getInputStream());
 
-			byte[] errData = readBytes(in);
+				responseData = readBytes(in);
 
-			throw new HttpException(errData, statusCode);
+				break;
+
+			case HttpStatus.SC_NO_CONTENT :
+				responseData = new byte[0];
+
+				break;
+
+			default :
+				InputStream err = new BufferedInputStream(urlConnection
+						.getErrorStream());
+
+				byte[] errData = readBytes(err);
+
+				throw new HttpException(errData, statusCode);
+
 		}
 
-		InputStream in = new BufferedInputStream(urlConnection.getInputStream());
-
-		byte[] responseData = readBytes(in);
-
-		Map<String, List<String>> headers = urlConnection.getHeaderFields();
-		HeaderAndBody result = new HeaderAndBody(responseData,
-				new HashMap<String, Object>(headers.size()));
+		headers = urlConnection.getHeaderFields();
+		result = new HeaderAndBody(responseData, new HashMap<String, Object>(
+				headers.size()));
 
 		for (Map.Entry<String, List<String>> header : headers.entrySet()) {
 			result.setHeader(header.getKey(), header.getValue().get(0));
 		}
 
 		return result;
+
 	}
 
 	private byte[] readBytes(InputStream inputStream) throws IOException {
