@@ -49,7 +49,7 @@ import org.aerogear.android.core.HttpProvider;
  */
 public final class HttpRestProvider implements HttpProvider {
 
-	private static final String TAG = "AeroGear";
+	private static final String TAG = HttpRestProvider.class.getSimpleName();
 	private final URL url;
 	private final Map<String, String> defaultHeaders = new HashMap<String, String>();
 
