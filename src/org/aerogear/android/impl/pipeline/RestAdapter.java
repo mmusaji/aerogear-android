@@ -31,6 +31,7 @@ import org.aerogear.android.pipeline.Pipe;
 import org.aerogear.android.pipeline.PipeType;
 
 import java.lang.reflect.Array;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
