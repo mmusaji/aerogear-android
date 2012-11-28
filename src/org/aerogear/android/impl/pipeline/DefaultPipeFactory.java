@@ -26,12 +26,12 @@ import org.aerogear.android.pipeline.PipeFactory;
 
 public final class DefaultPipeFactory implements PipeFactory {
 
-    @Override
-    public <T> Pipe<T> createPipe(Class<T> klass, PipeConfig config) {
-        Pipe<T> createdPipe;
-        if (config.getType().equals(PipeTypes.REST)) {
-            URL url = appendEndpoint(config.getBaseURL(), config.getEndpoint());
-            HttpRestProvider httpProvider = new HttpRestProvider(url);
+	@Override
+	public <T> Pipe<T> createPipe(Class<T> klass, PipeConfig config) {
+		Pipe<T> createdPipe;
+		if (PipeTypes.REST.equals(config.getType())) {
+			URL url = appendEndpoint(config.getBaseURL(), config.getEndpoint());
+			HttpRestProvider httpProvider = new HttpRestProvider(url);
 
             if (config.getGsonBuilder() != null) {
                 createdPipe = new RestAdapter<T>(klass, httpProvider, config.getGsonBuilder());
@@ -52,16 +52,16 @@ public final class DefaultPipeFactory implements PipeFactory {
         return createdPipe;
     }
 
-    private static URL appendEndpoint(URL baseURL, String endpoint) {
-        try {
-            if (!baseURL.toString().endsWith("/")) {
-                endpoint = "/" + endpoint;
-            }
-            return new URL(baseURL + endpoint);
-        } catch (MalformedURLException e) {
-            Log.e("AeroGear", e.getMessage());
-            return null;
-        }
-    }
+	private static URL appendEndpoint(URL baseURL, String path) {
+		try {
+			if (!baseURL.toString().endsWith("/")) {
+				path = "/" + path;
+			}
+			return new URL(baseURL + path);
+		} catch (MalformedURLException ignore) {//I don't think this can actually happen
+			Log.e("AeroGear", ignore.getMessage());
+			return null;
+		}
+	}
 
 }

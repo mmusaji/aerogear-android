@@ -44,9 +44,6 @@ public class HttpException extends RuntimeException {
         this.statusCode = statusCode;
     }
 
-	public byte[] getData() {
-		return Arrays.copyOf(data, data.length);
-	}
 
     public byte[] getData() {
         return Arrays.copyOf(data, data.length);

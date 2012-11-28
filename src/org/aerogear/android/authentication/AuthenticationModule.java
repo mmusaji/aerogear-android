@@ -33,7 +33,7 @@ import org.aerogear.android.pipeline.Pipe;
  */
 public interface AuthenticationModule {
 
-    public URL getbaseURL();
+    public URL getBaseURL();
 
     public String getLoginEndpoint();
 
