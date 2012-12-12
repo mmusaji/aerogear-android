@@ -18,6 +18,7 @@
 package org.aerogear.android.impl.datamanager;
 
 import java.util.Collection;
+import org.aerogear.android.ReadFilter;
 import org.aerogear.android.datamanager.StoreType;
 import static org.aerogear.android.impl.datamanager.StoreTypes.MEMORY;
 import org.aerogear.android.impl.helper.Data;
@@ -25,6 +26,8 @@ import org.aerogear.android.impl.helper.DataWithNoIdConfigured;
 import org.aerogear.android.impl.helper.DataWithNoPropertyId;
 import org.aerogear.android.impl.reflection.PropertyNotFoundException;
 import org.aerogear.android.impl.reflection.RecordIdNotFoundException;
+import org.json.JSONException;
+import org.json.JSONObject;
 import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
@@ -59,6 +62,59 @@ public class MemoryStorageTest {
         Collection<Data> datas = store.readAll();
         assertNotNull("datas could not be null", datas);
         assertEquals("datas should 2 data", 2, datas.size());
+    }
+
+    @Test
+    public void testReadWithFilter() {
+        store.save(new Data("foo", "desc of foo"));
+        store.save(new Data("bar", "desc of bar"));
+
+        Collection<Data> datas = store.readWithFilter(new ReadFilter());
+        assertNotNull("datas could not be null", datas);
+        assertEquals("datas should 2 data", 2, datas.size());
+    }
+
+    @Test
+    public void testReadWithFilterPerPage() {
+        store.save(new Data("foo", "desc of foo"));
+        store.save(new Data("bar", "desc of bar"));
+
+        ReadFilter filter = new ReadFilter();
+        filter.setPerPage(1);
+
+        Collection<Data> datas = store.readWithFilter(filter);
+        assertNotNull("datas could not be null", datas);
+        assertEquals("datas should 1 data", 1, datas.size());
+        assertEquals("foo", datas.iterator().next().getName());
+
+        filter.setOffset(1);
+        datas = store.readWithFilter(filter);
+        assertEquals("bar", datas.iterator().next().getName());
+    }
+
+    @Test
+    public void testReadWithFilterWhere() throws JSONException {
+        store.save(new Data("foo", "desc of foo"));
+        store.save(new Data("bar", "desc of bar"));
+
+        ReadFilter filter = new ReadFilter();
+        filter.setWhere(new JSONObject("{\"name\":\"bar\"}"));
+
+        Collection<Data> datas = store.readWithFilter(filter);
+
+        assertNotNull("datas could not be null", datas);
+        assertEquals("datas should 1 data", 1, datas.size());
+        assertEquals("bar", datas.iterator().next().getName());
+
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testReadWithFilterThrowsExceptionWithNestingJSON() throws JSONException {
+
+        ReadFilter filter = new ReadFilter();
+        filter.setWhere(new JSONObject("{\"name\":{\"name\":\"bar\"}}"));
+
+        Collection<Data> datas = store.readWithFilter(filter);
     }
 
     @Test()
