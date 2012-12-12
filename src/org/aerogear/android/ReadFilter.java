@@ -67,7 +67,6 @@ public class ReadFilter {
     }
 
     /**
-     * 
      * @return a URL encoded query which represents the values set in this object.
      */
     public String getQuery() {

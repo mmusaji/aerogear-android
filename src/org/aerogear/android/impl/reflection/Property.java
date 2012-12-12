@@ -37,6 +37,9 @@ public class Property {
      *
      * @param klass Class to be manipulated
      * @param fieldName Field to be accessed
+     * 
+     * @throws IllegalArgumentException if either param is null
+     * @throws PropertyNotFoundException if property isn't found
      */
     public Property(Class klass, String fieldName) {
         if (klass == null) {
