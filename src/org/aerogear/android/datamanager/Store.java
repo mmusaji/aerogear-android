@@ -19,6 +19,8 @@ package org.aerogear.android.datamanager;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.List;
+import org.aerogear.android.ReadFilter;
 
 /**
  * Represents an abstraction layer for a storage system.
@@ -46,6 +48,14 @@ public interface Store<T> {
      * @return T
      */
     public T read(Serializable id);
+
+    /**
+     * Search for objects/records from the underlying storage system.
+     *
+     * @param filter a filter to use to fetch an object
+     * @return List<T>  SHOULD NOT BE NULL
+     */
+    public List<T> readWithFilter(ReadFilter filter);
 
     /**
      * Saves the given object in the underlying storage system.

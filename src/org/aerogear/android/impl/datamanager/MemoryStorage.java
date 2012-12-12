@@ -17,14 +17,19 @@
 package org.aerogear.android.impl.datamanager;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
+import org.aerogear.android.ReadFilter;
 import org.aerogear.android.datamanager.IdGenerator;
 import org.aerogear.android.datamanager.Store;
 import org.aerogear.android.datamanager.StoreType;
 import org.aerogear.android.impl.reflection.Property;
 import org.aerogear.android.impl.reflection.Scan;
+import org.json.JSONObject;
 
 /**
  * Memory implementation of Store {@link Store}.
@@ -96,5 +101,65 @@ public class MemoryStorage<T> implements Store<T> {
     @Override
     public void remove(Serializable id) {
         data.remove(id);
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @throws IllegalArgumentException if filter.query has nested objects
+     */
+    @Override
+    public List<T> readWithFilter(ReadFilter filter) {
+
+        JSONObject where = filter.getWhere();
+        scanForNestedObjectsInWhereClause(where);
+        List<T> results = new ArrayList<T>(data.values());
+
+        filterData(results, where);
+        results = pageData(results, filter.getLimit(), filter.getOffset(), filter.getPerPage());
+        return results;
+    }
+
+    private void scanForNestedObjectsInWhereClause(JSONObject where) {
+        String key;
+        Object value;
+        Iterator keys = where.keys();
+        while (keys.hasNext()) {
+            key = keys.next().toString();
+            value = where.opt(key);
+            if (value instanceof JSONObject) {
+                throw new IllegalArgumentException("readWithFilter does not support nested objects");
+            }
+        }
+    }
+
+    private void filterData(Collection<T> data, JSONObject where) {
+        String filterPropertyName;
+        Object filterValue;
+        Iterator keys = where.keys();
+        while (keys.hasNext()) {
+            filterPropertyName = keys.next().toString();
+            filterValue = where.opt(filterPropertyName);
+
+            for (T objectInStorage : data) {
+                Property objectProperty = new Property(objectInStorage.getClass(), filterPropertyName);
+                Object propertyValue = objectProperty.getValue(objectInStorage);
+                if (propertyValue != null && filterValue != null) {
+                    if (propertyValue.equals(filterValue)) {
+                        continue;
+                    } else {
+                        data.remove(objectInStorage);
+                    }
+                } else if (propertyValue == null && filterValue == null) {//both props are null don't remove
+                    continue;
+                } else {
+                    data.remove(objectInStorage);
+                }
+            }
+        }
+    }
+
+    private List<T> pageData(List<T> results, Integer limit, Integer offset, Integer perPage) {
+        return results.subList(offset, Math.min(offset + perPage, results.size()));
     }
 }
