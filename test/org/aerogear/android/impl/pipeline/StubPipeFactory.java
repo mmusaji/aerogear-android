@@ -20,6 +20,7 @@ package org.aerogear.android.impl.pipeline;
 import java.net.MalformedURLException;
 import java.net.URL;
 import org.aerogear.android.Callback;
+import org.aerogear.android.ReadFilter;
 import org.aerogear.android.authentication.AuthenticationModule;
 import org.aerogear.android.pipeline.Pipe;
 import org.aerogear.android.pipeline.PipeFactory;
@@ -52,6 +53,10 @@ public class StubPipeFactory implements PipeFactory {
 
             @Override
             public void read(Callback callback) {
+            }
+
+            @Override
+            public void readWithFilter(ReadFilter filer, Callback callback) {
             }
 
             @Override

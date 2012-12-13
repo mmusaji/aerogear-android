@@ -17,6 +17,7 @@
 package org.aerogear.android.impl.pipeline;
 
 import android.graphics.Point;
+import android.util.Log;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.InstanceCreator;
@@ -44,20 +45,27 @@ import static junit.framework.Assert.assertEquals;
 import org.aerogear.android.Callback;
 import org.aerogear.android.Pipeline;
 import org.aerogear.android.Provider;
+import org.aerogear.android.ReadFilter;
 import org.aerogear.android.RecordId;
+import org.aerogear.android.authentication.AuthenticationModule;
+import org.aerogear.android.authentication.AuthorizationFields;
 import org.aerogear.android.core.HeaderAndBody;
 import org.aerogear.android.core.HttpProvider;
+import org.aerogear.android.impl.core.HttpProviderFactory;
 import org.aerogear.android.impl.helper.Data;
 import org.aerogear.android.impl.helper.HttpStubProvider;
 import org.aerogear.android.impl.helper.TestUtil;
 import org.aerogear.android.pipeline.Pipe;
+import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import static org.mockito.Mockito.*;
 
 @RunWith(RobolectricTestRunner.class)
 public class RestAdapterTest {
 
+    private static final String TAG = RestAdapterTest.class.getSimpleName();
     private static final String SERIALIZED_POINTS = "{\"points\":[{\"x\":0,\"y\":0},{\"x\":1,\"y\":2},{\"x\":2,\"y\":4},{\"x\":3,\"y\":6},{\"x\":4,\"y\":8},{\"x\":5,\"y\":10},{\"x\":6,\"y\":12},{\"x\":7,\"y\":14},{\"x\":8,\"y\":16},{\"x\":9,\"y\":18}],\"id\":\"1\"}";
     private URL url;
     private final Provider<HttpProvider> stubHttpProviderFactory = new Provider<HttpProvider>() {
@@ -227,6 +235,42 @@ public class RestAdapterTest {
         assertEquals(listClass.points, returnedPoints);
     }
 
+    @Test
+    public void runReadWithFilterAndAuthenticaiton() throws Exception {
+
+        HttpProviderFactory factory = mock(HttpProviderFactory.class);
+        when(factory.get(anyObject())).thenReturn(mock(HttpProvider.class));
+
+        AuthorizationFields authFields = new AuthorizationFields();
+        authFields.addQueryParameter("token", "token");
+
+        AuthenticationModule urlModule = mock(AuthenticationModule.class);
+        when(urlModule.isLoggedIn()).thenReturn(true);
+        when(urlModule.getAuthorizationFields()).thenReturn(authFields);
+
+        RestAdapter<Data> adapter = new RestAdapter<Data>(Data.class, url);
+        TestUtil.setPrivateField(adapter, "httpProviderFactory", factory);
+
+        ReadFilter filter = new ReadFilter();
+        filter.setPerPage(10);
+        filter.setWhere(new JSONObject("{\"model\":\"BMW\"}"));
+
+        adapter.setAuthenticationModule(urlModule);
+
+        adapter.readWithFilter(filter, new Callback<List<Data>>() {
+
+            @Override
+            public void onSuccess(List<Data> data) {
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+            }
+        });
+
+        verify(factory).get(new URL(url.toString() + "?token=token&per_page=10&where=%7B%22model%22:%22BMW%22%7D"));
+    }
+
     /**
      * Runs a read method, returns the result of the call back and makes sure no
      * exceptions are thrown
@@ -248,6 +292,7 @@ public class RestAdapterTest {
             @Override
             public void onFailure(Exception e) {
                 hasException.set(true);
+                Log.e(TAG, "Failure to run the read", e);
                 latch.countDown();
             }
         });

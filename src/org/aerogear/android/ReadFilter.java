@@ -65,7 +65,11 @@ public class ReadFilter {
     public void setWhere(JSONObject where) {
         this.where = where;
     }
-    
+
+    /**
+     * 
+     * @return a URL encoded query which represents the values set in this object.
+     */
     public String getQuery() {
         StringBuilder queryBuilder = new StringBuilder();
         String amp = "";
@@ -85,16 +89,16 @@ public class ReadFilter {
             amp = "&";
         }
 
-        if (where != null && where.length() > 0 ) {
+        if (where != null && where.length() > 0) {
             try {
-                queryBuilder.append(amp).append("where=").append(URLEncoder.encode(where.toString(), UTF_8));
+                queryBuilder.append(amp).append("where=").append(URLEncoder.encode(where.toString(), UTF_8).replace("%3A", ":"));//The encoder shouldn't encode colons.
             } catch (UnsupportedEncodingException ex) {
-               Log.e(TAG, "UTF-8 isn't supported on this platform", ex);
-               throw new RuntimeException(ex);
+                Log.e(TAG, "UTF-8 isn't supported on this platform", ex);
+                throw new RuntimeException(ex);
             }
             amp = "&";
         }
-        
+
         return queryBuilder.toString();
     }
 

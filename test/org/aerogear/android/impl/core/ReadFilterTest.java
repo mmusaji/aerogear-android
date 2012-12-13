@@ -26,22 +26,22 @@ import org.junit.runner.RunWith;
 
 @RunWith(RobolectricTestRunner.class)
 public class ReadFilterTest {
-    
+
     @Test
     public void testFilterQueryBuilder() throws JSONException {
         ReadFilter filter = new ReadFilter();
         filter.setLimit(1);
         assertEquals("limit=1", filter.getQuery());
-        
+
         filter.setOffset(2);
         assertEquals("limit=1&offset=2", filter.getQuery());
-        
+
         filter.setPerPage(4);
         assertEquals("limit=1&offset=2&per_page=4", filter.getQuery());
-        
+
         filter.setWhere(new JSONObject("{\"model\":\"BMW\"}"));
-        assertEquals("limit=1&offset=2&per_page=4&where=%7B%22model%22%3A%22BMW%22%7D", filter.getQuery());
-        
+        assertEquals("limit=1&offset=2&per_page=4&where=%7B%22model%22:%22BMW%22%7D", filter.getQuery());
+
     }
-    
+
 }
