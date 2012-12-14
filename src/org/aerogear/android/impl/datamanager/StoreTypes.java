@@ -26,7 +26,7 @@ public enum StoreTypes implements StoreType {
 
     MEMORY("MEMORY"),
     CONTENT_PROVIDER("CONTENT_PROVIDER");
-    
+
     private String typeDescription;
 
     StoreTypes(String typeDescription) {
