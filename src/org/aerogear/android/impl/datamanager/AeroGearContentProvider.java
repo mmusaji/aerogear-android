@@ -31,8 +31,13 @@ import java.util.Map;
 public class AeroGearContentProvider extends ContentProvider {
 
     private final UriMatcher matcher = new UriMatcher(UriMatcher.NO_MATCH);
-    private final Map<Uri, String> typeMap = new HashMap<Uri, String>();
+
+    /**
+     * in the format of vnd.android.cursor.item/vnd.org.aerogear.provider.appName.klassName
+     */
+    private final Map<Uri, String> mimeTypeMap = new HashMap<Uri, String>();
     private String appName;
+    private static final int AG_CODE = 0x00001;
 
     @Override
     public boolean onCreate() {
@@ -52,7 +57,7 @@ public class AeroGearContentProvider extends ContentProvider {
 
     @Override
     public String getType(Uri uri) {
-        return typeMap.get(uri);
+        return mimeTypeMap.get(uri);
     }
 
     @Override
@@ -99,6 +104,13 @@ public class AeroGearContentProvider extends ContentProvider {
                    .append(appName).append("/").append(klass.getSimpleName());
 
         return Uri.parse(uriBuilder.toString());
+    }
+
+    public void addType(Class klass) {
+        Uri local = buildUri(klass);
+        String mimeType = buildMimeType(klass);
+        matcher.addURI(appName, local.getPath(), AG_CODE);
+        mimeTypeMap.put(local, mimeType);
     }
 
 }
