@@ -25,7 +25,7 @@ import org.aerogear.android.datamanager.StoreType;
 public enum StoreTypes implements StoreType {
 
     MEMORY("MEMORY"),
-    CONTENT_PROVIDER("CONTENT_PROVIDER");
+    SQL("SQL");
 
     private String typeDescription;
 
