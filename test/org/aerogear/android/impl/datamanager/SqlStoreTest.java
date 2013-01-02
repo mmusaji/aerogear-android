@@ -32,17 +32,32 @@ import org.junit.runner.RunWith;
 public class SqlStoreTest {
     private Context context;
     private Data data;
+    private SQLStore<Data> store;
 
     @Before
-    public void getContext() {
+    public void setUp() {
         this.context = Robolectric.application.getApplicationContext();
+        this.store = new SQLStore<Data>(Data.class, context);
         this.data = new Data("name", "description");
         this.data.setId(1);
     }
 
     @Test
     public void testSave() throws InterruptedException {
-        SQLStore<Data> store = new SQLStore<Data>(Data.class, context);
+        saveData();
+        Data readData = store.read(data.getId());
+        Assert.assertEquals(data, readData);
+    }
+
+    @Test
+    public void testReset() throws InterruptedException {
+        saveData();
+        store.reset();
+        Data readData = store.read(data.getId());
+        Assert.assertNull(readData);
+    }
+
+    private void saveData() throws InterruptedException {
         final CountDownLatch latch = new CountDownLatch(1);
         store.open(new Callback() {
 
@@ -59,7 +74,6 @@ public class SqlStoreTest {
         });
         latch.await();
         store.save(data);
-        Data readData = store.read(data.getId());
-        Assert.assertEquals(data, readData);
     }
+
 }

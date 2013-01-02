@@ -125,6 +125,10 @@ public class SQLStore<T> extends SQLiteOpenHelper implements Store<T> {
         JsonObject result = new JsonObject();
         Cursor cursor = database.rawQuery(sql, bindArgs);
 
+        if (cursor.getCount() == 0) {
+            return null;
+        }
+
         try {
             while (cursor.moveToNext()) {
                 add(result, cursor.getString(0), cursor.getString(1));
@@ -182,7 +186,8 @@ public class SQLStore<T> extends SQLiteOpenHelper implements Store<T> {
      */
     @Override
     public void reset() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        String sql = String.format("Delete from %s_property", className);
+        database.execSQL(sql);
     }
 
     /**
