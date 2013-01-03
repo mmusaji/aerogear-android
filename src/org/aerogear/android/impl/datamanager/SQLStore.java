@@ -28,14 +28,17 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.aerogear.android.Callback;
 import org.aerogear.android.ReadFilter;
 import org.aerogear.android.datamanager.IdGenerator;
@@ -54,12 +57,14 @@ public class SQLStore<T> extends SQLiteOpenHelper implements Store<T> {
 
     private final static String CREATE_PROPERTIES_TABLE = "create table if not exists %s_property "
             + " ( _ID integer primary key autoincrement,"
-            + "  PARENT_ID integer,"
+            + "  PARENT_ID text not null,"
             + "  PROPERTY_NAME text not null,"
             + "  PROPERTY_VALUE text )";
 
     private final static String CREATE_PROPERTIES_INDEXES = "create index  if not exists %s_property_name_index "
             + " ON %s_property (PROPERTY_NAME);"
+            + "create index if not exists %s_property_name_value_index "
+            + " ON %s_property (PROPERTY_NAME, PROPERTY_VALUE) ;"
             + "create index  if not exists %s_property_parent_index "
             + " ON %s_property (PARENT_ID);";
     private SQLiteDatabase database;
@@ -149,14 +154,34 @@ public class SQLStore<T> extends SQLiteOpenHelper implements Store<T> {
      */
     @Override
     public List<T> readWithFilter(ReadFilter filter) {
-        JSONObject where = filter.getWhere();
+        String sql = String.format("select PARENT_ID from %s_property where PROPERTY_NAME = ? and PROPERTY_VALUE = ?", className);
+        JsonObject where = (JsonObject) new JsonParser().parse(filter.getWhere().toString());
         List<Pair<String, String>> keyValues = new ArrayList<Pair<String, String>>();
-        buildKeyValuePairs(where, keyValues);
-        scanForNestedObjectsInWhereClause(where);
-        List<T> results = new ArrayList<T>(data.values());
+        Map<String, AtomicInteger> resultCount = new HashMap<String, AtomicInteger>();
+        buildKeyValuePairs(where, keyValues, "");
 
-        filterData(results, where);
-        results = pageData(results, filter.getLimit(), filter.getOffset(), filter.getPerPage());
+        for (Pair<String, String> kv : keyValues) {
+            String[] bindArgs = new String[] { kv.first, kv.second };
+            Cursor cursor = database.rawQuery(sql, bindArgs);
+            while (cursor.moveToNext()) {
+                String id = cursor.getString(0);
+                AtomicInteger count = resultCount.get(id);
+                if (count == null) {
+                    count = new AtomicInteger(0);
+                    resultCount.put(id, count);
+                }
+                count.incrementAndGet();
+            }
+        }
+
+        List<T> results = new ArrayList<T>();
+
+        for (String id : resultCount.keySet()) {
+            if (resultCount.get(id).get() == keyValues.size()) {//There are as many objects as queries which meant a result was returned for every query
+                results.add(read(id));
+            }
+        }
+
         return results;
     }
 
@@ -181,13 +206,14 @@ public class SQLStore<T> extends SQLiteOpenHelper implements Store<T> {
     private void saveElement(JsonObject serialized, String path, Serializable id) {
         String sql = String.format("insert into %s_property (PROPERTY_NAME, PROPERTY_VALUE, PARENT_ID) values (?,?,?)", className);
         Set<Entry<String, JsonElement>> members = serialized.entrySet();
+        String pathVar = path.isEmpty() ? "" : ".";
         for (Entry<String, JsonElement> member : members) {
             JsonElement value = member.getValue();
             String propertyName = member.getKey();
             if (value.isJsonObject()) {
-                saveElement((JsonObject) value, path + "." + propertyName, id);
+                saveElement((JsonObject) value, path + pathVar + propertyName, id);
             } else {
-                database.execSQL(sql, new Object[] { propertyName, value, id });
+                database.execSQL(sql, new Object[] { path + pathVar + propertyName, value, id });
             }
         }
     }
@@ -220,7 +246,7 @@ public class SQLStore<T> extends SQLiteOpenHelper implements Store<T> {
     public void onCreate(SQLiteDatabase db) {
 
         db.execSQL(String.format(CREATE_PROPERTIES_TABLE, className));
-        db.execSQL(String.format(CREATE_PROPERTIES_INDEXES, className, className, className, className));
+        db.execSQL(String.format(CREATE_PROPERTIES_INDEXES, className, className, className, className, className, className));
     }
 
     /**
@@ -279,11 +305,18 @@ public class SQLStore<T> extends SQLiteOpenHelper implements Store<T> {
         }
     }
 
-    private void buildKeyValuePairs(JSONObject where, List<Pair<String, String>> keyValues) {
-        Iterator keys = where.keys();
-        while (keys.hasNext()) {
-            String key = (String) keys.next();
-
+    private void buildKeyValuePairs(JsonObject where, List<Pair<String, String>> keyValues, String parentPath) {
+        Set<Entry<String, JsonElement>> keys = where.entrySet();
+        String pathVar = parentPath.isEmpty() ? "" : ".";//Set a dot if parent path is not empty
+        for (Entry<String, JsonElement> entry : keys) {
+            String key = entry.getKey();
+            String path = parentPath + pathVar + key;
+            JsonElement value = entry.getValue();
+            if (value.isJsonObject()) {
+                buildKeyValuePairs((JsonObject) value, keyValues, path);
+            } else {
+                keyValues.add(new Pair<String, String>(path, value.toString()));
+            }
         }
     }
 }
