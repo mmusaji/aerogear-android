@@ -23,6 +23,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.os.AsyncTask;
 import android.util.Log;
+import android.util.Pair;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
@@ -31,6 +32,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -41,6 +43,7 @@ import org.aerogear.android.datamanager.Store;
 import org.aerogear.android.datamanager.StoreType;
 import org.aerogear.android.impl.reflection.Property;
 import org.aerogear.android.impl.reflection.Scan;
+import org.json.JSONObject;
 
 public class SQLStore<T> extends SQLiteOpenHelper implements Store<T> {
 
@@ -146,7 +149,15 @@ public class SQLStore<T> extends SQLiteOpenHelper implements Store<T> {
      */
     @Override
     public List<T> readWithFilter(ReadFilter filter) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        JSONObject where = filter.getWhere();
+        List<Pair<String, String>> keyValues = new ArrayList<Pair<String, String>>();
+        buildKeyValuePairs(where, keyValues);
+        scanForNestedObjectsInWhereClause(where);
+        List<T> results = new ArrayList<T>(data.values());
+
+        filterData(results, where);
+        results = pageData(results, filter.getLimit(), filter.getOffset(), filter.getPerPage());
+        return results;
     }
 
     /**
@@ -264,6 +275,14 @@ public class SQLStore<T> extends SQLiteOpenHelper implements Store<T> {
                 result.add(names[0], subObject);
             }
             add(subObject, names[1], propertyValue);
+
+        }
+    }
+
+    private void buildKeyValuePairs(JSONObject where, List<Pair<String, String>> keyValues) {
+        Iterator keys = where.keys();
+        while (keys.hasNext()) {
+            String key = (String) keys.next();
 
         }
     }
