@@ -29,6 +29,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.google.gson.JsonPrimitive;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -51,16 +52,13 @@ import org.json.JSONObject;
 public class SQLStore<T> extends SQLiteOpenHelper implements Store<T> {
 
     private static final String TAG = SQLStore.class.getSimpleName();
-
     private final Class<T> klass;
     private final String className;
-
     private final static String CREATE_PROPERTIES_TABLE = "create table if not exists %s_property "
             + " ( _ID integer primary key autoincrement,"
             + "  PARENT_ID text not null,"
             + "  PROPERTY_NAME text not null,"
             + "  PROPERTY_VALUE text )";
-
     private final static String CREATE_PROPERTIES_INDEXES = "create index  if not exists %s_property_name_index "
             + " ON %s_property (PROPERTY_NAME);"
             + "create index if not exists %s_property_name_value_index "
@@ -208,12 +206,30 @@ public class SQLStore<T> extends SQLiteOpenHelper implements Store<T> {
         Set<Entry<String, JsonElement>> members = serialized.entrySet();
         String pathVar = path.isEmpty() ? "" : ".";
         for (Entry<String, JsonElement> member : members) {
-            JsonElement value = member.getValue();
+            JsonElement jsonValue = member.getValue();
             String propertyName = member.getKey();
-            if (value.isJsonObject()) {
-                saveElement((JsonObject) value, path + pathVar + propertyName, id);
+            if (jsonValue.isJsonObject()) {
+                saveElement((JsonObject) jsonValue, path + pathVar + propertyName, id);
             } else {
-                database.execSQL(sql, new Object[] { path + pathVar + propertyName, value, id });
+                if (jsonValue.isJsonPrimitive()) {
+                    JsonPrimitive primitive = jsonValue.getAsJsonPrimitive();
+                    if (primitive.isBoolean()) {
+                        Integer value = primitive.getAsBoolean() ? 1 : 0;
+                        database.execSQL(sql, new Object[] { path + pathVar + propertyName, value, id });
+                    } else if (primitive.isNumber()) {
+                        Number value = primitive.getAsNumber();
+                        database.execSQL(sql, new Object[] { path + pathVar + propertyName, value, id });
+                    } else if (primitive.isString()) {
+                        String value = primitive.getAsString();
+                        database.execSQL(sql, new Object[] { path + pathVar + propertyName, value, id });
+                    } else {
+                        throw new IllegalArgumentException(jsonValue + " isnt a number, boolean, or string");
+                    }
+
+                } else {
+                    throw new IllegalArgumentException(jsonValue + " isnt a JsonPrimitive");
+                }
+
             }
         }
     }
@@ -254,7 +270,6 @@ public class SQLStore<T> extends SQLiteOpenHelper implements Store<T> {
      */
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-
     }
 
     public void open(final Callback onReady) {
@@ -281,7 +296,6 @@ public class SQLStore<T> extends SQLiteOpenHelper implements Store<T> {
                     onReady.onSuccess(SQLStore.this);
                 }
             }
-
         }.execute((Void) null);
     }
 
@@ -311,11 +325,29 @@ public class SQLStore<T> extends SQLiteOpenHelper implements Store<T> {
         for (Entry<String, JsonElement> entry : keys) {
             String key = entry.getKey();
             String path = parentPath + pathVar + key;
-            JsonElement value = entry.getValue();
-            if (value.isJsonObject()) {
-                buildKeyValuePairs((JsonObject) value, keyValues, path);
+            JsonElement jsonValue = entry.getValue();
+            if (jsonValue.isJsonObject()) {
+                buildKeyValuePairs((JsonObject) jsonValue, keyValues, path);
             } else {
-                keyValues.add(new Pair<String, String>(path, value.toString()));
+                if (jsonValue.isJsonPrimitive()) {
+                    JsonPrimitive primitive = jsonValue.getAsJsonPrimitive();
+                    if (primitive.isBoolean()) {
+                        Integer value = primitive.getAsBoolean() ? 1 : 0;
+                        keyValues.add(new Pair<String, String>(path, value.toString()));
+                    } else if (primitive.isNumber()) {
+                        Number value = primitive.getAsNumber();
+                        keyValues.add(new Pair<String, String>(path, value.toString()));
+                    } else if (primitive.isString()) {
+                        String value = primitive.getAsString();
+                        keyValues.add(new Pair<String, String>(path, value.toString()));
+                    } else {
+                        throw new IllegalArgumentException(jsonValue + " isnt a number, boolean, or string");
+                    }
+
+                } else {
+                    throw new IllegalArgumentException(jsonValue + " isnt a JsonPrimitive");
+                }
+
             }
         }
     }

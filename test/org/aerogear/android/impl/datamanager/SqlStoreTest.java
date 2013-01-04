@@ -37,7 +37,6 @@ import org.junit.runner.RunWith;
 public class SqlStoreTest {
 
     private Context context;
-    private Data data;
     private SQLStore<Data> store;
     private SQLStore<TrivialNestedClass> nestedStore;
 
@@ -46,22 +45,23 @@ public class SqlStoreTest {
         this.context = Robolectric.application.getApplicationContext();
         this.store = new SQLStore<Data>(Data.class, context);
         this.nestedStore = new SQLStore<TrivialNestedClass>(TrivialNestedClass.class, context);
-        this.data = new Data("name", "description");
-        this.data.setId(10);
+
     }
 
     @Test
     public void testSave() throws InterruptedException {
-        saveData(1, "name", "description");
-        Data readData = store.read(data.getId());
+
+        Data data = new Data(10, "name", "description");
+        saveData(10, "name", "description");
+        Data readData = store.read(10);
         Assert.assertEquals(data, readData);
     }
 
     @Test
     public void testReset() throws InterruptedException {
-        saveData(1, "name", "description");
+        saveData(10, "name", "description");
         store.reset();
-        Data readData = store.read(data.getId());
+        Data readData = store.read(10);
         Assert.assertNull(readData);
     }
 
@@ -101,17 +101,20 @@ public class SqlStoreTest {
         JSONObject where;
         List<TrivialNestedClass> result;
 
+        Data data = new Data(10, "name", "description");
+
         TrivialNestedClass newNested = new TrivialNestedClass();
         newNested.setId(1);
         newNested.setText("nestedText");
         newNested.setData(data);
+
         open(nestedStore);
         nestedStore.save(newNested);
 
         filter = new ReadFilter();
         where = new JSONObject();
         where.put("text", "nestedText");
-        where.put("data.id", "10");
+        where.put("data.id", 10);
         filter.setWhere(where);
         result = nestedStore.readWithFilter(filter);
         Assert.assertEquals(1, result.size());
