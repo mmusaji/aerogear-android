@@ -19,7 +19,7 @@ package org.aerogear.android.impl.helper;
 
 import org.aerogear.android.RecordId;
 
-public class Data {
+public class Data implements Comparable<Data> {
 
     @RecordId
     private Integer id;
@@ -80,4 +80,22 @@ public class Data {
     public int hashCode() {
         return id.hashCode();
     }
+
+    @Override
+    public int compareTo(Data data) {
+        if (data == null) {
+            return 1;
+        }
+        if (id == null) {
+            if (data.id == null) {
+                return 0;
+            } else {
+                return -1;
+            }
+        }
+        return id.compareTo(data.id);
+    }
+    
+    
+    
 }
