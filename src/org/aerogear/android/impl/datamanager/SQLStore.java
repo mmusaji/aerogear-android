@@ -104,6 +104,7 @@ public class SQLStore<T> extends SQLiteOpenHelper implements Store<T> {
                 Integer id = cursor.getInt(2);
                 JsonObject object = objects.get(id);
                 if (object == null) {
+                    object = new JsonObject();
                     objects.put(id, object);
                 }
                 add(object, cursor.getString(0), cursor.getString(1));
