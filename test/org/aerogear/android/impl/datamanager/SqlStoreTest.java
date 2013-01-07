@@ -18,6 +18,7 @@
 package org.aerogear.android.impl.datamanager;
 
 import android.content.Context;
+import com.google.gson.JsonObject;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.RobolectricTestRunner;
 import java.util.ArrayList;
@@ -135,7 +136,9 @@ public class SqlStoreTest {
         filter = new ReadFilter();
         where = new JSONObject();
         where.put("text", "nestedText");
-        where.put("data.id", 10);
+            JSONObject dataFilter = new JSONObject();
+            dataFilter.put("id", 10);
+        where.put("data", dataFilter);
         filter.setWhere(where);
         result = nestedStore.readWithFilter(filter);
         Assert.assertEquals(1, result.size());
