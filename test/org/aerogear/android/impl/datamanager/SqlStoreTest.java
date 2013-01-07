@@ -79,6 +79,19 @@ public class SqlStoreTest {
     }
     
     @Test
+    public void testRemove() throws InterruptedException, JSONException {
+        loadBulkData();
+        store.remove(1);
+                
+        List<Data> allData = new ArrayList<Data>(store.readAll());
+        Collections.sort(allData);
+        Assert.assertEquals(5, allData.size());
+        Assert.assertEquals(2l, (long)allData.get(0).getId());
+        Assert.assertEquals("name2", allData.get(4).getName());
+        
+    }
+    
+    @Test
     public void testFilter() throws InterruptedException, JSONException {
         ReadFilter filter;
         JSONObject where;
