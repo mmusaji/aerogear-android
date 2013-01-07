@@ -20,6 +20,8 @@ package org.aerogear.android.impl.datamanager;
 import android.content.Context;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.RobolectricTestRunner;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import org.aerogear.android.Callback;
@@ -66,18 +68,24 @@ public class SqlStoreTest {
     }
 
     @Test
+    public void testReadAll() throws InterruptedException, JSONException {
+        loadBulkData();
+        List<Data> allData = new ArrayList<Data>(store.readAll());
+        Collections.sort(allData);
+        Assert.assertEquals(6, allData.size());
+        Assert.assertEquals("name", allData.get(0).getName());
+        Assert.assertEquals("name2", allData.get(5).getName());
+        
+    }
+    
+    @Test
     public void testFilter() throws InterruptedException, JSONException {
         ReadFilter filter;
         JSONObject where;
         List<Data> result;
 
-        saveData(1, "name", "description");
-        saveData(2, "name", "description");
-        saveData(3, "name2", "description");
-        saveData(4, "name2", "description");
-        saveData(5, "name", "description2");
-        saveData(6, "name2", "description2");
-
+        loadBulkData();
+        
         filter = new ReadFilter();
         where = new JSONObject();
         where.put("name", "name2");
@@ -143,6 +151,15 @@ public class SqlStoreTest {
             }
         });
         latch.await();
+    }
+
+    private void loadBulkData() throws InterruptedException {
+        saveData(1, "name", "description");
+        saveData(2, "name", "description");
+        saveData(3, "name2", "description");
+        saveData(4, "name2", "description");
+        saveData(5, "name", "description2");
+        saveData(6, "name2", "description2");
     }
 
     public static final class TrivialNestedClass {
