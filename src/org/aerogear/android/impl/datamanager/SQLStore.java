@@ -34,7 +34,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -47,7 +46,6 @@ import org.aerogear.android.datamanager.Store;
 import org.aerogear.android.datamanager.StoreType;
 import org.aerogear.android.impl.reflection.Property;
 import org.aerogear.android.impl.reflection.Scan;
-import org.json.JSONObject;
 
 public class SQLStore<T> extends SQLiteOpenHelper implements Store<T> {
 

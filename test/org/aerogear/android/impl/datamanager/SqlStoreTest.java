@@ -18,7 +18,6 @@
 package org.aerogear.android.impl.datamanager;
 
 import android.content.Context;
-import com.google.gson.JsonObject;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.RobolectricTestRunner;
 import java.util.ArrayList;
