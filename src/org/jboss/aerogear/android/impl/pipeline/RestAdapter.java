@@ -22,8 +22,6 @@ import android.util.Log;
 import android.util.Pair;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
 
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -47,10 +45,8 @@ import org.jboss.aerogear.android.pipeline.PipeType;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Array;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import org.jboss.aerogear.android.util.JsonUtils;
+import static org.jboss.aerogear.android.util.JsonUtils.*;
 
 /**
  * Rest implementation of {@link Pipe}.
@@ -123,7 +119,7 @@ public final class RestAdapter<T> implements Pipe<T> {
                     HttpProvider httpProvider = getHttpProvider(URLDecoder.decode(innerFilter.getQuery(), UTF_8));
                     byte[] responseBody = httpProvider.get().getBody();
                     String responseAsString = new String(responseBody, encoding);
-                    this.result = JsonUtils.jsonToObjectList(gson, klass, responseAsString);
+                    this.result = jsonToObjectList(gson, klass, responseAsString);
                 } catch (Exception e) {
                     exception = e;
                 }
@@ -175,14 +171,14 @@ public final class RestAdapter<T> implements Pipe<T> {
                     String body = gson.toJson(data);
                     final HttpProvider httpProvider = getHttpProvider();
 
-                    HeaderAndBody result;
+                    HeaderAndBody response;
                     if (id == null || id.length() == 0) {
-                        result = httpProvider.post(body);
+                        response = httpProvider.post(body);
                     } else {
-                        result = httpProvider.put(id, body);
+                        response = httpProvider.put(id, body);
                     }
 
-                    this.result = gson.fromJson(new String(result.getBody(), encoding), klass);
+                    this.result = gson.fromJson(new String(response.getBody(), encoding), klass);
 
                 } catch (Exception e) {
                     exception = e;
@@ -235,18 +231,6 @@ public final class RestAdapter<T> implements Pipe<T> {
             }
         }.execute();
 
-    }
-
-    /**
-     * This will return a class of the type T[] from a given class. When we read
-     * from the AG pipe, Java needs a reference to a generic array type.
-     *
-     * @param klass
-     * @return an array of klass with a length of 1
-     */
-    private Class<T[]> asArrayClass(Class<T> klass) {
-
-        return (Class<T[]>) Array.newInstance(klass, 1).getClass();
     }
 
     private URL appendQuery(String query, URL baseURL) {

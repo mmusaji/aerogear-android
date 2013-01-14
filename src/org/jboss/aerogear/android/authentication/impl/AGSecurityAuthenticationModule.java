@@ -19,7 +19,9 @@ package org.jboss.aerogear.android.authentication.impl;
 
 import android.os.AsyncTask;
 import android.util.Log;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import org.jboss.aerogear.android.Callback;
 import org.jboss.aerogear.android.Provider;
 import org.jboss.aerogear.android.authentication.AbstractAuthenticationModule;
@@ -33,6 +35,7 @@ import org.json.JSONObject;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Map;
+import org.jboss.aerogear.android.util.JsonUtils;
 
 /**
  * A module for authenticating with restful AG services.
@@ -225,9 +228,10 @@ public final class AGSecurityAuthenticationModule extends AbstractAuthentication
     }
 
     private String buildLoginData(String username, String password) {
-        JsonObject response = new JsonObject();
-        response.addProperty("username", username);
-        response.addProperty("password", password);
+        JSONObject response = new JSONObject();
+        
+        JsonUtils.add(response, "username", username);
+        JsonUtils.add(response, "password", password);
         return response.toString();
     }
 
