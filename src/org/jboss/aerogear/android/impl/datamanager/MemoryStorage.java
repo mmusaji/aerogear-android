@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright Red Hat, Inc., and individual contributors
  * by the @authors tag. See the copyright.txt in the distribution for a
  * full listing of individual contributors.
  *
@@ -142,7 +142,7 @@ public class MemoryStorage<T> implements Store<T> {
         while (keys.hasNext()) {
             filterPropertyName = keys.next().toString();
             filterValue = where.opt(filterPropertyName);
- 
+
             for (T objectInStorage : data) {
                 Property objectProperty = new Property(objectInStorage.getClass(), filterPropertyName);
                 Object propertyValue = objectProperty.getValue(objectInStorage);
