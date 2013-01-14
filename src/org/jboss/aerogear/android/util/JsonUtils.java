@@ -16,6 +16,7 @@
  */
 package org.jboss.aerogear.android.util;
 
+import android.util.Log;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
@@ -23,11 +24,15 @@ import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  * A collection of convenience methods for working with JSON data.
  */
 public final class JsonUtils {
+    
+    private static final String TAG = JsonUtils.class.getSimpleName();
 
     private JsonUtils() {
     }
@@ -72,7 +77,7 @@ public final class JsonUtils {
      * @param klass
      * @return
      */
-    private static <T> Class<T[]> asArrayClass(Class<T> klass) {
+    public static <T> Class<T[]> asArrayClass(Class<T> klass) {
         return (Class<T[]>) ((T[]) Array.newInstance(klass, 1)).getClass();
     }
 
@@ -86,5 +91,21 @@ public final class JsonUtils {
         List<T> resultList = new ArrayList<T>(1);
         resultList.add(item);
         return resultList;
+    }
+    
+    /**
+     * 
+     * This method calls jsonObject.put and wraps the JSONException as a RuntimeException if it is thrown.
+     * 
+     * @param jsonObject
+     * @param key
+     * @param value 
+     */
+    public static void add(JSONObject jsonObject, String key, Object value) {
+        try {
+            jsonObject.put(key, value);
+        } catch (JSONException ex) {
+            Log.e(TAG, String.format("Error adding {%s: %s}",key,value.toString()), ex);
+        }
     }
 }
