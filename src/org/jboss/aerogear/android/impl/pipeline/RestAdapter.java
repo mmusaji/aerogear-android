@@ -25,18 +25,12 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 
-import java.io.UnsupportedEncodingException;
-import java.lang.reflect.Array;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
-import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import org.jboss.aerogear.android.Callback;
 import org.jboss.aerogear.android.Provider;
 import org.jboss.aerogear.android.ReadFilter;
@@ -52,11 +46,11 @@ import org.jboss.aerogear.android.pipeline.PipeType;
 
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Array;
-import java.net.*;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.jboss.aerogear.android.util.JsonUtils;
 
 /**
  * Rest implementation of {@link Pipe}.
@@ -129,17 +123,7 @@ public final class RestAdapter<T> implements Pipe<T> {
                     HttpProvider httpProvider = getHttpProvider(URLDecoder.decode(innerFilter.getQuery(), UTF_8));
                     byte[] responseBody = httpProvider.get().getBody();
                     String responseAsString = new String(responseBody, encoding);
-                    JsonParser parser = new JsonParser();
-                    JsonElement result = parser.parse(responseAsString);
-                    if (result.isJsonArray()) {
-                        T[] resultArray = gson.fromJson(responseAsString, arrayKlass);
-                        this.result = Arrays.asList(resultArray);
-                    } else {
-                        T resultObject = gson.fromJson(responseAsString, klass);
-                        List<T> resultList = new ArrayList<T>(1);
-                        resultList.add(resultObject);
-                        this.result = resultList;
-                    }
+                    this.result = JsonUtils.jsonToObjectList(gson, klass, responseAsString);
                 } catch (Exception e) {
                     exception = e;
                 }
