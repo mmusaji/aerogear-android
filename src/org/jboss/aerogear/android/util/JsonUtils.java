@@ -19,6 +19,7 @@ package org.jboss.aerogear.android.util;
 import android.util.Log;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
@@ -33,6 +34,7 @@ import org.json.JSONObject;
 public final class JsonUtils {
     
     private static final String TAG = JsonUtils.class.getSimpleName();
+
 
     private JsonUtils() {
     }
@@ -107,5 +109,13 @@ public final class JsonUtils {
         } catch (JSONException ex) {
             Log.e(TAG, String.format("Error adding {%s: %s}",key,value.toString()), ex);
         }
+    }
+    /**
+     * Convert an instance of org.json.JSONObject to com.google.gson.JsonObject
+     * @param where
+     * @return 
+     */
+    public static JsonObject JSONToGson(JSONObject jsonObject) {
+        return (JsonObject) new JsonParser().parse(jsonObject.toString());
     }
 }
