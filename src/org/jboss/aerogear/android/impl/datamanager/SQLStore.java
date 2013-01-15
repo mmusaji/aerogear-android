@@ -46,6 +46,7 @@ import org.jboss.aerogear.android.datamanager.Store;
 import org.jboss.aerogear.android.datamanager.StoreType;
 import org.jboss.aerogear.android.impl.reflection.Property;
 import org.jboss.aerogear.android.impl.reflection.Scan;
+import org.jboss.aerogear.android.util.JsonUtils;
 
 public class SQLStore<T> extends SQLiteOpenHelper implements Store<T> {
 
@@ -157,7 +158,7 @@ public class SQLStore<T> extends SQLiteOpenHelper implements Store<T> {
             filter = new ReadFilter();
         }
         String sql = String.format("select PARENT_ID from %s_property where PROPERTY_NAME = ? and PROPERTY_VALUE = ?", className);
-        JsonObject where = (JsonObject) new JsonParser().parse(filter.getWhere().toString());
+        JsonObject where = JsonUtils.JSONToGson(filter.getWhere());
         List<Pair<String, String>> queryList = new ArrayList<Pair<String, String>>();
         Map<String, AtomicInteger> resultCount = new HashMap<String, AtomicInteger>();
         buildKeyValuePairs(where, queryList, "");
