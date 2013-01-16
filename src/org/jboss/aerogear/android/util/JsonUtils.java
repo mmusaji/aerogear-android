@@ -32,9 +32,8 @@ import org.json.JSONObject;
  * A collection of convenience methods for working with JSON data.
  */
 public final class JsonUtils {
-    
-    private static final String TAG = JsonUtils.class.getSimpleName();
 
+    private static final String TAG = JsonUtils.class.getSimpleName();
 
     private JsonUtils() {
     }
@@ -94,7 +93,7 @@ public final class JsonUtils {
         resultList.add(item);
         return resultList;
     }
-    
+
     /**
      * 
      * This method calls jsonObject.put and wraps the JSONException as a RuntimeException if it is thrown.
@@ -107,9 +106,10 @@ public final class JsonUtils {
         try {
             jsonObject.put(key, value);
         } catch (JSONException ex) {
-            Log.e(TAG, String.format("Error adding {%s: %s}",key,value.toString()), ex);
+            Log.e(TAG, String.format("Error adding {%s: %s}", key, value.toString()), ex);
         }
     }
+
     /**
      * Convert an instance of org.json.JSONObject to com.google.gson.JsonObject
      * @param where
