@@ -43,7 +43,6 @@ import org.jboss.aerogear.android.pipeline.Pipe;
 import org.jboss.aerogear.android.pipeline.PipeType;
 
 import java.io.UnsupportedEncodingException;
-import java.lang.reflect.Array;
 import java.nio.charset.Charset;
 import java.util.List;
 import static org.jboss.aerogear.android.util.JsonUtils.*;
@@ -178,7 +177,8 @@ public final class RestAdapter<T> implements Pipe<T> {
                         response = httpProvider.put(id, body);
                     }
 
-                    this.result = gson.fromJson(new String(response.getBody(), encoding), klass);
+                    String responseAsString = new String(response.getBody(), encoding);
+                    T resultObject = jsonToObject(gson, klass, responseAsString);
 
                 } catch (Exception e) {
                     exception = e;
