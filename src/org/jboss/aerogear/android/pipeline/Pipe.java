@@ -17,6 +17,8 @@
 
 package org.jboss.aerogear.android.pipeline;
 
+import android.util.Pair;
+import java.io.Serializable;
 import java.net.URL;
 import java.util.List;
 import org.jboss.aerogear.android.Callback;
@@ -48,33 +50,39 @@ public interface Pipe<T> {
     /**
      * Reads all the data from the underlying server connection.
      *
-     * @param callback The callback for consuming the result from the {@link Pipe} invocation.
+     * @param resultCallback  default callback the PipeWorker will return to.
+     * @return an identifier for a PipeWorker
+     * 
      */
-    void read(Callback<List<T>> callback);
+    Serializable read(Callback<Pair<Serializable, List<T>>> resultCallback);
 
     /**
      * Reads all the data from the underlying server connection.
      *
-     * @param callback The callback for consuming the result from the {@link Pipe} invocation.
      * @param filter a {@link ReadFilter} for performing pagination and querying.
+     * @param resultCallback  default callback the PipeWorker will return to.
+     * @return an identifier for a PipeWorker
      */
-    void readWithFilter(ReadFilter filter, Callback<List<T>> callback);
+    Serializable readWithFilter(ReadFilter filter, Callback<Pair<Serializable, List<T>>> resultCallback);
 
     /**
      * Saves or updates a given object on the server.
      *
      * @param item     the item to save or update
-     * @param callback The callback for consuming the result from the {@link Pipe} invocation.
+     * @param resultCallback  default callback the PipeWorker will return to.
+     * 
+     * @return an identifier for a PipeWorker
      */
-    void save(T item, Callback<T> callback);
+    Serializable save(T item, Callback<Pair<Serializable, T>> resultCallback);
 
     /**
      * Removes an object from the underlying server connection. The given key argument is used as the objects ID.
      *
      * @param id       representing the ‘id’ of the object to be removed
-     * @param callback The callback for consuming the result from the {@link Pipe} invocation.
+     * @param resultCallback  default callback the PipeWorker will return to.
+     * @return an identifier for a PipeWorker
      */
-    void remove(String id, Callback<Void> callback);
+    Serializable remove(String id, Callback<Pair<Serializable, T>> resultCallback);
 
     /**
      * Sets the authentication module for the Pipe.
@@ -84,4 +92,5 @@ public interface Pipe<T> {
      */
     void setAuthenticationModule(AuthenticationModule module);
 
+    PipeWorker<T> getWorker(Serializable id);
 }
