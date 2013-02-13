@@ -156,11 +156,11 @@ public final class RestAdapter<T> implements Pipe<T> {
         } else {
             httpProvider = getHttpProvider(filter.getLinkUri());
         }
-        ReadPipeWorker<List<T>> worker = new ReadPipeWorker<List<T>>(httpProvider, uuid, filter, dataRoot, gson, this, pageConfig, encoding, klass);
+        ReadPipeWorker<T> worker = new ReadPipeWorker<T>(httpProvider, uuid, filter, dataRoot, gson, this, pageConfig, encoding, klass);
 
         
         worker.registerCallback(resultCallback);
-        worker.registerCallback((Callback<Pair<Serializable, List<T>>>)new RemoveCallback(uuid));
+        worker.registerCallback((Callback)new RemoveCallback(uuid));
 
         runningWorkers.put(uuid, worker);
 
@@ -179,7 +179,7 @@ public final class RestAdapter<T> implements Pipe<T> {
     }
 
     @Override
-    public Serializable save(final T data, final Callback<Pair<Serializable, T>> resultCallback) {
+    public Serializable save(final T data, final Callback<Pair<Serializable, List<T>>> resultCallback) {
         final String id;
 
         try {
@@ -211,7 +211,7 @@ public final class RestAdapter<T> implements Pipe<T> {
      * {@inheritDoc}
      */
     @Override
-    public Serializable remove(final String id, Callback<Pair<Serializable, T>> resultCallback) {
+    public Serializable remove(final String id, Callback<Pair<Serializable, List<T>>> resultCallback) {
 
         Serializable uuid = ID_GENERATOR.generate();
         RestPipeWorker<T> worker = new DeletePipeWorker<T>(getHttpProvider(), uuid, id);
@@ -360,7 +360,7 @@ public final class RestAdapter<T> implements Pipe<T> {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    private class RemoveCallback implements Callback<Pair<Serializable, T>> {
+    private class RemoveCallback implements Callback<Pair<Serializable, List<T>>> {
 
         private final Serializable id;
 
@@ -369,7 +369,7 @@ public final class RestAdapter<T> implements Pipe<T> {
         }
 
         @Override
-        public void onSuccess(Pair<Serializable, T> data) {
+        public void onSuccess(Pair<Serializable, List<T>> data) {
             finishedWorkers.put(id, runningWorkers.remove(id));
         }
 

@@ -73,7 +73,7 @@ public interface Pipe<T> {
      * 
      * @return an identifier for a PipeWorker
      */
-    Serializable save(T item, Callback<Pair<Serializable, T>> resultCallback);
+    Serializable save(T item, Callback<Pair<Serializable, List<T>>> resultCallback);
 
     /**
      * Removes an object from the underlying server connection. The given key argument is used as the objects ID.
@@ -82,7 +82,7 @@ public interface Pipe<T> {
      * @param resultCallback  default callback the PipeWorker will return to.
      * @return an identifier for a PipeWorker
      */
-    Serializable remove(String id, Callback<Pair<Serializable, T>> resultCallback);
+    Serializable remove(String id, Callback<Pair<Serializable, List<T>>> resultCallback);
 
     /**
      * Sets the authentication module for the Pipe.

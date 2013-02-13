@@ -7,6 +7,7 @@ package org.jboss.aerogear.android.impl.pipeline.worker;
 import android.os.AsyncTask;
 import android.util.Log;
 import android.util.Pair;
+import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import java.io.Serializable;
 import java.nio.charset.Charset;
@@ -65,6 +66,10 @@ public class SavePipeWorker<T>  extends RestPipeWorker<T> {
                     exception = e;
                 }
 
+                SavePipeWorker.super.isFinished = true;
+                SavePipeWorker.super.hasData = true;
+                SavePipeWorker.super.data = Lists.newArrayList(this.result);
+                
                 return null;
             }
 

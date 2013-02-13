@@ -43,6 +43,7 @@ public class DeletePipeWorker<T> extends RestPipeWorker<T> {
                 } catch (Exception e) {
                     exception = e;
                 }
+                DeletePipeWorker.super.isFinished = true;
                 return null;
             }
 

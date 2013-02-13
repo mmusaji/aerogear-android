@@ -102,6 +102,9 @@ public class ReadPipeWorker<T> extends RestPipeWorker<T> {
                 } catch (Exception e) {
                     exception = e;
                 }
+                ReadPipeWorker.super.isFinished = true;
+                ReadPipeWorker.super.hasData = true;
+                ReadPipeWorker.super.data = this.result;
                 return null;
             }
 

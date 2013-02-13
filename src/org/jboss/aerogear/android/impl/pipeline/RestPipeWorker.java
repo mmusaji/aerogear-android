@@ -7,6 +7,7 @@ package org.jboss.aerogear.android.impl.pipeline;
 import android.util.Pair;
 import java.io.Serializable;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import org.jboss.aerogear.android.Callback;
 import org.jboss.aerogear.android.http.HttpProvider;
@@ -18,8 +19,9 @@ import org.jboss.aerogear.android.pipeline.PipeWorker;
  */
 public abstract class RestPipeWorker<T> implements PipeWorker<T>, Runnable {
 
-    protected T data = null;
+    protected List<T> data = null;
     protected boolean hasData = false;
+    protected boolean isFinished = false;
     protected Set<Callback> callbacks = new HashSet<Callback>(10);
     protected final Serializable uuid;
     private final HttpProvider httpProvider;
@@ -35,22 +37,26 @@ public abstract class RestPipeWorker<T> implements PipeWorker<T>, Runnable {
     }
 
     @Override
-    public T getData() {
+    public List<T> getData() {
         return data;
     }
 
     @Override
-    public void registerCallback(Callback<Pair<Serializable, T>> resultCallback) {
+    public void registerCallback(Callback<Pair<Serializable, List<T>>> resultCallback) {
         callbacks.add(resultCallback);
     }
 
     @Override
-    public void unregisterCallback(Callback<Pair<Serializable, T>> resultCallback) {
+    public void unregisterCallback(Callback<Pair<Serializable, List<T>>> resultCallback) {
         callbacks.remove(resultCallback);
     }
 
     protected final HttpProvider getHttpProvider() {
         return httpProvider;
+    }
+
+    public boolean isFinished() {
+        return isFinished;
     }
     
 }

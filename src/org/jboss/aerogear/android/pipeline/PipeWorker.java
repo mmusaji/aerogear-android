@@ -18,6 +18,7 @@ package org.jboss.aerogear.android.pipeline;
 
 import android.util.Pair;
 import java.io.Serializable;
+import java.util.List;
 import org.jboss.aerogear.android.Callback;
 
 
@@ -25,10 +26,12 @@ public interface PipeWorker<T> {
 
     boolean hasData();
     
-    T getData();
+    boolean isFinished();
     
-    void registerCallback(Callback<Pair<Serializable, T>> resultCallback);
+    List<T> getData();
     
-    void unregisterCallback(Callback<Pair<Serializable, T>> resultCallback);
+    void registerCallback(Callback<Pair<Serializable, List<T>>> resultCallback);
+    
+    void unregisterCallback(Callback<Pair<Serializable, List<T>>> resultCallback);
     
 }
