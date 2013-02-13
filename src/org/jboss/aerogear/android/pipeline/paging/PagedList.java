@@ -16,6 +16,8 @@
  */
 package org.jboss.aerogear.android.pipeline.paging;
 
+import android.util.Pair;
+import java.io.Serializable;
 import java.util.List;
 import org.jboss.aerogear.android.Callback;
 
@@ -31,12 +33,12 @@ public interface PagedList<T> extends List<T> {
      * 
      * @param callback 
      */
-    public void next(Callback<List<T>> callback);
+    public void next(Callback<Pair<Serializable, List<T>>> callback);
 
     /**
      * Retrieve the previous result set.  This method MUST NOT pass data to the callback which can not be used.
      * 
      * @param callback 
      */
-    public void previous(Callback<List<T>> callback);
+    public void previous(Callback<Pair<Serializable, List<T>>> callback);
 }

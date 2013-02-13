@@ -17,6 +17,7 @@
 
 package org.jboss.aerogear.android.impl.pipeline;
 
+import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URL;
 import org.jboss.aerogear.android.Callback;
@@ -25,6 +26,7 @@ import org.jboss.aerogear.android.authentication.AuthenticationModule;
 import org.jboss.aerogear.android.pipeline.Pipe;
 import org.jboss.aerogear.android.pipeline.PipeFactory;
 import org.jboss.aerogear.android.pipeline.PipeType;
+import org.jboss.aerogear.android.pipeline.PipeWorker;
 
 public class StubPipeFactory implements PipeFactory {
 
@@ -52,23 +54,32 @@ public class StubPipeFactory implements PipeFactory {
             }
 
             @Override
-            public void read(Callback callback) {
+            public Serializable read(Callback callback) {
+                return null;
             }
 
             @Override
-            public void readWithFilter(ReadFilter filer, Callback callback) {
+            public Serializable readWithFilter(ReadFilter filer, Callback callback) {
+                return null;
             }
 
             @Override
-            public void save(Object item, Callback callback) {
+            public Serializable save(Object item, Callback callback) {
+                return null;
             }
 
             @Override
-            public void remove(String id, Callback callback) {
+            public Serializable remove(String id, Callback callback) {
+                return null;
             }
 
             @Override
             public void setAuthenticationModule(AuthenticationModule module) {
+            }
+
+            @Override
+            public PipeWorker getWorker(Serializable id) {
+                throw new UnsupportedOperationException("Not supported yet.");
             }
 
         };

@@ -16,7 +16,9 @@
  */
 package org.jboss.aerogear.android.impl.pipeline.paging;
 
+import android.util.Pair;
 import com.google.common.collect.ForwardingList;
+import java.io.Serializable;
 import java.util.List;
 import org.jboss.aerogear.android.Callback;
 import org.jboss.aerogear.android.ReadFilter;
@@ -55,12 +57,12 @@ public class WrappingPagedList<T> extends ForwardingList<T> implements PagedList
     }
 
     @Override
-    public void next(Callback<List<T>> callback) {
+    public void next(Callback<Pair<Serializable, List<T>>> callback) {
         pipe.readWithFilter(nextFilter, callback);
     }
 
     @Override
-    public void previous(Callback<List<T>> callback) {
+    public void previous(Callback<Pair<Serializable, List<T>>> callback) {
         pipe.readWithFilter(previousFilter, callback);
     }
 

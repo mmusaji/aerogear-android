@@ -17,7 +17,9 @@
 
 package org.jboss.aerogear.android.authentication.impl;
 
+import android.util.Pair;
 import com.xtremelabs.robolectric.RobolectricTestRunner;
+import java.io.Serializable;
 import org.jboss.aerogear.android.Callback;
 import org.jboss.aerogear.android.authentication.AbstractAuthenticationModule;
 import org.jboss.aerogear.android.authentication.AuthenticationModule;
@@ -69,10 +71,10 @@ public class GeneralAuthenticationModuleTest implements AuthenticationModuleTest
         UnitTestUtils.setPrivateField(adapter, "httpProviderFactory", factory);
         adapter.setAuthenticationModule(urlModule);
 
-        adapter.read(new Callback<List<Data>>() {
+        adapter.read(new Callback<Pair<Serializable, List<Data>>>() {
 
             @Override
-            public void onSuccess(List<Data> data) {
+            public void onSuccess(Pair<Serializable, List<Data>> data) {
             }
 
             @Override
