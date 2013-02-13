@@ -19,6 +19,7 @@ package org.jboss.aerogear.android.impl.pipeline;
 
 import org.jboss.aerogear.android.impl.pipeline.paging.WrappingPagedList;
 import android.graphics.Point;
+import android.util.Pair;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.InstanceCreator;
@@ -30,6 +31,7 @@ import com.google.gson.JsonParseException;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 import com.xtremelabs.robolectric.RobolectricTestRunner;
+import java.io.Serializable;
 import junit.framework.Assert;
 import org.jboss.aerogear.android.http.HeaderAndBody;
 import org.jboss.aerogear.android.http.HttpProvider;
@@ -250,10 +252,10 @@ public class RestAdapterTest {
         final ListClassId listClass = new ListClassId(true);
         final List<Point> returnedPoints = new ArrayList<Point>(10);
 
-        restPipe.save(listClass, new Callback<ListClassId>() {
+        restPipe.save(listClass, new Callback<Pair<Serializable, ListClassId>>() {
             @Override
-            public void onSuccess(ListClassId data) {
-                returnedPoints.addAll(data.points);
+            public void onSuccess(Pair<Serializable, ListClassId> data) {
+                returnedPoints.addAll(data.second.points);
                 latch.countDown();
             }
 
@@ -280,10 +282,10 @@ public class RestAdapterTest {
         ReadFilter filter = new ReadFilter();
         filter.setLinkUri(URI.create("?limit=10&where=%7B%22model%22:%22BMW%22%7D&token=token"));
 
-        adapter.readWithFilter(filter, new Callback<List<Data>>() {
+        adapter.readWithFilter(filter, new Callback<Pair<Serializable, List<Data>>>() {
 
             @Override
-            public void onSuccess(List<Data> data) {
+            public void onSuccess(Pair<Serializable, List<Data>> data) {
             }
 
             @Override
@@ -316,10 +318,10 @@ public class RestAdapterTest {
 
         adapter.setAuthenticationModule(urlModule);
 
-        adapter.readWithFilter(filter, new Callback<List<Data>>() {
+        adapter.readWithFilter(filter, new Callback<Pair<Serializable, List<Data>>>() {
 
             @Override
-            public void onSuccess(List<Data> data) {
+            public void onSuccess(Pair<Serializable, List<Data>> data) {
             }
 
             @Override
@@ -468,10 +470,10 @@ public class RestAdapterTest {
         final AtomicBoolean hasException = new AtomicBoolean(false);
         final AtomicReference<List<T>> resultRef = new AtomicReference<List<T>>();
 
-        restPipe.readWithFilter(readFilter, new Callback<List<T>>() {
+        restPipe.readWithFilter(readFilter, new Callback<Pair<Serializable, List<T>>>() {
             @Override
-            public void onSuccess(List<T> data) {
-                resultRef.set(data);
+            public void onSuccess(Pair<Serializable, List<T>> data) {
+                resultRef.set(data.second);
                 latch.countDown();
             }
 
@@ -498,9 +500,9 @@ public class RestAdapterTest {
         final CountDownLatch latch = new CountDownLatch(1);
         final AtomicBoolean hasException = new AtomicBoolean(false);
         final AtomicReference<Exception> exceptionref = new AtomicReference<Exception>();
-        restPipe.readWithFilter(readFilter, new Callback<List<T>>() {
+        restPipe.readWithFilter(readFilter, new Callback<Pair<Serializable, List<T>>>() {
             @Override
-            public void onSuccess(List<T> data) {
+            public void onSuccess(Pair<Serializable, List<T>> data) {
                 latch.countDown();
             }
 
