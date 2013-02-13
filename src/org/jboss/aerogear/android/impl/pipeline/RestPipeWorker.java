@@ -21,11 +21,11 @@ public abstract class RestPipeWorker<T> implements PipeWorker<T>, Runnable {
     protected T data = null;
     protected boolean hasData = false;
     protected Set<Callback> callbacks = new HashSet<Callback>(10);
-    private final Serializable id;
+    protected final Serializable uuid;
     private final HttpProvider httpProvider;
     
     public RestPipeWorker(HttpProvider httpProvider, Serializable uuid) {
-        this.id = uuid;
+        this.uuid = uuid;
         this.httpProvider = httpProvider;
     }
 

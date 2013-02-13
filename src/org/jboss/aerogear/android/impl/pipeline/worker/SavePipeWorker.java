@@ -6,6 +6,7 @@ package org.jboss.aerogear.android.impl.pipeline.worker;
 
 import android.os.AsyncTask;
 import android.util.Log;
+import android.util.Pair;
 import com.google.gson.Gson;
 import java.io.Serializable;
 import java.nio.charset.Charset;
@@ -74,7 +75,7 @@ public class SavePipeWorker<T>  extends RestPipeWorker<T> {
                 for (Callback callback : callbacks) {
                     try {
                         if (exception == null) {
-                            callback.onSuccess(null);
+                            callback.onSuccess(new Pair(uuid, this.result));
                         } else {
                             callback.onFailure(exception);
                         }
