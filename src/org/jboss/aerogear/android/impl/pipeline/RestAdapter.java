@@ -192,7 +192,7 @@ public final class RestAdapter<T> implements Pipe<T> {
         }
 
         Serializable uuid = ID_GENERATOR.generate();
-        SavePipeWorker<T> worker = new SavePipeWorker<T>(getHttpProvider(), uuid, id, gson, encoding, klass);
+        SavePipeWorker<T> worker = new SavePipeWorker<T>(getHttpProvider(), uuid, id, data, gson, encoding, klass);
 
         worker.registerCallback(resultCallback);
         worker.registerCallback(new RemoveCallback(uuid));

@@ -28,13 +28,15 @@ public class SavePipeWorker<T>  extends RestPipeWorker<T> {
     private static final String TAG = DeletePipeWorker.class.getSimpleName();
     private final Charset encoding;
     private final Class<T> klass;
+    private final T object;
     
-    public SavePipeWorker(HttpProvider httpProvider, Serializable uuid, String toSave, Gson gson, Charset encoding, Class klass) {
+    public SavePipeWorker(HttpProvider httpProvider, Serializable uuid, String objectId, T object, Gson gson, Charset encoding, Class klass) {
         super(httpProvider, uuid);
-        this.id = toSave;
+        this.id = objectId;
         this.gson = gson;
         this.encoding = encoding;
         this.klass = klass;
+        this.object = object;
     }
 
     @Override
@@ -47,7 +49,7 @@ public class SavePipeWorker<T>  extends RestPipeWorker<T> {
             protected Void doInBackground(Void... voids) {
                 try {
 
-                    String body = gson.toJson(data);
+                    String body = gson.toJson(object);
                     final HttpProvider httpProvider = getHttpProvider();
 
                     HeaderAndBody requestResult;
