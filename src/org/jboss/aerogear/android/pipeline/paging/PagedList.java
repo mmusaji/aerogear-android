@@ -33,12 +33,12 @@ public interface PagedList<T> extends List<T> {
      * 
      * @param callback 
      */
-    public void next(Callback<Pair<Serializable, List<T>>> callback);
+    public Serializable next(Callback<Pair<Serializable, List<T>>> callback);
 
     /**
      * Retrieve the previous result set.  This method MUST NOT pass data to the callback which can not be used.
      * 
      * @param callback 
      */
-    public void previous(Callback<Pair<Serializable, List<T>>> callback);
+    public Serializable previous(Callback<Pair<Serializable, List<T>>> callback);
 }

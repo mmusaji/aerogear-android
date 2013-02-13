@@ -57,13 +57,13 @@ public class WrappingPagedList<T> extends ForwardingList<T> implements PagedList
     }
 
     @Override
-    public void next(Callback<Pair<Serializable, List<T>>> callback) {
-        pipe.readWithFilter(nextFilter, callback);
+    public Serializable next(Callback<Pair<Serializable, List<T>>> callback) {
+        return pipe.readWithFilter(nextFilter, callback);
     }
 
     @Override
-    public void previous(Callback<Pair<Serializable, List<T>>> callback) {
-        pipe.readWithFilter(previousFilter, callback);
+    public Serializable previous(Callback<Pair<Serializable, List<T>>> callback) {
+        return pipe.readWithFilter(previousFilter, callback);
     }
 
     public ReadFilter getNextFilter() {

@@ -357,7 +357,11 @@ public final class RestAdapter<T> implements Pipe<T> {
 
     @Override
     public PipeWorker<T> getWorker(Serializable id) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        if (runningWorkers.containsKey(id)) {
+            return runningWorkers.get(id);
+        } else {
+            return finishedWorkers.getIfPresent(id);
+        }
     }
 
     private class RemoveCallback implements Callback<Pair<Serializable, List<T>>> {
