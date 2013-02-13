@@ -252,10 +252,10 @@ public class RestAdapterTest {
         final ListClassId listClass = new ListClassId(true);
         final List<Point> returnedPoints = new ArrayList<Point>(10);
 
-        restPipe.save(listClass, new Callback<Pair<Serializable, ListClassId>>() {
+        restPipe.save(listClass, new Callback<Pair<Serializable, List<ListClassId>>>() {
             @Override
-            public void onSuccess(Pair<Serializable, ListClassId> data) {
-                returnedPoints.addAll(data.second.points);
+            public void onSuccess(Pair<Serializable, List<ListClassId>> data) {
+                returnedPoints.addAll(data.second.get(0).points);
                 latch.countDown();
             }
 
