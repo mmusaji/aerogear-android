@@ -82,7 +82,7 @@ public class SavePipeWorker<T>  extends RestPipeWorker<T> {
                 for (Callback callback : callbacks) {
                     try {
                         if (exception == null) {
-                            callback.onSuccess(new Pair(uuid, this.result));
+                            callback.onSuccess(new Pair(uuid, Lists.newArrayList(this.result)));
                         } else {
                             callback.onFailure(exception);
                         }
