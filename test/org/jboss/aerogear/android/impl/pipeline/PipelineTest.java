@@ -208,8 +208,9 @@ public class PipelineTest {
                 new AGSecurityAuthenticationConfig()));
         RestAdapter<Data> pipe = (RestAdapter<Data>) factory.createPipe(
                 Data.class, config);
+        Object restRunner = UnitTestUtils.getPrivateField(pipe, "restRunner");
 
-        assertNotNull(UnitTestUtils.getPrivateField(pipe, "authModule",
+        assertNotNull(UnitTestUtils.getPrivateField(restRunner, "authModule",
                 AuthenticationModule.class));
 
     }

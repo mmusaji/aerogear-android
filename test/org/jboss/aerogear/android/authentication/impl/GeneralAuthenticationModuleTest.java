@@ -66,7 +66,8 @@ public class GeneralAuthenticationModuleTest implements AuthenticationModuleTest
         when(urlModule.getAuthorizationFields()).thenReturn(authFields);
 
         RestAdapter<Data> adapter = new RestAdapter<Data>(Data.class, SIMPLE_URL);
-        UnitTestUtils.setPrivateField(adapter, "httpProviderFactory", factory);
+        Object restRunner = UnitTestUtils.getPrivateField(adapter, "restRunner");
+        UnitTestUtils.setPrivateField(restRunner, "httpProviderFactory", factory);
         adapter.setAuthenticationModule(urlModule);
 
         adapter.read(new Callback<List<Data>>() {
