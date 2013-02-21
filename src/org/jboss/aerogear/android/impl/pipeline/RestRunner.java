@@ -383,6 +383,9 @@ public class RestRunner<T> {
     public void setDataRoot(String dataRoot) {
         this.dataRoot = dataRoot;
     }
-    
+
+    protected Gson getGSON() {
+        return gson;
+    }
     
 }
