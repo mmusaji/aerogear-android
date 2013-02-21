@@ -18,6 +18,7 @@
 package org.jboss.aerogear.android;
 
 import android.util.Log;
+import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URLEncoder;
@@ -26,7 +27,7 @@ import org.json.JSONObject;
 /**
  * This class wraps and builds the query parameters for filtering and pagination
  */
-public class ReadFilter {
+public class ReadFilter implements Serializable {
 
     private static final String UTF_8 = "UTF-8";
     private static final String TAG = ReadFilter.class.getSimpleName();
