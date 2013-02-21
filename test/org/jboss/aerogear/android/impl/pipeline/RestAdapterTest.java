@@ -269,6 +269,8 @@ public class RestAdapterTest {
     @Test
     public void runReadWithFilterUsingUri() throws Exception {
 
+        final CountDownLatch latch = new CountDownLatch(1);
+
         HttpProviderFactory factory = mock(HttpProviderFactory.class);
         when(factory.get(anyObject())).thenReturn(mock(HttpProvider.class));
 
@@ -282,18 +284,23 @@ public class RestAdapterTest {
         adapter.readWithFilter(filter, new Callback<List<Data>>() {
             @Override
             public void onSuccess(List<Data> data) {
+                latch.countDown();
             }
 
             @Override
             public void onFailure(Exception e) {
+                latch.countDown();
             }
         });
+        latch.await(500, TimeUnit.MILLISECONDS);
 
         verify(factory).get(eq(new URL(url.toString() + "?limit=10&where=%7B%22model%22:%22BMW%22%7D&token=token")));
     }
 
     @Test
     public void runReadWithFilterAndAuthenticaiton() throws Exception {
+
+        final CountDownLatch latch = new CountDownLatch(1);
 
         HttpProviderFactory factory = mock(HttpProviderFactory.class);
         when(factory.get(anyObject())).thenReturn(mock(HttpProvider.class));
@@ -319,13 +326,16 @@ public class RestAdapterTest {
         adapter.readWithFilter(filter, new Callback<List<Data>>() {
             @Override
             public void onSuccess(List<Data> data) {
+                latch.countDown();
             }
 
             @Override
             public void onFailure(Exception e) {
+                latch.countDown();
                 Logger.getLogger(getClass().getSimpleName()).log(Level.SEVERE, TAG, e);
             }
         });
+        latch.await(500, TimeUnit.MILLISECONDS);
 
         verify(factory).get(new URL(url.toString() + "?limit=10&where=%7B%22model%22:%22BMW%22%7D&token=token"));
     }

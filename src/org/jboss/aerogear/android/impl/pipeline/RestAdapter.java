@@ -20,7 +20,6 @@ import org.jboss.aerogear.android.impl.pipeline.paging.URIPageHeaderParser;
 import org.jboss.aerogear.android.impl.pipeline.paging.URIBodyPageParser;
 import android.os.AsyncTask;
 import android.util.Log;
-import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import java.net.URL;
 import org.jboss.aerogear.android.Callback;
@@ -31,6 +30,13 @@ import org.jboss.aerogear.android.pipeline.PipeType;
 
 import java.nio.charset.Charset;
 import java.util.List;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Executor;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.jboss.aerogear.android.pipeline.paging.PageConfig;
 import org.jboss.aerogear.android.pipeline.paging.ParameterProvider;
 
@@ -40,7 +46,13 @@ import org.jboss.aerogear.android.pipeline.paging.ParameterProvider;
 public final class RestAdapter<T> implements Pipe<T> {
 
     private static final String TAG = RestAdapter.class.getSimpleName();
-    private String dataRoot = "";
+    private static final int CORE_POOL_SIZE = 5;
+    private static final int MAX_POOL_SIZE = 64;
+    private static final int KEEP_ALIVE = 1;
+    private static final BlockingQueue<Runnable> WORK_QUEUE =
+            new LinkedBlockingQueue<Runnable>(10);
+    public static final Executor THREAD_POOL_EXECUTOR = new ThreadPoolExecutor(CORE_POOL_SIZE, MAX_POOL_SIZE, KEEP_ALIVE,
+            TimeUnit.SECONDS, WORK_QUEUE);
     private ParameterProvider parameterProvider = new DefaultParameterProvider();
     /**
      * A class of the Generic type this pipe wraps. This is used by GSON for
@@ -52,7 +64,6 @@ public final class RestAdapter<T> implements Pipe<T> {
      * JSON for deserializing collections.
      */
     private final URL baseURL;
-    
     private final RestRunner<T> restRunner;
 
     public RestAdapter(Class<T> klass, URL baseURL) {
@@ -117,31 +128,25 @@ public final class RestAdapter<T> implements Pipe<T> {
         }
         final ReadFilter innerFilter = filter;
 
-        new AsyncTask<Void, Void, Void>() {
+        THREAD_POOL_EXECUTOR.execute(new Runnable() {
             List<T> result = null;
             Exception exception = null;
 
             @Override
-            protected Void doInBackground(Void... voids) {
+            public void run() {
                 try {
                     this.result = restRunner.readWithFilter(innerFilter, RestAdapter.this);
                 } catch (Exception e) {
                     Log.e(TAG, e.getMessage(), e);
                     this.exception = e;
                 }
-                return null;
-            }
-
-            @Override
-            protected void onPostExecute(Void ignore) {
-                super.onPostExecute(ignore);
                 if (exception == null) {
                     callback.onSuccess(this.result);
                 } else {
                     callback.onFailure(exception);
                 }
             }
-        }.execute();
+        });
 
     }
 
@@ -156,33 +161,26 @@ public final class RestAdapter<T> implements Pipe<T> {
     @Override
     public void save(final T data, final Callback<T> callback) {
 
-        new AsyncTask<Void, Void, Void>() {
-            T result = null;
-            Exception exception = null;
-
+        THREAD_POOL_EXECUTOR.execute(new Runnable() {
             @Override
-            protected Void doInBackground(Void... voids) {
+            public void run() {
+                T result = null;
+                Exception exception = null;
+
                 try {
-
-                    this.result = restRunner.save(data);
-
+                    result = restRunner.save(data);
                 } catch (Exception e) {
                     exception = e;
                 }
 
-                return null;
-            }
-
-            @Override
-            protected void onPostExecute(Void ignore) {
-                super.onPostExecute(ignore);
                 if (exception == null) {
-                    callback.onSuccess(this.result);
+                    callback.onSuccess(result);
                 } else {
                     callback.onFailure(exception);
                 }
             }
-        }.execute();
+        });
+
 
     }
 
@@ -192,29 +190,23 @@ public final class RestAdapter<T> implements Pipe<T> {
     @Override
     public void remove(final String id, final Callback<Void> callback) {
 
-        new AsyncTask<Void, Void, Void>() {
+        THREAD_POOL_EXECUTOR.execute(new Runnable() {
             Exception exception = null;
 
             @Override
-            protected Void doInBackground(Void... voids) {
+            public void run() {
                 try {
                     RestAdapter.this.restRunner.remove(id);
                 } catch (Exception e) {
                     exception = e;
                 }
-                return null;
-            }
-
-            @Override
-            protected void onPostExecute(Void ignore) {
-                super.onPostExecute(ignore);
                 if (exception == null) {
                     callback.onSuccess(null);
                 } else {
                     callback.onFailure(exception);
                 }
             }
-        }.execute();
+        });
 
     }
 
