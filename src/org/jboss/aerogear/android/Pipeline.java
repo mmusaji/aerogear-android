@@ -17,12 +17,17 @@
 
 package org.jboss.aerogear.android;
 
+import android.app.Activity;
+import android.app.Fragment;
+import android.content.Context;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import org.jboss.aerogear.android.impl.pipeline.DefaultPipeFactory;
+import org.jboss.aerogear.android.impl.pipeline.ModernLoaderAdapter;
 import org.jboss.aerogear.android.impl.pipeline.PipeConfig;
+import org.jboss.aerogear.android.impl.pipeline.RestAdapter;
 import org.jboss.aerogear.android.pipeline.Pipe;
 import org.jboss.aerogear.android.pipeline.PipeFactory;
 
@@ -120,5 +125,42 @@ public class Pipeline {
      */
     public Pipe get(String name) {
         return pipes.get(name);
+    }
+    
+    /**
+     * Look up for a pipe object.  This will wrap the Pipe in a Loader.
+     *
+     * @param name the name of the actual pipe
+     * @param activity the activity whose lifecycle the loader will follow
+     * @return the new created Pipe object
+     * 
+     * @throws IllegalStateException if the named pipe is not an instance of RestAdapter
+     */
+    public Pipe get(String name, Activity activity) {
+        Pipe pipe = pipes.get(name);
+        if (pipe != null && pipe instanceof RestAdapter) {
+            return new ModernLoaderAdapter(activity, (RestAdapter)pipes.get(name));
+        }
+        throw new IllegalArgumentException(String.format("The pipe named %s is not an instance of RestAdapter", name));
+    }
+    
+    /**
+     * Look up for a pipe object.  This will wrap the Pipe in a Loader.
+     *
+     * @param name the name of the actual pipe
+     * @param fragment the Fragment whose lifecycle the activity will follow
+     * @param applicationContext the COntext of the application.
+     * 
+     * @return the new created Pipe object
+     * 
+     * @throws IllegalStateException if the named pipe is not an instance of RestAdapter
+     */
+    public Pipe get(String name, Fragment fragment, Context applicationContext) {
+        Pipe pipe = pipes.get(name);
+        
+        if (pipe != null && pipe instanceof RestAdapter) {
+            return new ModernLoaderAdapter(fragment, applicationContext, (RestAdapter)pipes.get(name));
+        }
+        throw new IllegalArgumentException(String.format("The pipe named %s is not an instance of RestAdapter", name));
     }
 }
