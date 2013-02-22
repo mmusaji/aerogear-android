@@ -36,6 +36,7 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import static org.mockito.Mockito.*;
 
@@ -55,6 +56,8 @@ public class GeneralAuthenticationModuleTest implements AuthenticationModuleTest
     @Test
     public void applySecurityTokenOnURL() throws Exception {
 
+        final CountDownLatch latch = new CountDownLatch(1);
+        
         HttpProviderFactory factory = mock(HttpProviderFactory.class);
         when(factory.get(anyObject())).thenReturn(mock(HttpProvider.class));
 
@@ -74,13 +77,16 @@ public class GeneralAuthenticationModuleTest implements AuthenticationModuleTest
 
             @Override
             public void onSuccess(List<Data> data) {
+                latch.countDown();
             }
 
             @Override
             public void onFailure(Exception e) {
+                latch.countDown();
             }
         });
-
+        
+        latch.await(1, TimeUnit.SECONDS);
         verify(factory).get(new URL(SIMPLE_URL.toString() + "?token=" + TOKEN));
     }
 
