@@ -109,7 +109,6 @@ public class MemoryStorage<T> implements Store<T> {
      * 
      * @throws IllegalArgumentException if filter.query has nested objects
      */
-    @Override
     public List<T> readWithFilter(ReadFilter filter) {
         if (filter == null) {
             filter = new ReadFilter();

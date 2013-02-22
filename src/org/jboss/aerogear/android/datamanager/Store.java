@@ -50,14 +50,6 @@ public interface Store<T> {
     public T read(Serializable id);
 
     /**
-     * Search for objects/records from the underlying storage system.
-     *
-     * @param filter a filter to use to fetch an object
-     * @return List<T>  SHOULD NOT BE NULL
-     */
-    public List<T> readWithFilter(ReadFilter filter);
-
-    /**
      * Saves the given object in the underlying storage system.
      *
      * @param item Object to save

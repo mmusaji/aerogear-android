@@ -151,7 +151,6 @@ public class SQLStore<T> extends SQLiteOpenHelper implements Store<T> {
     /**
      * {@inheritDoc }
      */
-    @Override
     public List<T> readWithFilter(ReadFilter filter) {
         if (filter == null) {
             filter = new ReadFilter();
