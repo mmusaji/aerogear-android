@@ -144,6 +144,11 @@ public class RestRunner<T> {
     public List<T> readWithFilter(ReadFilter filter, Pipe<T> requestingPipe) {
         List<T> result;
         HttpProvider httpProvider;
+        
+        if (filter == null) {
+        	filter = new ReadFilter();
+        }
+        
         if (filter.getLinkUri() == null) {
             httpProvider = getHttpProvider(parameterProvider.getParameters(filter));
         } else {
