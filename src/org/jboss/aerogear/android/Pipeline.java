@@ -149,7 +149,7 @@ public class Pipeline {
      *
      * @param name the name of the actual pipe
      * @param fragment the Fragment whose lifecycle the activity will follow
-     * @param applicationContext the COntext of the application.
+     * @param applicationContext the Context of the application.
      * 
      * @return the new created Pipe object
      * 
