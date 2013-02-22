@@ -161,7 +161,9 @@ public class ModernLoaderAdapter<T> implements Pipe<T>, LoaderManager.LoaderCall
         } else {
             AbstractModernPipeLoader modernLoader = (AbstractModernPipeLoader) loader;
             if (modernLoader.hasException()) {
-                modernLoader.callback.onFailure(modernLoader.getException());
+            	Exception exception = modernLoader.getException();
+            	Log.e(TAG, exception.getMessage(), exception);
+                modernLoader.callback.onFailure(exception);
             } else {
                 modernLoader.callback.onSuccess(data);
             }
