@@ -104,7 +104,7 @@ public final class AGSecurityAuthenticationModule extends AbstractAuthentication
                 HeaderAndBody result = null;
                 Exception exception = null;
                 try {
-                    result = runner.enroll(userData);
+                    result = runner.onEnroll(userData);
                     authToken = result.getHeader(tokenHeaderName).toString();
                     isLoggedIn = true;
                 } catch (Exception e) {
@@ -133,7 +133,7 @@ public final class AGSecurityAuthenticationModule extends AbstractAuthentication
                 Exception exception = null;
                 
                 try {
-                    result = runner.login(username, password);
+                    result = runner.onLogin(username, password);
                     authToken = result.getHeader(tokenHeaderName).toString();
                     isLoggedIn = true;
                 } catch (Exception e) {
@@ -157,7 +157,7 @@ public final class AGSecurityAuthenticationModule extends AbstractAuthentication
             public void run() {
                 Exception exception = null;
                 try {
-                    runner.logout();
+                    runner.onLogout();
                     authToken = "";
                     isLoggedIn = false;
                 } catch (Exception e) {

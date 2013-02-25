@@ -22,12 +22,13 @@ import java.net.URL;
 import java.util.Map;
 import org.jboss.aerogear.android.Provider;
 import org.jboss.aerogear.android.authentication.AuthenticationConfig;
+import org.jboss.aerogear.android.authentication.AuthenticationModuleHandler;
 import org.jboss.aerogear.android.http.HeaderAndBody;
 import org.jboss.aerogear.android.http.HttpProvider;
 import org.jboss.aerogear.android.impl.core.HttpProviderFactory;
 import org.json.JSONObject;
 
-public class AGSecurityAuthenticationModuleRunner {
+public class AGSecurityAuthenticationModuleRunner implements AuthenticationModuleHandler {
 
     private static final String TAG = AGSecurityAuthenticationModuleRunner.class.getSimpleName();
     private final Provider<HttpProvider> httpProviderFactory = new HttpProviderFactory();
@@ -58,19 +59,22 @@ public class AGSecurityAuthenticationModuleRunner {
         this.enrollURL = appendToBaseURL(enrollEndpoint);
     }
 
-    public HeaderAndBody enroll(final Map<String, String> userData) {
+    @Override
+    public HeaderAndBody onEnroll(final Map<String, String> userData) {
         HttpProvider provider = httpProviderFactory.get(enrollURL);
         String enrollData = new JSONObject(userData).toString();
         return provider.post(enrollData);
     }
 
-    public HeaderAndBody login(final String username, final String password) {
+    @Override
+    public HeaderAndBody onLogin(final String username, final String password) {
         HttpProvider provider = httpProviderFactory.get(loginURL);
         String loginData = buildLoginData(username, password);
         return provider.post(loginData);
     }
 
-    public void logout() {
+    @Override
+    public void onLogout() {
         HttpProvider provider = httpProviderFactory.get(logoutURL);
         provider.post("");
     }
