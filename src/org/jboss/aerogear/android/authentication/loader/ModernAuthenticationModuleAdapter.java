@@ -22,13 +22,16 @@ import android.app.LoaderManager;
 import android.content.Context;
 import android.content.Loader;
 import android.os.Bundle;
+import com.google.common.base.Objects;
 import com.google.gson.Gson;
 import java.net.URL;
+import java.util.HashMap;
 import java.util.Map;
 import org.jboss.aerogear.android.Callback;
 import org.jboss.aerogear.android.authentication.AuthenticationModule;
 import org.jboss.aerogear.android.authentication.AuthorizationFields;
 import org.jboss.aerogear.android.http.HeaderAndBody;
+import org.jboss.aerogear.android.impl.pipeline.ModernLoaderAdapter;
 import org.jboss.aerogear.android.pipeline.Pipe;
 
 public class ModernAuthenticationModuleAdapter implements AuthenticationModule, LoaderManager.LoaderCallbacks<HeaderAndBody>{
@@ -83,17 +86,32 @@ public class ModernAuthenticationModuleAdapter implements AuthenticationModule, 
 
     @Override
     public void enroll(Map<String, String> userData, Callback<HeaderAndBody> callback) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        int id = Objects.hashCode(userData, callback);
+        Bundle bundle = new Bundle();
+        bundle.putSerializable(CALLBACK, callback);
+        bundle.putSerializable(PARAMS, new HashMap(userData));
+        bundle.putSerializable(METHOD, ModernAuthenticationModuleAdapter.Methods.ENROLL);
+        manager.initLoader(id, bundle, this);
     }
 
     @Override
     public void login(String username, String password, Callback<HeaderAndBody> callback) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        int id = Objects.hashCode(username, password, callback);
+        Bundle bundle = new Bundle();
+        bundle.putSerializable(CALLBACK, callback);
+        bundle.putSerializable(USERNAME, username);
+        bundle.putSerializable(PASSWORD, password);
+        bundle.putSerializable(METHOD, ModernAuthenticationModuleAdapter.Methods.LOGIN);
+        manager.initLoader(id, bundle, this);
     }
 
     @Override
     public void logout(Callback<Void> callback) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        int id = Objects.hashCode(callback);
+        Bundle bundle = new Bundle();
+        bundle.putSerializable(CALLBACK, callback);
+        bundle.putSerializable(METHOD, ModernAuthenticationModuleAdapter.Methods.LOGOUT);
+        manager.initLoader(id, bundle, this);
     }
 
     @Override
