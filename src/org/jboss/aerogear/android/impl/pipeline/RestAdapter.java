@@ -19,16 +19,13 @@ import org.jboss.aerogear.android.impl.pipeline.paging.DefaultParameterProvider;
 import org.jboss.aerogear.android.impl.pipeline.paging.URIPageHeaderParser;
 import org.jboss.aerogear.android.impl.pipeline.paging.URIBodyPageParser;
 import android.util.Log;
-import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import java.net.URL;
 import org.jboss.aerogear.android.Callback;
 import org.jboss.aerogear.android.ReadFilter;
-import org.jboss.aerogear.android.authentication.AuthenticationModule;
 import org.jboss.aerogear.android.pipeline.Pipe;
 import org.jboss.aerogear.android.pipeline.PipeType;
 
-import java.nio.charset.Charset;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Executor;
@@ -63,7 +60,7 @@ public final class RestAdapter<T> implements Pipe<T> {
      * JSON for deserializing collections.
      */
     private final URL baseURL;
-    private final RestRunner<T> restRunner;
+    private final PipeHandler<T> restRunner;
 
     public RestAdapter(Class<T> klass, URL baseURL) {
         this.restRunner = new RestRunner(klass, baseURL);
@@ -209,40 +206,7 @@ public final class RestAdapter<T> implements Pipe<T> {
 
     }
 
-    @Override
-    public void setAuthenticationModule(AuthenticationModule module) {
-        this.restRunner.setAuthenticationModule(module);
-    }
 
-    /**
-     * Sets the encoding of the Pipe. May not be null.
-     *
-     * @param encoding
-     * @throws IllegalArgumentException if encoding is null
-     */
-    public void setEncoding(Charset encoding) {
-        this.restRunner.setEncoding(encoding);
-    }
-
-    public String getDataRoot() {
-        return this.restRunner.getDataRoot();
-    }
-
-    protected void setDataRoot(String dataRoot) {
-        this.restRunner.setDataRoot(dataRoot);
-    }
-
-    public ParameterProvider getParameterProvider() {
-        return parameterProvider;
-    }
-
-    protected void setParameterProvider(ParameterProvider parameterProvider) {
-        this.parameterProvider = parameterProvider;
-    }
-    
-    protected Gson getGSON() {
-        return restRunner.getGSON();
-    }
 
     @Override
     public PipeHandler getHandler() {
@@ -252,5 +216,6 @@ public final class RestAdapter<T> implements Pipe<T> {
     protected Class<T> getKlass() {
         return klass;
     }
+
     
 }
