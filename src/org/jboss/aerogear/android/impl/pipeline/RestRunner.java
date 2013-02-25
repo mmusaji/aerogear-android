@@ -131,7 +131,7 @@ public class RestRunner<T> implements PipeHandler<T> {
             
         } else {
             this.pageConfig = null;
-            this.parameterProvider = null;
+            this.parameterProvider = new DefaultParameterProvider();
         }
         
         if (config.getAuthModule() != null) {
