@@ -17,6 +17,7 @@
 
 package org.jboss.aerogear.android.impl.pipeline;
 
+import com.google.gson.Gson;
 import java.net.MalformedURLException;
 import java.net.URL;
 import org.jboss.aerogear.android.Callback;
@@ -24,6 +25,7 @@ import org.jboss.aerogear.android.ReadFilter;
 import org.jboss.aerogear.android.authentication.AuthenticationModule;
 import org.jboss.aerogear.android.pipeline.Pipe;
 import org.jboss.aerogear.android.pipeline.PipeFactory;
+import org.jboss.aerogear.android.pipeline.PipeHandler;
 import org.jboss.aerogear.android.pipeline.PipeType;
 
 public class StubPipeFactory implements PipeFactory {
@@ -67,8 +69,20 @@ public class StubPipeFactory implements PipeFactory {
             public void remove(String id, Callback callback) {
             }
 
+
             @Override
-            public void setAuthenticationModule(AuthenticationModule module) {
+            public PipeHandler getHandler() {
+                return null;
+            }
+
+            @Override
+            public Gson getGson() {
+                return null;
+            }
+
+            @Override
+            public Class getKlass() {
+                return null;
             }
 
         };
