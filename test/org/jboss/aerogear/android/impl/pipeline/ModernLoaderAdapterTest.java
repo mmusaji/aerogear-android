@@ -88,7 +88,9 @@ public class ModernLoaderAdapterTest {
         GsonBuilder builder = new GsonBuilder().registerTypeAdapter(Point.class, new PointTypeAdapter());
         HeaderAndBody response = new HeaderAndBody(SERIALIZED_POINTS.getBytes(), new HashMap<String, Object>());
         final HttpStubProvider provider = new HttpStubProvider(url, response);
-        RestAdapter<RestAdapterTest.ListClassId> restPipe = new RestAdapter<RestAdapterTest.ListClassId>(RestAdapterTest.ListClassId.class, url, builder);
+        PipeConfig config = new PipeConfig(url, RestAdapterTest.ListClassId.class);
+        config.setGsonBuilder(builder);
+        RestAdapter<RestAdapterTest.ListClassId> restPipe = new RestAdapter<RestAdapterTest.ListClassId>(RestAdapterTest.ListClassId.class, url, config);
         Object restRunner = UnitTestUtils.getPrivateField(restPipe, "restRunner");
         UnitTestUtils.setPrivateField(restRunner, "httpProviderFactory", new Provider<HttpProvider>() {
             @Override
@@ -99,7 +101,7 @@ public class ModernLoaderAdapterTest {
         
         Activity activity = new StubActivity();
         
-        ModernLoaderAdapter<RestAdapterTest.ListClassId> adapter = new ModernLoaderAdapter<RestAdapterTest.ListClassId>(activity, restPipe);
+        ModernLoaderAdapter<RestAdapterTest.ListClassId> adapter = new ModernLoaderAdapter<RestAdapterTest.ListClassId>(activity, restPipe, builder.create());
         
         List<RestAdapterTest.ListClassId> result = runRead(adapter);
 
@@ -159,7 +161,10 @@ public class ModernLoaderAdapterTest {
         when(urlModule.isLoggedIn()).thenReturn(true);
         when(urlModule.getAuthorizationFields()).thenReturn(authFields);
 
-        RestAdapter<Data> pipe = new RestAdapter<Data>(Data.class, url);
+        PipeConfig config = new PipeConfig(url, Data.class);
+        config.setAuthModule(urlModule);
+        
+        RestAdapter<Data> pipe = new RestAdapter<Data>(Data.class, url, config);
         Object restRunner = UnitTestUtils.getPrivateField(pipe, "restRunner");
 
         UnitTestUtils.setPrivateField(restRunner, "httpProviderFactory", factory);
@@ -168,11 +173,11 @@ public class ModernLoaderAdapterTest {
         filter.setLimit(10);
         filter.setWhere(new JSONObject("{\"model\":\"BMW\"}"));
 
-        pipe.setAuthenticationModule(urlModule);
+        
 
         StubActivity stubActivity = new StubActivity();
         stubActivity.onCreate(null);
-        ModernLoaderAdapter<Data> adapter = new ModernLoaderAdapter<Data>(stubActivity, pipe);
+        ModernLoaderAdapter<Data> adapter = new ModernLoaderAdapter<Data>(stubActivity, pipe, pipe.getGson());
         
         adapter.readWithFilter(filter, new Callback<List<Data>>() {
             @Override

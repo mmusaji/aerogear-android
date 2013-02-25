@@ -37,6 +37,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import org.jboss.aerogear.android.impl.pipeline.PipeConfig;
 
 import static org.mockito.Mockito.*;
 
@@ -68,10 +69,13 @@ public class GeneralAuthenticationModuleTest implements AuthenticationModuleTest
         when(urlModule.isLoggedIn()).thenReturn(true);
         when(urlModule.getAuthorizationFields()).thenReturn(authFields);
 
-        RestAdapter<Data> adapter = new RestAdapter<Data>(Data.class, SIMPLE_URL);
+        PipeConfig config = new PipeConfig(SIMPLE_URL, Data.class);
+        config.setAuthModule(urlModule);
+        
+        RestAdapter<Data> adapter = new RestAdapter<Data>(Data.class, SIMPLE_URL, config);
         Object restRunner = UnitTestUtils.getPrivateField(adapter, "restRunner");
         UnitTestUtils.setPrivateField(restRunner, "httpProviderFactory", factory);
-        adapter.setAuthenticationModule(urlModule);
+        
 
         adapter.read(new Callback<List<Data>>() {
 
