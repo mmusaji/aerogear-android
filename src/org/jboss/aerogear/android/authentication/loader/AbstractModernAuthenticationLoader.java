@@ -17,6 +17,7 @@ import org.jboss.aerogear.android.http.HeaderAndBody;
 public abstract class AbstractModernAuthenticationLoader extends AsyncTaskLoader<HeaderAndBody> {
     private final Callback callback;
     private final AuthenticationModule module;
+    private Exception exception;
 
     public AbstractModernAuthenticationLoader(Context context, AuthenticationModule module, Callback callback) {
         super(context);
@@ -30,6 +31,18 @@ public abstract class AbstractModernAuthenticationLoader extends AsyncTaskLoader
 
     public AuthenticationModule getModule() {
         return module;
+    }
+
+    boolean hasException() {
+        return exception != null;
+    }
+
+    public Exception getException() {
+        return exception;
+    }
+
+    protected void setException(Exception exception) {
+        this.exception = exception;
     }
 
 }
