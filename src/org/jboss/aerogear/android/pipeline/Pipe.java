@@ -76,14 +76,6 @@ public interface Pipe<T> {
      */
     void remove(String id, Callback<Void> callback);
     
-    /**
-     * Sets the authentication module for the Pipe.
-     * It should already be logged in.
-     *
-     * @param module
-     */
-    void setAuthenticationModule(AuthenticationModule module);
-
     PipeHandler<T> getHandler();
     
 }
