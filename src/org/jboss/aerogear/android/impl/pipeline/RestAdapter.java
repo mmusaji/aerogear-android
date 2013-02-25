@@ -35,6 +35,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import org.jboss.aerogear.android.pipeline.PipeHandler;
 import org.jboss.aerogear.android.pipeline.paging.PageConfig;
 import org.jboss.aerogear.android.pipeline.paging.ParameterProvider;
 
@@ -133,7 +134,7 @@ public final class RestAdapter<T> implements Pipe<T> {
             @Override
             public void run() {
                 try {
-                    this.result = restRunner.readWithFilter(innerFilter, RestAdapter.this);
+                    this.result = restRunner.onReadWithFilter(innerFilter, RestAdapter.this);
                 } catch (Exception e) {
                     Log.e(TAG, e.getMessage(), e);
                     this.exception = e;
@@ -166,7 +167,7 @@ public final class RestAdapter<T> implements Pipe<T> {
                 Exception exception = null;
 
                 try {
-                    result = restRunner.save(data);
+                    result = restRunner.onSave(data);
                 } catch (Exception e) {
                     exception = e;
                 }
@@ -194,7 +195,7 @@ public final class RestAdapter<T> implements Pipe<T> {
             @Override
             public void run() {
                 try {
-                    RestAdapter.this.restRunner.remove(id);
+                    RestAdapter.this.restRunner.onRemove(id);
                 } catch (Exception e) {
                     exception = e;
                 }
@@ -243,7 +244,8 @@ public final class RestAdapter<T> implements Pipe<T> {
         return restRunner.getGSON();
     }
 
-    protected RestRunner getRunner() {
+    @Override
+    public PipeHandler getHandler() {
         return restRunner;
     }
     

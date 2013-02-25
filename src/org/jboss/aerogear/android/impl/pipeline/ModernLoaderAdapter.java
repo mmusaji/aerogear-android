@@ -35,6 +35,7 @@ import org.jboss.aerogear.android.impl.pipeline.loader.ModernReadLoader;
 import org.jboss.aerogear.android.impl.pipeline.loader.ModernRemoveLoader;
 import org.jboss.aerogear.android.impl.pipeline.loader.ModernSaveLoader;
 import org.jboss.aerogear.android.pipeline.Pipe;
+import org.jboss.aerogear.android.pipeline.PipeHandler;
 import org.jboss.aerogear.android.pipeline.PipeType;
 
 /**
@@ -128,6 +129,11 @@ public class ModernLoaderAdapter<T> implements Pipe<T>, LoaderManager.LoaderCall
     }
 
     @Override
+    public PipeHandler<T> getHandler() {
+        return pipe.getHandler();
+    }
+    
+    @Override
     public Loader<T> onCreateLoader(int id, Bundle bundle) {
         Methods method = (Methods) bundle.get(METHOD);
         Callback callback = (Callback) bundle.get(CALLBACK);
@@ -135,18 +141,18 @@ public class ModernLoaderAdapter<T> implements Pipe<T>, LoaderManager.LoaderCall
         switch (method) {
             case READ: {
                 ReadFilter filter = (ReadFilter) bundle.get(FILTER);
-                l = new ModernReadLoader(applicationContext, callback, pipe.getRunner(), filter, this);
+                l = new ModernReadLoader(applicationContext, callback, pipe.getHandler(), filter, this);
             }
             break;
             case REMOVE: {
                 String toRemove = bundle.getString(REMOVE_ID, "-1");
-                l = new ModernRemoveLoader(applicationContext, callback, pipe.getRunner(), toRemove);
+                l = new ModernRemoveLoader(applicationContext, callback, pipe.getHandler(), toRemove);
             }
             break;
             case SAVE: {
                 String json = bundle.getString(ITEM);
                 T item = gson.fromJson(json, pipe.getKlass());
-                l= new ModernSaveLoader(applicationContext, callback, pipe.getRunner(), item);
+                l= new ModernSaveLoader(applicationContext, callback, pipe.getHandler(), item);
             }
             break;
         }

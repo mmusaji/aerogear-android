@@ -84,4 +84,6 @@ public interface Pipe<T> {
      */
     void setAuthenticationModule(AuthenticationModule module);
 
+    PipeHandler<T> getHandler();
+    
 }

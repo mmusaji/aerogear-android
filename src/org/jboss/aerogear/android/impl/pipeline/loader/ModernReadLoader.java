@@ -16,23 +16,22 @@
  */
 package org.jboss.aerogear.android.impl.pipeline.loader;
 
-import android.content.AsyncTaskLoader;
 import android.content.Context;
 import java.util.List;
 import org.jboss.aerogear.android.Callback;
 import org.jboss.aerogear.android.ReadFilter;
-import org.jboss.aerogear.android.impl.pipeline.RestRunner;
 import org.jboss.aerogear.android.pipeline.Pipe;
+import org.jboss.aerogear.android.pipeline.PipeHandler;
 
 
 public class ModernReadLoader<T> extends AbstractModernPipeLoader<List<T>> {
 
-    private final RestRunner<T> runner;
+    private final PipeHandler<T> runner;
     private List<T> result;
     private final ReadFilter filter;
     private final Pipe<T> requestingPipe;
 
-    public ModernReadLoader(Context context, Callback<List<T>> callback, RestRunner<T> runner, ReadFilter filter, Pipe<T> pipe) {
+    public ModernReadLoader(Context context, Callback<List<T>> callback, PipeHandler<T> runner, ReadFilter filter, Pipe<T> pipe) {
         super(context, callback);
         this.filter = filter;
         this.runner = runner;

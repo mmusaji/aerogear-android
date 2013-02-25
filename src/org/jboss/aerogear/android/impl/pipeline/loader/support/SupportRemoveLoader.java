@@ -18,15 +18,15 @@ package org.jboss.aerogear.android.impl.pipeline.loader.support;
 
 import android.content.Context;
 import org.jboss.aerogear.android.Callback;
-import org.jboss.aerogear.android.impl.pipeline.RestRunner;
+import org.jboss.aerogear.android.pipeline.PipeHandler;
 
 public class SupportRemoveLoader<T> extends AbstractSupportPipeLoader<T> {
 
-    private final RestRunner<T> runner;
+    private final PipeHandler<T> runner;
     private final String id;
     private boolean  isFinished = false;
     
-    public SupportRemoveLoader(Context context, Callback<T> callback, RestRunner<T> runner, String id) {
+    public SupportRemoveLoader(Context context, Callback<T> callback, PipeHandler<T> runner, String id) {
         super(context, callback);
         this.runner = runner;
         this.id = id;
@@ -35,7 +35,7 @@ public class SupportRemoveLoader<T> extends AbstractSupportPipeLoader<T> {
     @Override
     public T loadInBackground() {
         try {
-            runner.remove(id);
+            runner.onRemove(id);
             isFinished = true;
         } catch (Exception e) {
             super.exception = e;

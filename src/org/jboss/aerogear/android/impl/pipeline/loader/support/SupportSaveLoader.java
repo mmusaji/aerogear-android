@@ -19,15 +19,15 @@ package org.jboss.aerogear.android.impl.pipeline.loader.support;
 
 import android.content.Context;
 import org.jboss.aerogear.android.Callback;
-import org.jboss.aerogear.android.impl.pipeline.RestRunner;
+import org.jboss.aerogear.android.pipeline.PipeHandler;
 
 public class SupportSaveLoader<T> extends AbstractSupportPipeLoader<T> {
 
-    private final RestRunner<T> runner;
+    private final PipeHandler<T> runner;
     private final T data;
     private T result;
 
-    public SupportSaveLoader(Context context, Callback<T> callback, RestRunner<T> runner, T data) {
+    public SupportSaveLoader(Context context, Callback<T> callback, PipeHandler<T> runner, T data) {
         super(context, callback);
         this.runner = runner;
         this.data = data;
@@ -36,7 +36,7 @@ public class SupportSaveLoader<T> extends AbstractSupportPipeLoader<T> {
     @Override
     public T loadInBackground() {
         try {
-            return (result = runner.save(data));
+            return (result = runner.onSave(data));
         } catch (Exception e) {
             super.exception = e;
         }

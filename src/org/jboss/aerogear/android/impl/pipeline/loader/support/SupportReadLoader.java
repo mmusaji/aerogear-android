@@ -20,17 +20,17 @@ import android.content.Context;
 import java.util.List;
 import org.jboss.aerogear.android.Callback;
 import org.jboss.aerogear.android.ReadFilter;
-import org.jboss.aerogear.android.impl.pipeline.RestRunner;
 import org.jboss.aerogear.android.pipeline.Pipe;
+import org.jboss.aerogear.android.pipeline.PipeHandler;
 
 public class SupportReadLoader<T> extends AbstractSupportPipeLoader<List<T>> {
 
-    private final RestRunner<T> runner;
+    private final PipeHandler<T> runner;
     private List<T> result;
     private final ReadFilter filter;
     private final Pipe<T> requestingPipe;
 
-    public SupportReadLoader(Context context, Callback<List<T>> callback, RestRunner<T> runner, ReadFilter filter, Pipe<T> pipe) {
+    public SupportReadLoader(Context context, Callback<List<T>> callback, PipeHandler<T> runner, ReadFilter filter, Pipe<T> pipe) {
         super(context, callback);
         this.filter = filter;
         this.runner = runner;
@@ -40,7 +40,7 @@ public class SupportReadLoader<T> extends AbstractSupportPipeLoader<List<T>> {
     @Override
     public List<T> loadInBackground() {
         try {
-            return (result = runner.readWithFilter(filter, requestingPipe));
+            return (result = runner.onReadWithFilter(filter, requestingPipe));
         } catch (Exception e) {
             super.exception = e;
         }

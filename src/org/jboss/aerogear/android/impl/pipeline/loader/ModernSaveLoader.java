@@ -18,15 +18,15 @@ package org.jboss.aerogear.android.impl.pipeline.loader;
 
 import android.content.Context;
 import org.jboss.aerogear.android.Callback;
-import org.jboss.aerogear.android.impl.pipeline.RestRunner;
+import org.jboss.aerogear.android.pipeline.PipeHandler;
 
 public class ModernSaveLoader<T> extends AbstractModernPipeLoader<T> {
 
-    private final RestRunner<T> runner;
+    private final PipeHandler<T> runner;
     private final T data;
     private T result;
 
-    public ModernSaveLoader(Context context, Callback<T> callback, RestRunner<T> runner, T data) {
+    public ModernSaveLoader(Context context, Callback<T> callback, PipeHandler<T> runner, T data) {
         super(context, callback);
         this.runner = runner;
         this.data = data;
