@@ -132,7 +132,7 @@ public class RestAdapterTest {
 
     }
 
-    @Test(timeout = 50000L)
+    @Test(timeout = 500L)
     public void testEncoding() throws Exception {
         GsonBuilder builder = new GsonBuilder().registerTypeAdapter(Point.class, new RestAdapterTest.PointTypeAdapter());
         final Charset utf_16 = Charset.forName("UTF-16");
