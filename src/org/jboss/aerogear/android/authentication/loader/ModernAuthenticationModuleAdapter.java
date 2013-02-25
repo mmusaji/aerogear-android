@@ -22,6 +22,7 @@ import android.app.LoaderManager;
 import android.content.Context;
 import android.content.Loader;
 import android.os.Bundle;
+import android.util.Log;
 import com.google.common.base.Objects;
 import java.net.URL;
 import java.util.HashMap;
@@ -30,8 +31,7 @@ import org.jboss.aerogear.android.Callback;
 import org.jboss.aerogear.android.authentication.AuthenticationModule;
 import org.jboss.aerogear.android.authentication.AuthorizationFields;
 import org.jboss.aerogear.android.http.HeaderAndBody;
-import org.jboss.aerogear.android.impl.pipeline.loader.ModernRemoveLoader;
-import org.jboss.aerogear.android.impl.pipeline.loader.ModernSaveLoader;
+import org.jboss.aerogear.android.impl.pipeline.loader.AbstractModernPipeLoader;
 
 public class ModernAuthenticationModuleAdapter implements AuthenticationModule, LoaderManager.LoaderCallbacks<HeaderAndBody>{
 
@@ -150,12 +150,24 @@ public class ModernAuthenticationModuleAdapter implements AuthenticationModule, 
 
     @Override
     public void onLoadFinished(Loader<HeaderAndBody> loader, HeaderAndBody data) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        if (!(loader instanceof AbstractModernAuthenticationLoader)) {
+            Log.e(TAG, "Adapter is listening to loaders which it doesn't support");
+            throw new IllegalStateException("Adapter is listening to loaders which it doesn't support");
+        } else {
+            AbstractModernAuthenticationLoader modernLoader = (AbstractModernAuthenticationLoader) loader;
+            if (modernLoader.hasException()) {
+            	Exception exception = modernLoader.getException();
+            	Log.e(TAG, exception.getMessage(), exception);
+                modernLoader.getCallback().onFailure(exception);
+            } else {
+                modernLoader.getCallback().onSuccess(data);
+            }
+        }
     }
 
     @Override
     public void onLoaderReset(Loader<HeaderAndBody> loader) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        //Do nothing, should call logout on module manually.
     }
     
 }
