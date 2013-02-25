@@ -59,17 +59,17 @@ public class ModernLoaderAdapter<T> implements Pipe<T>, LoaderManager.LoaderCall
     private final LoaderManager manager;
     private final Gson gson;
 
-    public ModernLoaderAdapter(Activity activity, RestAdapter<T> pipe) {
+    public ModernLoaderAdapter(Activity activity, RestAdapter<T> pipe, Gson gson) {
         this.pipe = pipe;
-        gson = pipe.getGSON();
-        manager = activity.getLoaderManager();
-        applicationContext = activity.getApplicationContext();
+        this.gson = gson;
+        this.manager = activity.getLoaderManager();
+        this.applicationContext = activity.getApplicationContext();
     }
 
-    public ModernLoaderAdapter(Fragment fragment, Context applicationContext, RestAdapter<T> pipe) {
+    public ModernLoaderAdapter(Fragment fragment, Context applicationContext, RestAdapter<T> pipe, Gson gson) {
         this.pipe = pipe;
-        manager = fragment.getLoaderManager();
-        gson = pipe.getGSON();
+        this.manager = fragment.getLoaderManager();
+        this.gson = gson;
         this.applicationContext = applicationContext;
     }
 
@@ -121,11 +121,6 @@ public class ModernLoaderAdapter<T> implements Pipe<T>, LoaderManager.LoaderCall
         bundle.putSerializable(REMOVE_ID, toRemoveId);
         bundle.putSerializable(METHOD, Methods.REMOVE);
         manager.initLoader(id, bundle, this);
-    }
-
-    @Override
-    public void setAuthenticationModule(AuthenticationModule module) {
-        pipe.setAuthenticationModule(module);
     }
 
     @Override

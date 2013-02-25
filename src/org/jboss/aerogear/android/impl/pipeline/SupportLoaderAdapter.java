@@ -59,17 +59,17 @@ public class SupportLoaderAdapter<T> implements Pipe<T>, LoaderManager.LoaderCal
     private final LoaderManager manager;
     private final Gson gson;
 
-    public SupportLoaderAdapter(FragmentActivity activity, RestAdapter<T> pipe) {
+    public SupportLoaderAdapter(FragmentActivity activity, RestAdapter<T> pipe, Gson gson) {
         this.pipe = pipe;
-        gson = pipe.getGSON();
-        manager = activity.getSupportLoaderManager();
-        applicationContext = activity.getApplicationContext();
+        this.gson = gson;
+        this.manager = activity.getSupportLoaderManager();
+        this.applicationContext = activity.getApplicationContext();
     }
 
-    public SupportLoaderAdapter(Fragment fragment, Context applicationContext, RestAdapter<T> pipe) {
+    public SupportLoaderAdapter(Fragment fragment, Context applicationContext, RestAdapter<T> pipe, Gson gson) {
         this.pipe = pipe;
-        manager = fragment.getLoaderManager();
-        gson = pipe.getGSON();
+        this.manager = fragment.getLoaderManager();
+        this.gson = gson;
         this.applicationContext = applicationContext;
     }
 
@@ -121,11 +121,6 @@ public class SupportLoaderAdapter<T> implements Pipe<T>, LoaderManager.LoaderCal
         bundle.putSerializable(REMOVE_ID, toRemoveId);
         bundle.putSerializable(METHOD, Methods.REMOVE);
         manager.initLoader(id, bundle, this);
-    }
-
-    @Override
-    public void setAuthenticationModule(AuthenticationModule module) {
-        pipe.setAuthenticationModule(module);
     }
 
     @Override
