@@ -15,20 +15,12 @@
  */
 package org.jboss.aerogear.android.authentication.impl;
 
-import android.os.AsyncTask;
 import android.util.Log;
-import com.google.gson.JsonObject;
 import org.jboss.aerogear.android.Callback;
-import org.jboss.aerogear.android.Provider;
 import org.jboss.aerogear.android.authentication.AbstractAuthenticationModule;
 import org.jboss.aerogear.android.authentication.AuthenticationConfig;
 import org.jboss.aerogear.android.authentication.AuthorizationFields;
 import org.jboss.aerogear.android.http.HeaderAndBody;
-import org.jboss.aerogear.android.http.HttpProvider;
-import org.jboss.aerogear.android.impl.core.HttpProviderFactory;
-import org.json.JSONObject;
-
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
@@ -36,8 +28,6 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import org.jboss.aerogear.android.impl.pipeline.paging.DefaultParameterProvider;
-import org.jboss.aerogear.android.pipeline.paging.ParameterProvider;
 
 /**
  * A module for authenticating with restful AG services.
