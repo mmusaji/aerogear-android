@@ -63,22 +63,22 @@ public class ModernAuthenticationModuleAdapter implements AuthenticationModule, 
     
     @Override
     public URL getBaseURL() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return module.getBaseURL();
     }
 
     @Override
     public String getLoginEndpoint() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return module.getLoginEndpoint();
     }
 
     @Override
     public String getLogoutEndpoint() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return module.getLogoutEndpoint();
     }
 
     @Override
     public String getEnrollEndpoint() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return module.getEnrollEndpoint();
     }
 
     @Override
