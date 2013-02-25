@@ -116,12 +116,12 @@ public class ModernAuthenticationModuleAdapter implements AuthenticationModule, 
 
     @Override
     public boolean isLoggedIn() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return module.isLoggedIn();
     }
 
     @Override
     public AuthorizationFields getAuthorizationFields() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return module.getAuthorizationFields();
     }
 
     @Override
