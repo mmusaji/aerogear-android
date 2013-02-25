@@ -51,12 +51,12 @@ import org.jboss.aerogear.android.impl.reflection.Scan;
 import org.jboss.aerogear.android.impl.util.ParseException;
 import org.jboss.aerogear.android.impl.util.WebLinkParser;
 import org.jboss.aerogear.android.pipeline.Pipe;
+import org.jboss.aerogear.android.pipeline.PipeHandler;
 import org.jboss.aerogear.android.pipeline.paging.PageConfig;
 import org.jboss.aerogear.android.pipeline.paging.ParameterProvider;
 import org.json.JSONObject;
 
-
-public class RestRunner<T> {
+public class RestRunner<T> implements PipeHandler<T> {
 
     private final PageConfig pageConfig;
     private static final String TAG = RestRunner.class.getSimpleName();
@@ -121,7 +121,13 @@ public class RestRunner<T> {
         }
     }
 
-    public T save(T data) {
+    @Override
+    public List<T> onRead(Pipe<T> requestingPipe) {
+        return onReadWithFilter(new ReadFilter(), requestingPipe);
+    }
+
+    @Override
+    public T onSave(T data) {
 
         final String id;
         String recordIdFieldName = Scan.recordIdFieldNameIn(data.getClass());
@@ -141,7 +147,8 @@ public class RestRunner<T> {
         return gson.fromJson(new String(result.getBody(), encoding), klass);
     }
 
-    public List<T> readWithFilter(ReadFilter filter, Pipe<T> requestingPipe) {
+    @Override
+    public List<T> onReadWithFilter(ReadFilter filter, Pipe<T> requestingPipe) {
         List<T> result;
         HttpProvider httpProvider;
         
@@ -179,7 +186,8 @@ public class RestRunner<T> {
 
     }
 
-    public void remove(String id) {
+    @Override
+    public void onRemove(String id) {
         HttpProvider httpProvider = getHttpProvider();
         httpProvider.delete(id);
     }

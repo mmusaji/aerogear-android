@@ -42,7 +42,7 @@ public class ModernReadLoader<T> extends AbstractModernPipeLoader<List<T>> {
     @Override
     public List<T> loadInBackground() {
         try {
-            return (result = runner.readWithFilter(filter, requestingPipe));
+            return (result = runner.onReadWithFilter(filter, requestingPipe));
         } catch (Exception e) {
             super.exception = e;
         }

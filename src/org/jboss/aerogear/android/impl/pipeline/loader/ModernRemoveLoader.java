@@ -36,7 +36,7 @@ public class ModernRemoveLoader<T> extends AbstractModernPipeLoader<T> {
     @Override
     public T loadInBackground() {
         try {
-            runner.remove(id);
+            runner.onRemove(id);
             isFinished = true;
         } catch (Exception e) {
             super.exception = e;

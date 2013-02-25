@@ -46,7 +46,7 @@ public interface Pipe<T> {
     URL getUrl();
 
     /**
-     * Reads all the data from the underlying server connection.
+     * Sends a signal to the Pipe to read its data and return it via the callback.
      *
      * @param callback The callback for consuming the result from the {@link Pipe} invocation.
      */
@@ -59,7 +59,7 @@ public interface Pipe<T> {
      * @param filter a {@link ReadFilter} for performing pagination and querying.
      */
     void readWithFilter(ReadFilter filter, Callback<List<T>> callback);
-
+  
     /**
      * Saves or updates a given object on the server.
      *
@@ -67,7 +67,7 @@ public interface Pipe<T> {
      * @param callback The callback for consuming the result from the {@link Pipe} invocation.
      */
     void save(T item, Callback<T> callback);
-
+ 
     /**
      * Removes an object from the underlying server connection. The given key argument is used as the objects ID.
      *
@@ -75,7 +75,7 @@ public interface Pipe<T> {
      * @param callback The callback for consuming the result from the {@link Pipe} invocation.
      */
     void remove(String id, Callback<Void> callback);
-
+    
     /**
      * Sets the authentication module for the Pipe.
      * It should already be logged in.

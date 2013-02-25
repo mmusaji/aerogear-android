@@ -35,7 +35,7 @@ public class ModernSaveLoader<T> extends AbstractModernPipeLoader<T> {
     @Override
     public T loadInBackground() {
         try {
-            return (result = runner.save(data));
+            return (result = runner.onSave(data));
         } catch (Exception e) {
             super.exception = e;
         }
