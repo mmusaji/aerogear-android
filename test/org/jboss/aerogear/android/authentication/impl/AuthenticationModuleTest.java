@@ -17,6 +17,7 @@
 
 package org.jboss.aerogear.android.authentication.impl;
 
+import java.util.concurrent.CountDownLatch;
 import org.jboss.aerogear.android.Callback;
 import org.jboss.aerogear.android.http.HeaderAndBody;
 
@@ -41,14 +42,31 @@ public interface AuthenticationModuleTest {
         HeaderAndBody data;
         Exception exception;
 
+        CountDownLatch latch;
+        
+        public SimpleCallback() {
+        }
+        
+        public SimpleCallback(CountDownLatch latch) {
+            this.latch = latch;
+        }
+        
         @Override
         public void onSuccess(HeaderAndBody data) {
             this.data = data;
+            countdown();
         }
 
         @Override
         public void onFailure(Exception e) {
             this.exception = e;
+            countdown();
+        }
+        
+        private void countdown(){
+            if (latch != null) {
+                latch.countDown();
+            }
         }
     }
 
