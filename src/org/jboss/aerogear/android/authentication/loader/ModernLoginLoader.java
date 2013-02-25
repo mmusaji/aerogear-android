@@ -18,12 +18,22 @@ package org.jboss.aerogear.android.authentication.loader;
 
 import android.content.AsyncTaskLoader;
 import android.content.Context;
+import org.jboss.aerogear.android.Callback;
+import org.jboss.aerogear.android.authentication.AuthenticationModule;
 import org.jboss.aerogear.android.http.HeaderAndBody;
 
 public class ModernLoginLoader extends AsyncTaskLoader<HeaderAndBody> {
-
-    public ModernLoginLoader(Context context) {
-        super(context);
+    private final AuthenticationModule module;
+    private final Callback callback;
+    private final String username;
+    private final String password;
+    
+    ModernLoginLoader(Context applicationContext, Callback callback, AuthenticationModule module, String username, String password) {
+        super(applicationContext);
+        this.callback = callback;
+        this.module = module;
+        this.username = username;
+        this.password = password;
     }
 
     
