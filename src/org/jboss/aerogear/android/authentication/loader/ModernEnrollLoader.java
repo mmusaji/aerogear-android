@@ -16,23 +16,19 @@
  */
 package org.jboss.aerogear.android.authentication.loader;
 
-import android.content.AsyncTaskLoader;
 import android.content.Context;
 import java.util.Map;
 import org.jboss.aerogear.android.Callback;
 import org.jboss.aerogear.android.authentication.AuthenticationModule;
 import org.jboss.aerogear.android.http.HeaderAndBody;
 
-public class ModernEnrollLoader extends AsyncTaskLoader<HeaderAndBody> {
-    private final Map<String, String> params;
-    private final Callback callback;
-    private final AuthenticationModule module;
+public class ModernEnrollLoader extends AbstractModernAuthenticationLoader { 
 
-    ModernEnrollLoader(Context context, Callback callback, AuthenticationModule module, Map<String, String> params) {
-        super(context);
-        this.callback = callback;
+    private final Map<String, String> params;
+    
+    public ModernEnrollLoader(Context context, Callback callback, AuthenticationModule module, Map<String, String> params) {
+        super(context, module, callback);
         this.params = params;
-        this.module = module;
     }
 
     

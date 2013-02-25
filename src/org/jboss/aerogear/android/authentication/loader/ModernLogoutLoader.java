@@ -16,27 +16,21 @@
  */
 package org.jboss.aerogear.android.authentication.loader;
 
-import android.content.AsyncTaskLoader;
 import android.content.Context;
 import org.jboss.aerogear.android.Callback;
 import org.jboss.aerogear.android.authentication.AuthenticationModule;
 import org.jboss.aerogear.android.http.HeaderAndBody;
 
-public class ModernLogoutLoader extends AsyncTaskLoader<Void> {
-    private final Callback callback;
-    private final AuthenticationModule module;
+public class ModernLogoutLoader extends AbstractModernAuthenticationLoader {
 
-
-    ModernLogoutLoader(Context context, Callback callback, AuthenticationModule module) {
-        super(context);
-        this.callback = callback;
-        this.module = module;
+    public ModernLogoutLoader(Context context, Callback callback, AuthenticationModule module) {
+        super(context, module, callback);
     }
 
     
     
     @Override
-    public Void loadInBackground() {
+    public HeaderAndBody loadInBackground() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
     

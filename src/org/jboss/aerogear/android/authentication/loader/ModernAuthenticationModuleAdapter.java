@@ -23,7 +23,6 @@ import android.content.Context;
 import android.content.Loader;
 import android.os.Bundle;
 import com.google.common.base.Objects;
-import com.google.gson.Gson;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -31,8 +30,8 @@ import org.jboss.aerogear.android.Callback;
 import org.jboss.aerogear.android.authentication.AuthenticationModule;
 import org.jboss.aerogear.android.authentication.AuthorizationFields;
 import org.jboss.aerogear.android.http.HeaderAndBody;
-import org.jboss.aerogear.android.impl.pipeline.ModernLoaderAdapter;
-import org.jboss.aerogear.android.pipeline.Pipe;
+import org.jboss.aerogear.android.impl.pipeline.loader.ModernRemoveLoader;
+import org.jboss.aerogear.android.impl.pipeline.loader.ModernSaveLoader;
 
 public class ModernAuthenticationModuleAdapter implements AuthenticationModule, LoaderManager.LoaderCallbacks<HeaderAndBody>{
 
@@ -125,8 +124,28 @@ public class ModernAuthenticationModuleAdapter implements AuthenticationModule, 
     }
 
     @Override
-    public Loader<HeaderAndBody> onCreateLoader(int id, Bundle args) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public Loader<HeaderAndBody> onCreateLoader(int id, Bundle bundle) {
+        ModernAuthenticationModuleAdapter.Methods method = (ModernAuthenticationModuleAdapter.Methods) bundle.get(METHOD);
+        Callback callback = (Callback) bundle.get(CALLBACK);
+        Loader l = null;
+        switch (method) {
+            case LOGIN: {
+                String username = bundle.getString(USERNAME);
+                String password = bundle.getString(PASSWORD);
+                l = new ModernLoginLoader(applicationContext, callback, module, username, password);
+            }
+            break;
+            case LOGOUT: {
+                l = new ModernLogoutLoader(applicationContext, callback, module);
+            }
+            break;
+            case ENROLL: {
+                Map<String, String> params = (Map<String, String>) bundle.getSerializable(PARAMS);
+                l= new ModernEnrollLoader(applicationContext, callback, module, params);
+            }
+            break;
+        }
+        return l;
     }
 
     @Override
