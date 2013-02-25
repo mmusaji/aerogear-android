@@ -16,18 +16,51 @@
  */
 package org.jboss.aerogear.android.authentication.loader;
 
+import android.app.Activity;
+import android.app.Fragment;
 import android.app.LoaderManager;
+import android.content.Context;
 import android.content.Loader;
 import android.os.Bundle;
+import com.google.gson.Gson;
 import java.net.URL;
 import java.util.Map;
 import org.jboss.aerogear.android.Callback;
 import org.jboss.aerogear.android.authentication.AuthenticationModule;
 import org.jboss.aerogear.android.authentication.AuthorizationFields;
 import org.jboss.aerogear.android.http.HeaderAndBody;
+import org.jboss.aerogear.android.pipeline.Pipe;
 
 public class ModernAuthenticationModuleAdapter implements AuthenticationModule, LoaderManager.LoaderCallbacks<HeaderAndBody>{
 
+    private static final String TAG = ModernAuthenticationModuleAdapter.class.getSimpleName();
+    private static final String CALLBACK = "org.jboss.aerogear.android.authentication.loader.ModernAuthenticationModuleAdapter.CALLBACK";
+    private static final String METHOD = "org.jboss.aerogear.android.authentication.loader.ModernAuthenticationModuleAdapter.METHOD";
+    private static final String USERNAME = "org.jboss.aerogear.android.authentication.loader.ModernAuthenticationModuleAdapter.USERNAME";
+    private static final String PASSWORD = "org.jboss.aerogear.android.authentication.loader.ModernAuthenticationModuleAdapter.PASSWORD";
+    private static final String PARAMS = "org.jboss.aerogear.android.authentication.loader.ModernAuthenticationModuleAdapter.PARAMS";
+
+    
+    private static enum Methods {
+        LOGIN, LOGOUT, ENROLL
+    };
+    
+    private final Context applicationContext;
+    private final AuthenticationModule module;
+    private final LoaderManager manager;
+    
+    public ModernAuthenticationModuleAdapter(Activity activity, AuthenticationModule module) {
+        this.module = module;
+        this.manager = activity.getLoaderManager();
+        this.applicationContext = activity.getApplicationContext();
+    }
+
+    public ModernAuthenticationModuleAdapter(Fragment fragment, Context applicationContext, AuthenticationModule module) {
+        this.module = module;
+        this.manager = fragment.getLoaderManager();
+        this.applicationContext = applicationContext;
+    }
+    
     @Override
     public URL getBaseURL() {
         throw new UnsupportedOperationException("Not supported yet.");
