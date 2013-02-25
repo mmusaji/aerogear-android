@@ -21,6 +21,7 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
 import android.support.v4.app.FragmentActivity;
+import com.google.gson.GsonBuilder;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
@@ -46,6 +47,7 @@ public class Pipeline {
 
     private final URL baseURL;
     private final Map<String, Pipe> pipes = new HashMap<String, Pipe>();
+    
     /**
      * This is the factory which will create all pipe types. If not provided in
      * a constructor, it defaults to an instance of {@link DefaultPipeFactory}
@@ -136,14 +138,11 @@ public class Pipeline {
      * @param activity the activity whose lifecycle the loader will follow
      * @return the new created Pipe object
      * 
-     * @throws IllegalStateException if the named pipe is not an instance of RestAdapter
      */
     public Pipe get(String name, Activity activity) {
         Pipe pipe = pipes.get(name);
-        if (pipe != null && pipe instanceof RestAdapter) {
-            return new ModernLoaderAdapter(activity, (RestAdapter)pipes.get(name));
-        }
-        throw new IllegalArgumentException(String.format("The pipe named %s is not an instance of RestAdapter", name));
+        return new ModernLoaderAdapter(activity, pipe, pipe.getGson());
+        
     }
     
     /**
@@ -155,15 +154,11 @@ public class Pipeline {
      * 
      * @return the new created Pipe object
      * 
-     * @throws IllegalStateException if the named pipe is not an instance of RestAdapter
      */
     public Pipe get(String name, Fragment fragment, Context applicationContext) {
         Pipe pipe = pipes.get(name);
+        return new ModernLoaderAdapter(fragment, applicationContext, pipe, pipe.getGson());
         
-        if (pipe != null && pipe instanceof RestAdapter) {
-            return new ModernLoaderAdapter(fragment, applicationContext, (RestAdapter)pipes.get(name));
-        }
-        throw new IllegalArgumentException(String.format("The pipe named %s is not an instance of RestAdapter", name));
     }
     
     /**
@@ -177,10 +172,7 @@ public class Pipeline {
      */
     public Pipe get(String name, FragmentActivity activity) {
         Pipe pipe = pipes.get(name);
-        if (pipe != null && pipe instanceof RestAdapter) {
-            return new SupportLoaderAdapter(activity, (RestAdapter)pipes.get(name));
-        }
-        throw new IllegalArgumentException(String.format("The pipe named %s is not an instance of RestAdapter", name));
+        return new SupportLoaderAdapter(activity, pipe, pipe.getGson());
     }
     
     /**
@@ -196,10 +188,6 @@ public class Pipeline {
      */
     public Pipe get(String name, android.support.v4.app.Fragment fragment, Context applicationContext) {
         Pipe pipe = pipes.get(name);
-        
-        if (pipe != null && pipe instanceof RestAdapter) {
-            return new SupportLoaderAdapter(fragment, applicationContext, (RestAdapter)pipes.get(name));
-        }
-        throw new IllegalArgumentException(String.format("The pipe named %s is not an instance of RestAdapter", name));
+        return new SupportLoaderAdapter(fragment, applicationContext, pipe, pipe.getGson());
     }
 }

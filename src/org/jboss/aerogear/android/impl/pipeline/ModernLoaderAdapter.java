@@ -29,7 +29,6 @@ import java.net.URL;
 import java.util.List;
 import org.jboss.aerogear.android.Callback;
 import org.jboss.aerogear.android.ReadFilter;
-import org.jboss.aerogear.android.authentication.AuthenticationModule;
 import org.jboss.aerogear.android.impl.pipeline.loader.AbstractModernPipeLoader;
 import org.jboss.aerogear.android.impl.pipeline.loader.ModernReadLoader;
 import org.jboss.aerogear.android.impl.pipeline.loader.ModernRemoveLoader;
@@ -55,18 +54,18 @@ public class ModernLoaderAdapter<T> implements Pipe<T>, LoaderManager.LoaderCall
         READ, SAVE, REMOVE
     };
     private final Context applicationContext;
-    private final RestAdapter<T> pipe;
+    private final Pipe<T> pipe;
     private final LoaderManager manager;
     private final Gson gson;
 
-    public ModernLoaderAdapter(Activity activity, RestAdapter<T> pipe, Gson gson) {
+    public ModernLoaderAdapter(Activity activity, Pipe<T> pipe, Gson gson) {
         this.pipe = pipe;
         this.gson = gson;
         this.manager = activity.getLoaderManager();
         this.applicationContext = activity.getApplicationContext();
     }
 
-    public ModernLoaderAdapter(Fragment fragment, Context applicationContext, RestAdapter<T> pipe, Gson gson) {
+    public ModernLoaderAdapter(Fragment fragment, Context applicationContext, Pipe<T> pipe, Gson gson) {
         this.pipe = pipe;
         this.manager = fragment.getLoaderManager();
         this.gson = gson;
@@ -126,6 +125,16 @@ public class ModernLoaderAdapter<T> implements Pipe<T>, LoaderManager.LoaderCall
     @Override
     public PipeHandler<T> getHandler() {
         return pipe.getHandler();
+    }
+    
+    @Override
+    public Gson getGson() {
+        return gson;
+    }
+    
+    @Override
+    public Class<T> getKlass() {
+        return pipe.getKlass();
     }
     
     @Override

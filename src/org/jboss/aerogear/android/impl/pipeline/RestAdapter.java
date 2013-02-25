@@ -19,6 +19,8 @@ import org.jboss.aerogear.android.impl.pipeline.paging.DefaultParameterProvider;
 import org.jboss.aerogear.android.impl.pipeline.paging.URIPageHeaderParser;
 import org.jboss.aerogear.android.impl.pipeline.paging.URIBodyPageParser;
 import android.util.Log;
+import com.google.common.base.Objects;
+import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import java.net.URL;
 import org.jboss.aerogear.android.Callback;
@@ -61,18 +63,20 @@ public final class RestAdapter<T> implements Pipe<T> {
      */
     private final URL baseURL;
     private final PipeHandler<T> restRunner;
+    private final Gson gson;
 
     public RestAdapter(Class<T> klass, URL baseURL) {
         this.restRunner = new RestRunner(klass, baseURL);
         this.klass = klass;
-
+        this.gson = new Gson();
         this.baseURL = baseURL;
     }
 
     public RestAdapter(Class<T> klass, URL baseURL, PipeConfig config) {
         this.klass = klass;
         this.baseURL = baseURL;
-
+        this.gson = Objects.firstNonNull(config.getGsonBuilder(), new GsonBuilder()).create();
+        
         if (config.getHandler() != null) {
             this.restRunner = config.getHandler();
         } else {
@@ -191,7 +195,13 @@ public final class RestAdapter<T> implements Pipe<T> {
         return restRunner;
     }
 
-    protected Class<T> getKlass() {
+    @Override
+    public Class<T> getKlass() {
         return klass;
+    }
+
+    @Override
+    public Gson getGson() {
+        return gson;
     }
 }

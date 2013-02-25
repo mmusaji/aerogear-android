@@ -17,6 +17,7 @@
 
 package org.jboss.aerogear.android.pipeline;
 
+import com.google.gson.Gson;
 import java.net.URL;
 import java.util.List;
 import org.jboss.aerogear.android.Callback;
@@ -76,6 +77,22 @@ public interface Pipe<T> {
      */
     void remove(String id, Callback<Void> callback);
     
+    /**
+     * Returns the GSON serializer used to serialized instances of objects.
+     * 
+     * @return 
+     */
+    Gson getGson();
+    
+    /**
+     * @return the class which travels on this pipe
+     */
+    Class<T> getKlass();
+    
+    /**
+     * Returns the instance which is responsible for handling read, save, and remove.
+     * @return 
+     */
     PipeHandler<T> getHandler();
     
 }
