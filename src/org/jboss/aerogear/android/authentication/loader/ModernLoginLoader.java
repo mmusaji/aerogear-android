@@ -17,12 +17,17 @@
 package org.jboss.aerogear.android.authentication.loader;
 
 import android.content.Context;
+import android.util.Log;
+import java.util.concurrent.CountDownLatch;
 import org.jboss.aerogear.android.Callback;
 import org.jboss.aerogear.android.authentication.AuthenticationModule;
 import org.jboss.aerogear.android.http.HeaderAndBody;
 
 public class ModernLoginLoader extends AbstractModernAuthenticationLoader {
+    
+    private static final String TAG = ModernLoginLoader.class.getSimpleName();
 
+    private HeaderAndBody result = null;
     private final String username;
     private final String password;
     
@@ -36,7 +41,38 @@ public class ModernLoginLoader extends AbstractModernAuthenticationLoader {
     
     @Override
     public HeaderAndBody loadInBackground() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        final CountDownLatch latch = new CountDownLatch(1);
+        module.login(username, password, new Callback<HeaderAndBody>() {
+
+            @Override
+            public void onSuccess(HeaderAndBody data) {
+                result = data;
+                latch.countDown();
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                ModernLoginLoader.super.setException(e);
+                latch.countDown();
+            }
+        });
+        
+        try {
+            latch.await();
+        } catch (InterruptedException ex) {
+            Log.e(TAG, ex.getMessage(), ex);
+        }
+        
+        return result;
+    }
+    
+    @Override
+    protected void onStartLoading() {
+        if (!module.isLoggedIn() && result == null) {
+            forceLoad();
+        } else {
+            deliverResult(result);
+        }
     }
     
 }
