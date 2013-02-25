@@ -31,23 +31,10 @@ public final class DefaultPipeFactory implements PipeFactory {
         if (PipeTypes.REST.equals(config.getType())) {
             URL url = appendEndpoint(config.getBaseURL(), config.getEndpoint());
 
-            if (config.getGsonBuilder() != null) {
-                createdPipe = new RestAdapter<T>(klass, url, config.getGsonBuilder(), config.getPageConfig());
-            } else {
-                createdPipe = new RestAdapter<T>(klass, url, config.getPageConfig());
-            }
-
-            ((RestAdapter<T>) createdPipe).setEncoding(config.getEncoding());
-            ((RestAdapter<T>) createdPipe).setDataRoot(config.getDataRoot());
-            if (config.getPageConfig() != null && config.getPageConfig().getParameterProvider() != null) {
-                ((RestAdapter<T>) createdPipe).setParameterProvider(config.getPageConfig().getParameterProvider());
-            }
+            createdPipe = new RestAdapter<T>(klass, url, config);
+            
         } else {
             throw new IllegalArgumentException("Type is not supported yet");
-        }
-
-        if (config.getAuthModule() != null) {
-            createdPipe.setAuthenticationModule(config.getAuthModule());
         }
 
         return createdPipe;

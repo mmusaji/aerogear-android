@@ -57,12 +57,12 @@ import org.jboss.aerogear.android.pipeline.paging.ParameterProvider;
 import org.json.JSONObject;
 
 public class RestRunner<T> implements PipeHandler<T> {
-
+    
     private final PageConfig pageConfig;
     private static final String TAG = RestRunner.class.getSimpleName();
     private final Gson gson;
-    private String dataRoot = "";
-    private ParameterProvider parameterProvider = new DefaultParameterProvider();
+    private final String dataRoot;
+    private final ParameterProvider parameterProvider;
     /**
      * A class of the Generic type this pipe wraps. This is used by GSON for
      * deserializing.
@@ -77,83 +77,102 @@ public class RestRunner<T> implements PipeHandler<T> {
     private final Provider<HttpProvider> httpProviderFactory = new HttpProviderFactory();
     private AuthenticationModule authModule;
     private Charset encoding = Charset.forName("UTF-8");
-
+    
     public RestRunner(Class<T> klass, URL baseURL) {
         this.klass = klass;
         this.arrayKlass = asArrayClass(klass);
         this.baseURL = baseURL;
+        this.dataRoot = "";
         this.gson = new Gson();
         this.pageConfig = null;
+        this.parameterProvider = new DefaultParameterProvider();
     }
-
+    
     public RestRunner(Class<T> klass, URL baseURL,
-            GsonBuilder gsonBuilder) {
+            PipeConfig config) {
         this.klass = klass;
         this.arrayKlass = asArrayClass(klass);
         this.baseURL = baseURL;
-        this.gson = gsonBuilder.create();
-        this.pageConfig = null;
-    }
-
-    public RestRunner(Class<T> klass, URL baseURL, PageConfig pageconfig) {
-        this.klass = klass;
-        this.arrayKlass = asArrayClass(klass);
-        this.baseURL = baseURL;
-        this.gson = new Gson();
-        this.pageConfig = pageconfig;
-    }
-
-    public RestRunner(Class<T> klass, URL baseURL,
-            GsonBuilder gsonBuilder, PageConfig pageconfig) {
-        this.klass = klass;
-        this.arrayKlass = asArrayClass(klass);
-        this.baseURL = baseURL;
-        this.gson = gsonBuilder.create();
-        this.pageConfig = pageconfig;
-        if (pageconfig != null) {
-            if (pageconfig.getPageHeaderParser() == null) {
-                if (PageConfig.MetadataLocations.BODY.equals(pageconfig.getMetadataLocation())) {
-                    pageconfig.setPageHeaderParser(new URIBodyPageParser(baseURL));
-                } else if (PageConfig.MetadataLocations.HEADERS.equals(pageconfig.getMetadataLocation())) {
-                    pageconfig.setPageHeaderParser(new URIPageHeaderParser(baseURL));
-                }
-            }
+        
+        if (config.getGsonBuilder() != null) {
+            this.gson = config.getGsonBuilder().create();
+        } else {
+            this.gson = new Gson();            
         }
+        
+        if (config.getEncoding() != null) {
+            this.encoding = config.getEncoding();
+        } else {
+            this.encoding = Charset.forName("UTF-8");
+        }
+        
+        if (config.getDataRoot() != null) {
+            this.dataRoot = config.getDataRoot();
+        } else {
+            this.dataRoot = "";
+        }
+        
+        if (config.getPageConfig() != null) {
+            this.pageConfig = config.getPageConfig();
+            
+            if (pageConfig.getParameterProvider() != null) {
+                this.parameterProvider = pageConfig.getParameterProvider();
+            } else {
+                this.parameterProvider = new DefaultParameterProvider();
+            }
+            
+            if (pageConfig.getPageHeaderParser() == null) {
+                if (PageConfig.MetadataLocations.BODY.equals(pageConfig.getMetadataLocation())) {
+                    pageConfig.setPageHeaderParser(new URIBodyPageParser(baseURL));
+                } else if (PageConfig.MetadataLocations.HEADERS.equals(pageConfig.getMetadataLocation())) {
+                    pageConfig.setPageHeaderParser(new URIPageHeaderParser(baseURL));
+                }                
+            }
+            
+        } else {
+            this.pageConfig = null;
+            this.parameterProvider = null;
+        }
+        
+        if (config.getAuthModule() != null) {
+            this.authModule = config.getAuthModule();
+        }
+        
     }
-
+    
     @Override
     public List<T> onRead(Pipe<T> requestingPipe) {
         return onReadWithFilter(new ReadFilter(), requestingPipe);
     }
-
+    
     @Override
     public T onSave(T data) {
-
+        
         final String id;
         String recordIdFieldName = Scan.recordIdFieldNameIn(data.getClass());
         Object idObject = new Property(data.getClass(), recordIdFieldName).getValue(data);
         id = idObject == null ? null : idObject.toString();
-
+        
         String body = gson.toJson(data);
         final HttpProvider httpProvider = getHttpProvider();
-
+        
         HeaderAndBody result;
         if (id == null || id.length() == 0) {
             result = httpProvider.post(body);
         } else {
             result = httpProvider.put(id, body);
         }
-
+        
         return gson.fromJson(new String(result.getBody(), encoding), klass);
     }
-
+    
     @Override
     public List<T> onReadWithFilter(ReadFilter filter, Pipe<T> requestingPipe) {
         List<T> result;
         HttpProvider httpProvider;
         
         if (filter == null) {
-        	filter = new ReadFilter();
+            filter = new ReadFilter();
         }
         
         if (filter.getLinkUri() == null) {
@@ -183,9 +202,9 @@ public class RestRunner<T> implements PipeHandler<T> {
             }
         }
         return result;
-
+        
     }
-
+    
     @Override
     public void onRemove(String id) {
         HttpProvider httpProvider = getHttpProvider();
@@ -209,9 +228,9 @@ public class RestRunner<T> implements PipeHandler<T> {
      * @return a url with query params added
      */
     private URL addAuthorization(List<Pair<String, String>> queryParameters, URL baseURL) {
-
+        
         StringBuilder queryBuilder = new StringBuilder();
-
+        
         String amp = "";
         for (Pair<String, String> parameter : queryParameters) {
             try {
@@ -219,38 +238,38 @@ public class RestRunner<T> implements PipeHandler<T> {
                         .append(URLEncoder.encode(parameter.first, "UTF-8"))
                         .append("=")
                         .append(URLEncoder.encode(parameter.second, "UTF-8"));
-
+                
                 amp = "&";
             } catch (UnsupportedEncodingException ex) {
                 Log.e(TAG, "UTF-8 encoding is not supported.", ex);
                 throw new RuntimeException(ex);
-
+                
             }
         }
-
+        
         return appendQuery(queryBuilder.toString(), baseURL);
-
+        
     }
-
+    
     private void addAuthHeaders(HttpProvider httpProvider, AuthorizationFields fields) {
         List<Pair<String, String>> authHeaders = fields.getHeaders();
-
+        
         for (Pair<String, String> header : authHeaders) {
             httpProvider.setDefaultHeader(header.first, header.second);
         }
-
+        
     }
-
+    
     private HttpProvider getHttpProvider() {
         return getHttpProvider(URI.create(""));
     }
-
+    
     private HttpProvider getHttpProvider(URI relativeUri) {
         try {
             AuthorizationFields fields = loadAuth();
-
+            
             URL authorizedURL = addAuthorization(fields.getQueryParameters(), URIUtils.resolve(baseURL.toURI(), relativeUri).toURL());
-
+            
             final HttpProvider httpProvider = httpProviderFactory.get(authorizedURL);
             addAuthHeaders(httpProvider, fields);
             return httpProvider;
@@ -267,11 +286,11 @@ public class RestRunner<T> implements PipeHandler<T> {
      * Apply authentication if the token is present
      */
     private AuthorizationFields loadAuth() {
-
+        
         if (authModule != null && authModule.isLoggedIn()) {
             return authModule.getAuthorizationFields();
         }
-
+        
         return new AuthorizationFields();
     }
 
@@ -288,7 +307,7 @@ public class RestRunner<T> implements PipeHandler<T> {
     private List<T> computePagedList(List<T> result, HeaderAndBody httpResponse, JSONObject where, Pipe<T> requestingPipe) {
         ReadFilter previousRead = null;
         ReadFilter nextRead = null;
-
+        
         if (PageConfig.MetadataLocations.WEB_LINKING.equals(pageConfig.getMetadataLocation())) {
             String webLinksRaw = "";
             final String relHeader = "rel";
@@ -308,7 +327,7 @@ public class RestRunner<T> implements PipeHandler<T> {
                         previousRead = new ReadFilter();
                         previousRead.setLinkUri(new URI(link.getUri()));
                     }
-
+                    
                 }
             } catch (URISyntaxException ex) {
                 Log.e(TAG, webLinksRaw + " did not contain a valid context URI", ex);
@@ -329,14 +348,14 @@ public class RestRunner<T> implements PipeHandler<T> {
         if (nextRead != null) {
             nextRead.setWhere(where);
         }
-
+        
         if (previousRead != null) {
             previousRead.setWhere(where);
         }
-
+        
         return new WrappingPagedList<T>(requestingPipe, result, nextRead, previousRead);
     }
-
+    
     private String getWebLinkHeader(HeaderAndBody httpResponse) {
         String linkHeaderName = "Link";
         Object header = httpResponse.getHeader(linkHeaderName);
@@ -345,11 +364,11 @@ public class RestRunner<T> implements PipeHandler<T> {
         }
         return null;
     }
-
+    
     public void setAuthenticationModule(AuthenticationModule module) {
         this.authModule = module;
     }
-
+    
     private URL appendQuery(String query, URL baseURL) {
         try {
             URI baseURI = baseURL.toURI();
@@ -361,7 +380,7 @@ public class RestRunner<T> implements PipeHandler<T> {
                     baseQuery = baseQuery + "&" + query;
                 }
             }
-
+            
             return new URI(baseURI.getScheme(), baseURI.getUserInfo(), baseURI.getHost(), baseURI.getPort(), baseURI.getPath(), baseQuery, baseURI.getFragment()).toURL();
         } catch (MalformedURLException ex) {
             Log.e(TAG, "The URL could not be created from " + baseURL.toString(), ex);
@@ -371,7 +390,7 @@ public class RestRunner<T> implements PipeHandler<T> {
             throw new RuntimeException(ex);
         }
     }
-
+    
     private JsonElement getResultElement(JsonElement element, String dataRoot) {
         String[] identifiers = dataRoot.split("\\.");
         for (String identifier : identifiers) {
@@ -384,21 +403,16 @@ public class RestRunner<T> implements PipeHandler<T> {
         }
         return element;
     }
-
+    
     void setEncoding(Charset encoding) {
         this.encoding = encoding;
     }
-
+    
     public String getDataRoot() {
         return dataRoot;
     }
-
-    public void setDataRoot(String dataRoot) {
-        this.dataRoot = dataRoot;
-    }
-
+    
     protected Gson getGSON() {
         return gson;
     }
-    
 }

@@ -69,36 +69,16 @@ public final class RestAdapter<T> implements Pipe<T> {
         this.baseURL = baseURL;
     }
 
-    public RestAdapter(Class<T> klass, URL baseURL,
-            GsonBuilder gsonBuilder) {
-        this.restRunner = new RestRunner(klass, baseURL, gsonBuilder);
+    public RestAdapter(Class<T> klass, URL baseURL, PipeConfig config) {
         this.klass = klass;
-
         this.baseURL = baseURL;
-    }
 
-    public RestAdapter(Class<T> klass, URL baseURL, PageConfig pageconfig) {
-        this.restRunner = new RestRunner(klass, baseURL, pageconfig);
-        this.klass = klass;
-
-        this.baseURL = baseURL;
-    }
-
-    public RestAdapter(Class<T> klass, URL baseURL,
-            GsonBuilder gsonBuilder, PageConfig pageconfig) {
-        this.restRunner = new RestRunner(klass, baseURL, gsonBuilder, pageconfig);
-        this.klass = klass;
-
-        this.baseURL = baseURL;
-        if (pageconfig != null) {
-            if (pageconfig.getPageHeaderParser() == null) {
-                if (PageConfig.MetadataLocations.BODY.equals(pageconfig.getMetadataLocation())) {
-                    pageconfig.setPageHeaderParser(new URIBodyPageParser(baseURL));
-                } else if (PageConfig.MetadataLocations.HEADERS.equals(pageconfig.getMetadataLocation())) {
-                    pageconfig.setPageHeaderParser(new URIPageHeaderParser(baseURL));
-                }
-            }
+        if (config.getHandler() != null) {
+            this.restRunner = config.getHandler();
+        } else {
+            this.restRunner = new RestRunner(klass, baseURL, config);
         }
+
     }
 
     /**
@@ -206,16 +186,12 @@ public final class RestAdapter<T> implements Pipe<T> {
 
     }
 
-
-
     @Override
     public PipeHandler getHandler() {
         return restRunner;
     }
-    
+
     protected Class<T> getKlass() {
         return klass;
     }
-
-    
 }
