@@ -21,7 +21,9 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
 import android.support.v4.app.FragmentActivity;
-import com.google.gson.GsonBuilder;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.MapMaker;
+import com.google.common.collect.Multimap;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
@@ -29,8 +31,8 @@ import java.util.Map;
 import org.jboss.aerogear.android.impl.pipeline.DefaultPipeFactory;
 import org.jboss.aerogear.android.impl.pipeline.ModernLoaderAdapter;
 import org.jboss.aerogear.android.impl.pipeline.PipeConfig;
-import org.jboss.aerogear.android.impl.pipeline.RestAdapter;
 import org.jboss.aerogear.android.impl.pipeline.SupportLoaderAdapter;
+import org.jboss.aerogear.android.pipeline.LoaderPipe;
 import org.jboss.aerogear.android.pipeline.Pipe;
 import org.jboss.aerogear.android.pipeline.PipeFactory;
 
@@ -47,6 +49,7 @@ public class Pipeline {
 
     private final URL baseURL;
     private final Map<String, Pipe> pipes = new HashMap<String, Pipe>();
+    private final Multimap<String, Integer> loaderIdsForNamed = HashMultimap.create();
     
     /**
      * This is the factory which will create all pipe types. If not provided in
@@ -139,10 +142,11 @@ public class Pipeline {
      * @return the new created Pipe object
      * 
      */
-    public Pipe get(String name, Activity activity) {
+    public LoaderPipe get(String name, Activity activity) {
         Pipe pipe = pipes.get(name);
-        return new ModernLoaderAdapter(activity, pipe, pipe.getGson());
-        
+        ModernLoaderAdapter adapter = new ModernLoaderAdapter(activity, pipe, pipe.getGson(), name);
+        adapter.setLoaderIds(loaderIdsForNamed);
+        return adapter;
     }
     
     /**
@@ -155,10 +159,11 @@ public class Pipeline {
      * @return the new created Pipe object
      * 
      */
-    public Pipe get(String name, Fragment fragment, Context applicationContext) {
+    public LoaderPipe get(String name, Fragment fragment, Context applicationContext) {
         Pipe pipe = pipes.get(name);
-        return new ModernLoaderAdapter(fragment, applicationContext, pipe, pipe.getGson());
-        
+        ModernLoaderAdapter adapter = new ModernLoaderAdapter(fragment, applicationContext, pipe, pipe.getGson(), name);
+        adapter.setLoaderIds(loaderIdsForNamed);
+        return adapter;
     }
     
     /**
@@ -170,9 +175,11 @@ public class Pipeline {
      * 
      * @throws IllegalStateException if the named pipe is not an instance of RestAdapter
      */
-    public Pipe get(String name, FragmentActivity activity) {
+    public LoaderPipe get(String name, FragmentActivity activity) {
         Pipe pipe = pipes.get(name);
-        return new SupportLoaderAdapter(activity, pipe, pipe.getGson());
+        SupportLoaderAdapter adapter = new SupportLoaderAdapter(activity, pipe, pipe.getGson(), name);
+        adapter.setLoaderIds(loaderIdsForNamed);
+        return adapter;
     }
     
     /**
@@ -186,8 +193,10 @@ public class Pipeline {
      * 
      * @throws IllegalStateException if the named pipe is not an instance of RestAdapter
      */
-    public Pipe get(String name, android.support.v4.app.Fragment fragment, Context applicationContext) {
+    public LoaderPipe get(String name, android.support.v4.app.Fragment fragment, Context applicationContext) {
         Pipe pipe = pipes.get(name);
-        return new SupportLoaderAdapter(fragment, applicationContext, pipe, pipe.getGson());
+        LoaderPipe adapter = new SupportLoaderAdapter(fragment, applicationContext, pipe, pipe.getGson(), name);
+        adapter.setLoaderIds(loaderIdsForNamed);
+        return adapter;
     }
 }

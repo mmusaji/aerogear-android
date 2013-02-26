@@ -101,7 +101,7 @@ public class ModernLoaderAdapterTest {
         
         Activity activity = new StubActivity();
         
-        ModernLoaderAdapter<RestAdapterTest.ListClassId> adapter = new ModernLoaderAdapter<RestAdapterTest.ListClassId>(activity, restPipe, builder.create());
+        ModernLoaderAdapter<RestAdapterTest.ListClassId> adapter = new ModernLoaderAdapter<RestAdapterTest.ListClassId>(activity, restPipe, builder.create(), "");
         
         List<RestAdapterTest.ListClassId> result = runRead(adapter);
 
@@ -177,7 +177,7 @@ public class ModernLoaderAdapterTest {
 
         StubActivity stubActivity = new StubActivity();
         stubActivity.onCreate(null);
-        ModernLoaderAdapter<Data> adapter = new ModernLoaderAdapter<Data>(stubActivity, pipe, pipe.getGson());
+        ModernLoaderAdapter<Data> adapter = new ModernLoaderAdapter<Data>(stubActivity, pipe, pipe.getGson(), "");
         
         adapter.readWithFilter(filter, new Callback<List<Data>>() {
             @Override

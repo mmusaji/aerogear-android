@@ -24,15 +24,19 @@ import android.content.Loader;
 import android.os.Bundle;
 import android.util.Log;
 import com.google.common.base.Objects;
+import com.google.common.collect.Multimap;
 import com.google.gson.Gson;
 import java.net.URL;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import org.jboss.aerogear.android.Callback;
 import org.jboss.aerogear.android.ReadFilter;
 import org.jboss.aerogear.android.impl.pipeline.loader.AbstractModernPipeLoader;
 import org.jboss.aerogear.android.impl.pipeline.loader.ModernReadLoader;
 import org.jboss.aerogear.android.impl.pipeline.loader.ModernRemoveLoader;
 import org.jboss.aerogear.android.impl.pipeline.loader.ModernSaveLoader;
+import org.jboss.aerogear.android.pipeline.LoaderPipe;
 import org.jboss.aerogear.android.pipeline.Pipe;
 import org.jboss.aerogear.android.pipeline.PipeHandler;
 import org.jboss.aerogear.android.pipeline.PipeType;
@@ -40,14 +44,15 @@ import org.jboss.aerogear.android.pipeline.PipeType;
 /**
  * This class wraps a Store in an asynchronous Loader.
  */
-public class ModernLoaderAdapter<T> implements Pipe<T>, LoaderManager.LoaderCallbacks<T> {
-    
+public class ModernLoaderAdapter<T> implements LoaderPipe<T>, LoaderManager.LoaderCallbacks<T> {
+
     private static final String TAG = ModernLoaderAdapter.class.getSimpleName();
     private static final String CALLBACK = "org.jboss.aerogear.android.impl.pipeline.ModernClassLoader.CALLBACK";
     private static final String METHOD = "org.jboss.aerogear.android.impl.pipeline.ModernClassLoader.METHOD";
     private static final String FILTER = "org.jboss.aerogear.android.impl.pipeline.ModernClassLoader.FILTER";
     private static final String ITEM = "org.jboss.aerogear.android.impl.pipeline.ModernClassLoader.ITEM";
     private static final String REMOVE_ID = "org.jboss.aerogear.android.impl.pipeline.ModernClassLoader.REMOVIE_ID";
+    private Multimap<String, Integer> idsForNamedPipes;
 
     private static enum Methods {
 
@@ -57,19 +62,22 @@ public class ModernLoaderAdapter<T> implements Pipe<T>, LoaderManager.LoaderCall
     private final Pipe<T> pipe;
     private final LoaderManager manager;
     private final Gson gson;
-
-    public ModernLoaderAdapter(Activity activity, Pipe<T> pipe, Gson gson) {
+    private final String name;
+    
+    public ModernLoaderAdapter(Activity activity, Pipe<T> pipe, Gson gson, String name) {
         this.pipe = pipe;
         this.gson = gson;
         this.manager = activity.getLoaderManager();
         this.applicationContext = activity.getApplicationContext();
+        this.name = name;
     }
 
-    public ModernLoaderAdapter(Fragment fragment, Context applicationContext, Pipe<T> pipe, Gson gson) {
+    public ModernLoaderAdapter(Fragment fragment, Context applicationContext, Pipe<T> pipe, Gson gson, String name) {
         this.pipe = pipe;
         this.manager = fragment.getLoaderManager();
         this.gson = gson;
         this.applicationContext = applicationContext;
+        this.name = name;
     }
 
     @Override
@@ -126,19 +134,20 @@ public class ModernLoaderAdapter<T> implements Pipe<T>, LoaderManager.LoaderCall
     public PipeHandler<T> getHandler() {
         return pipe.getHandler();
     }
-    
+
     @Override
     public Gson getGson() {
         return gson;
     }
-    
+
     @Override
     public Class<T> getKlass() {
         return pipe.getKlass();
     }
-    
+
     @Override
     public Loader<T> onCreateLoader(int id, Bundle bundle) {
+        this.idsForNamedPipes.put(name, id);
         Methods method = (Methods) bundle.get(METHOD);
         Callback callback = (Callback) bundle.get(CALLBACK);
         Loader l = null;
@@ -156,7 +165,7 @@ public class ModernLoaderAdapter<T> implements Pipe<T>, LoaderManager.LoaderCall
             case SAVE: {
                 String json = bundle.getString(ITEM);
                 T item = gson.fromJson(json, pipe.getKlass());
-                l= new ModernSaveLoader(applicationContext, callback, pipe.getHandler(), item);
+                l = new ModernSaveLoader(applicationContext, callback, pipe.getHandler(), item);
             }
             break;
         }
@@ -171,8 +180,8 @@ public class ModernLoaderAdapter<T> implements Pipe<T>, LoaderManager.LoaderCall
         } else {
             AbstractModernPipeLoader<T> modernLoader = (AbstractModernPipeLoader<T>) loader;
             if (modernLoader.hasException()) {
-            	Exception exception = modernLoader.getException();
-            	Log.e(TAG, exception.getMessage(), exception);
+                Exception exception = modernLoader.getException();
+                Log.e(TAG, exception.getMessage(), exception);
                 modernLoader.callback.onFailure(exception);
             } else {
                 modernLoader.callback.onSuccess(data);
@@ -184,4 +193,21 @@ public class ModernLoaderAdapter<T> implements Pipe<T>, LoaderManager.LoaderCall
     public void onLoaderReset(Loader<T> loader) {
         //Gotta do something, though I don't know what
     }
+
+    @Override
+    public void reset() {
+        for (Integer id : idsForNamedPipes.get(name)) {
+            Loader l = manager.getLoader(id);
+            if (l != null) {
+                manager.destroyLoader(id);
+            }
+        }
+        idsForNamedPipes.removeAll(name);
+    }
+    
+    @Override
+    public void setLoaderIds(Multimap<String, Integer> idsForNamedPipes) {
+        this.idsForNamedPipes = idsForNamedPipes;
+    }
+    
 }
