@@ -169,7 +169,7 @@ public class ModernLoaderAdapter<T> implements Pipe<T>, LoaderManager.LoaderCall
             Log.e(TAG, "Adapter is listening to loaders which it doesn't support");
             throw new IllegalStateException("Adapter is listening to loaders which it doesn't support");
         } else {
-            AbstractModernPipeLoader modernLoader = (AbstractModernPipeLoader) loader;
+            AbstractModernPipeLoader<T> modernLoader = (AbstractModernPipeLoader<T>) loader;
             if (modernLoader.hasException()) {
             	Exception exception = modernLoader.getException();
             	Log.e(TAG, exception.getMessage(), exception);
