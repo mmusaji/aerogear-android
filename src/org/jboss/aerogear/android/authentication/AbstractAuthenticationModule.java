@@ -51,19 +51,19 @@ public abstract class AbstractAuthenticationModule implements
     @Override
     public void enroll(Map<String, String> userData,
             final Callback<HeaderAndBody> callback) {
-        callback.onSuccess(null);
+        callback.onFailure(new IllegalStateException("Not implemented"));
     }
 
     @Override
     public void login(final String username, final String password,
             final Callback<HeaderAndBody> callback) {
-        callback.onSuccess(null);
+        callback.onFailure(new IllegalStateException("Not implemented"));
 
     }
 
     @Override
     public void logout(final Callback<Void> callback) {
-        callback.onSuccess(null);
+        callback.onFailure(new IllegalStateException("Not implemented"));
     }
 
 }
