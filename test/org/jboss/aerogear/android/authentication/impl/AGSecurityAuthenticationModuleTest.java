@@ -130,20 +130,17 @@ public class AGSecurityAuthenticationModuleTest implements AuthenticationModuleT
                             @Override
                             public HeaderAndBody post(String ignore)
                                     throws RuntimeException {
-                                try {
                                     HashMap<String, Object> headers = new HashMap<String, Object>();
                                     headers.put("Auth-Token", TOKEN);
                                     return new HeaderAndBody(new byte[1],
                                             headers);
-                                } finally {
-                                    latch.countDown();
-                                }
+                                
                             }
                         };
                     }
                 });
 
-        SimpleCallback callback = new SimpleCallback();
+        SimpleCallback callback = new SimpleCallback(latch);
         module.login(PASSING_USERNAME, LOGIN_PASSWORD, callback);
         latch.await();
 
@@ -153,7 +150,7 @@ public class AGSecurityAuthenticationModuleTest implements AuthenticationModuleT
         Assert.assertEquals(TOKEN, module.getAuthToken());
     }
 
-    @Test(timeout = 5000L)
+    @Test(timeout = 50000L)
     public void enrollSucceeds() throws Exception {
         AGSecurityAuthenticationModule module = new AGSecurityAuthenticationModule(
                 SIMPLE_URL, new AGSecurityAuthenticationConfig());
@@ -167,19 +164,16 @@ public class AGSecurityAuthenticationModuleTest implements AuthenticationModuleT
                             @Override
                             public HeaderAndBody post(String enrollData)
                                     throws RuntimeException {
-                                try {
                                     HashMap<String, Object> headers = new HashMap<String, Object>();
                                     headers.put("Auth-Token", TOKEN);
                                     return new HeaderAndBody(new byte[1],
                                             headers);
-                                } finally {
-                                    latch.countDown();
-                                }
+                                
                             }
                         };
                     }
                 });
-        SimpleCallback callback = new SimpleCallback();
+        SimpleCallback callback = new SimpleCallback(latch);
 
         Map<String, String> userData = new HashMap<String, String>();
         userData.put("username", PASSING_USERNAME);
