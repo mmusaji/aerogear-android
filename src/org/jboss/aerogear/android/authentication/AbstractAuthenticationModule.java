@@ -46,67 +46,26 @@ public abstract class AbstractAuthenticationModule implements
     protected static final Executor THREAD_POOL_EXECUTOR = new ThreadPoolExecutor(CORE_POOL_SIZE, MAX_POOL_SIZE, KEEP_ALIVE,
             TimeUnit.SECONDS, WORK_QUEUE);
     
-    protected final AuthenticationModuleHandler runner;
-    protected final URL baseURL;
     
-    protected AbstractAuthenticationModule(URL baseURL, AuthenticationConfig config) {
-        
-        this.baseURL = baseURL;
-        
-        if (config.getHandler() == null) {
-            runner = new DefaultAuthenticationModuleHandler(baseURL, config);
-        } else {
-            runner = config.getHandler();
-        }
+    protected AbstractAuthenticationModule(URL baseURL, AuthenticationConfig config) {y 
     }
     
+    @Override
     public void enroll(Map<String, String> userData,
             final Callback<HeaderAndBody> callback) {
-        new AsyncTask<Void, Void, Void>() {
-
-            @Override
-            protected Void doInBackground(Void... params) {
-                return null;
-            }
-
-            @Override
-            protected void onPostExecute(Void result) {
-                callback.onFailure(new IllegalStateException("Not implemented"));
-            }
-        }.execute((Void) null);
-
+        callback.onSuccess(null);
     }
 
+    @Override
     public void login(final String username, final String password,
             final Callback<HeaderAndBody> callback) {
-        new AsyncTask<Void, Void, Void>() {
-
-            @Override
-            protected Void doInBackground(Void... params) {
-                return null;
-            }
-
-            @Override
-            protected void onPostExecute(Void result) {
-                callback.onFailure(new IllegalStateException("Not implemented"));
-            }
-        }.execute((Void) null);
+        callback.onSuccess(null);
 
     }
 
+    @Override
     public void logout(final Callback<Void> callback) {
-        new AsyncTask<Void, Void, Void>() {
-
-            @Override
-            protected Void doInBackground(Void... params) {
-                return null;
-            }
-
-            @Override
-            protected void onPostExecute(Void result) {
-                callback.onFailure(new IllegalStateException("Not implemented"));
-            }
-        }.execute((Void) null);
+        callback.onSuccess(null);
     }
 
 }

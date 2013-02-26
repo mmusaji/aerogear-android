@@ -51,6 +51,8 @@ public final class AGSecurityAuthenticationModule extends AbstractAuthentication
     private final String tokenHeaderName;
     private boolean isLoggedIn = false;
     
+    private final AGSecurityAuthenticationModuleRunner runner;
+
 
     /**
      *
@@ -61,6 +63,7 @@ public final class AGSecurityAuthenticationModule extends AbstractAuthentication
      */
     public AGSecurityAuthenticationModule(URL baseURL, AuthenticationConfig config) {
         super(baseURL, config);
+        this.runner = new AGSecurityAuthenticationModuleRunner(baseURL, config);
 
         if (config instanceof AGSecurityAuthenticationConfig) {
             this.tokenHeaderName = ((AGSecurityAuthenticationConfig) config)

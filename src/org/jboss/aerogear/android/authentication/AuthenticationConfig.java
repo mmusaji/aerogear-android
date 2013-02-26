@@ -28,7 +28,6 @@ public class AuthenticationConfig {
     private String loginEndpoint = "/auth/login";
     private String logoutEndpoint = "/auth/logout";
     private String enrollEndpoint = "/auth/enroll";
-    private AuthenticationModuleHandler handler;
     
     private AuthType authType = AuthTypes.AG_SECURITY;
 
@@ -62,14 +61,6 @@ public class AuthenticationConfig {
 
     public void setAuthType(AuthType authType) {
         this.authType = authType;
-    }
-
-    public AuthenticationModuleHandler getHandler() {
-        return handler;
-    }
-
-    public void setHandler(AuthenticationModuleHandler handler) {
-        this.handler = handler;
     }
 
 }

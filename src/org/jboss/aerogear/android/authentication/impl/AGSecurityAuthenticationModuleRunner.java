@@ -13,7 +13,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  */
-package org.jboss.aerogear.android.authentication;
+package org.jboss.aerogear.android.authentication.impl;
 
 import android.util.Log;
 import com.google.gson.JsonObject;
@@ -22,15 +22,14 @@ import java.net.URL;
 import java.util.Map;
 import org.jboss.aerogear.android.Provider;
 import org.jboss.aerogear.android.authentication.AuthenticationConfig;
-import org.jboss.aerogear.android.authentication.AuthenticationModuleHandler;
 import org.jboss.aerogear.android.http.HeaderAndBody;
 import org.jboss.aerogear.android.http.HttpProvider;
 import org.jboss.aerogear.android.impl.core.HttpProviderFactory;
 import org.json.JSONObject;
 
-public class DefaultAuthenticationModuleHandler implements AuthenticationModuleHandler {
+public class AGSecurityAuthenticationModuleRunner {
 
-    private static final String TAG = DefaultAuthenticationModuleHandler.class.getSimpleName();
+    private static final String TAG = AGSecurityAuthenticationModuleRunner.class.getSimpleName();
     private final Provider<HttpProvider> httpProviderFactory = new HttpProviderFactory();
     private final URL baseURL;
     private final String loginEndpoint;
@@ -47,7 +46,7 @@ public class DefaultAuthenticationModuleHandler implements AuthenticationModuleH
      * @throws IllegalArgumentException if an endpoint can not be appended to
      * baseURL
      */
-    public DefaultAuthenticationModuleHandler(URL baseURL, AuthenticationConfig config) {
+    public AGSecurityAuthenticationModuleRunner(URL baseURL, AuthenticationConfig config) {
         this.baseURL = baseURL;
         this.loginEndpoint = config.getLoginEndpoint();
         this.logoutEndpoint = config.getLogoutEndpoint();
@@ -59,21 +58,18 @@ public class DefaultAuthenticationModuleHandler implements AuthenticationModuleH
         this.enrollURL = appendToBaseURL(enrollEndpoint);
     }
 
-    @Override
     public HeaderAndBody onEnroll(final Map<String, String> userData) {
         HttpProvider provider = httpProviderFactory.get(enrollURL);
         String enrollData = new JSONObject(userData).toString();
         return provider.post(enrollData);
     }
 
-    @Override
     public HeaderAndBody onLogin(final String username, final String password) {
         HttpProvider provider = httpProviderFactory.get(loginURL);
         String loginData = buildLoginData(username, password);
         return provider.post(loginData);
     }
 
-    @Override
     public void onLogout() {
         HttpProvider provider = httpProviderFactory.get(logoutURL);
         provider.post("");
