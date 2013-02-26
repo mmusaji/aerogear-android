@@ -13,7 +13,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  */
-package org.jboss.aerogear.android.authentication.impl;
+package org.jboss.aerogear.android.authentication;
 
 import android.util.Log;
 import com.google.gson.JsonObject;
@@ -28,9 +28,9 @@ import org.jboss.aerogear.android.http.HttpProvider;
 import org.jboss.aerogear.android.impl.core.HttpProviderFactory;
 import org.json.JSONObject;
 
-public class AGSecurityAuthenticationModuleRunner implements AuthenticationModuleHandler {
+public class DefaultAuthenticationModuleHandler implements AuthenticationModuleHandler {
 
-    private static final String TAG = AGSecurityAuthenticationModuleRunner.class.getSimpleName();
+    private static final String TAG = DefaultAuthenticationModuleHandler.class.getSimpleName();
     private final Provider<HttpProvider> httpProviderFactory = new HttpProviderFactory();
     private final URL baseURL;
     private final String loginEndpoint;
@@ -47,7 +47,7 @@ public class AGSecurityAuthenticationModuleRunner implements AuthenticationModul
      * @throws IllegalArgumentException if an endpoint can not be appended to
      * baseURL
      */
-    public AGSecurityAuthenticationModuleRunner(URL baseURL, AuthenticationConfig config) {
+    public DefaultAuthenticationModuleHandler(URL baseURL, AuthenticationConfig config) {
         this.baseURL = baseURL;
         this.loginEndpoint = config.getLoginEndpoint();
         this.logoutEndpoint = config.getLogoutEndpoint();

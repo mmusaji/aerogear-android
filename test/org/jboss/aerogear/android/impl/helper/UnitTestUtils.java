@@ -50,6 +50,14 @@ public class UnitTestUtils {
         return field.get(target);
     }
 
+    public static Object getSuperPrivateField(Object target, String fieldName)
+            throws NoSuchFieldException, IllegalArgumentException,
+            IllegalAccessException {
+        Field field = target.getClass().getSuperclass().getDeclaredField(fieldName);
+        field.setAccessible(true);
+        return field.get(target);
+    }
+    
     public static <T> T getPrivateField(Object target, String fieldName,
             Class<T> type) throws NoSuchFieldException,
             IllegalArgumentException, IllegalAccessException {

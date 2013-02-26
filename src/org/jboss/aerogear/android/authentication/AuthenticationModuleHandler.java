@@ -16,6 +16,7 @@
  */
 package org.jboss.aerogear.android.authentication;
 
+import java.net.URL;
 import java.util.Map;
 import org.jboss.aerogear.android.http.HeaderAndBody;
 
@@ -38,4 +39,12 @@ public interface AuthenticationModuleHandler {
      * <p/>
      */
     public void onLogout();
+
+    public URL getBaseURL();
+
+    public String getLoginEndpoint();
+
+    public String getLogoutEndpoint();
+
+    public String getEnrollEndpoint();
 }

@@ -53,7 +53,7 @@ public class AGSecurityAuthenticationModuleTest implements AuthenticationModuleT
     public void testDefaultConstructor() throws Exception {
         AGSecurityAuthenticationModule module = new AGSecurityAuthenticationModule(
                 SIMPLE_URL, new AGSecurityAuthenticationConfig());
-        Object runner = UnitTestUtils.getPrivateField(module, "runner");
+        Object runner = UnitTestUtils.getSuperPrivateField(module, "runner");
         HttpProvider provider = (HttpProvider) UnitTestUtils.getPrivateField(runner,
                 "httpProviderFactory", Provider.class).get(SIMPLE_URL);
         Assert.assertEquals(SIMPLE_URL, provider.getUrl());
@@ -85,7 +85,7 @@ public class AGSecurityAuthenticationModuleTest implements AuthenticationModuleT
         AGSecurityAuthenticationModule module = new AGSecurityAuthenticationModule(
                 SIMPLE_URL, new AGSecurityAuthenticationConfig());
         final CountDownLatch latch = new CountDownLatch(1);
-        Object runner = UnitTestUtils.getPrivateField(module, "runner");
+        Object runner = UnitTestUtils.getSuperPrivateField(module, "runner");
         UnitTestUtils.setPrivateField(runner, "httpProviderFactory",
                 new Provider<HttpProvider>() {
                     @Override
@@ -118,7 +118,7 @@ public class AGSecurityAuthenticationModuleTest implements AuthenticationModuleT
         AGSecurityAuthenticationModule module = new AGSecurityAuthenticationModule(
                 SIMPLE_URL, new AGSecurityAuthenticationConfig());
         final CountDownLatch latch = new CountDownLatch(1);
-        Object runner = UnitTestUtils.getPrivateField(module, "runner");
+        Object runner = UnitTestUtils.getSuperPrivateField(module, "runner");
         UnitTestUtils.setPrivateField(runner, "httpProviderFactory",
                 new Provider<HttpProvider>() {
                     @Override
@@ -152,7 +152,7 @@ public class AGSecurityAuthenticationModuleTest implements AuthenticationModuleT
         AGSecurityAuthenticationModule module = new AGSecurityAuthenticationModule(
                 SIMPLE_URL, new AGSecurityAuthenticationConfig());
         final CountDownLatch latch = new CountDownLatch(1);
-        Object runner = UnitTestUtils.getPrivateField(module, "runner");
+        Object runner = UnitTestUtils.getSuperPrivateField(module, "runner");
         UnitTestUtils.setPrivateField(runner, "httpProviderFactory",
                 new Provider<HttpProvider>() {
                     @Override
@@ -195,7 +195,7 @@ public class AGSecurityAuthenticationModuleTest implements AuthenticationModuleT
         SimpleCallback callback = new SimpleCallback();
 
         final CountDownLatch latch = new CountDownLatch(1);
-        Object runner = UnitTestUtils.getPrivateField(module, "runner");
+        Object runner = UnitTestUtils.getSuperPrivateField(module, "runner");
         UnitTestUtils.setPrivateField(runner, "httpProviderFactory",
                 new Provider<HttpProvider>() {
                     @Override
