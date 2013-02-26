@@ -62,7 +62,7 @@ public final class AGSecurityAuthenticationModule extends AbstractAuthentication
      * baseURL
      */
     public AGSecurityAuthenticationModule(URL baseURL, AuthenticationConfig config) {
-        super(baseURL, config);
+        
         this.runner = new AGSecurityAuthenticationModuleRunner(baseURL, config);
 
         if (config instanceof AGSecurityAuthenticationConfig) {

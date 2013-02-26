@@ -47,8 +47,6 @@ public abstract class AbstractAuthenticationModule implements
             TimeUnit.SECONDS, WORK_QUEUE);
     
     
-    protected AbstractAuthenticationModule(URL baseURL, AuthenticationConfig config) {y 
-    }
     
     @Override
     public void enroll(Map<String, String> userData,
