@@ -17,12 +17,16 @@
 
 package org.jboss.aerogear.android.authentication.impl;
 
+import android.app.Activity;
+import android.app.Fragment;
+import android.content.Context;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import org.jboss.aerogear.android.authentication.AuthenticationConfig;
 import org.jboss.aerogear.android.authentication.AuthenticationModule;
+import org.jboss.aerogear.android.authentication.loader.ModernAuthenticationModuleAdapter;
 
 /**
  * This is the default implementation of Authenticator.
@@ -50,16 +54,7 @@ public class Authenticator {
 
     }
 
-    /**
-     * Gets a AuthenticationModule for name
-     * 
-     * @param name
-     * @return a AuthenticationModule for name or null if there isn't a value for name
-     * @throws NullPointerException is name is null
-     */
-    public AuthenticationModule get(String name) {
-        return modules.get(name);
-    }
+    
 
     /**
      * Removes a AuthenticationModule for name
@@ -92,5 +87,42 @@ public class Authenticator {
         return modules.get(name);
 
     }
+    
+    public void add(String name, AuthenticationModule module) {
+        modules.put(name, module);
+    }
 
+    /**
+     * Gets a AuthenticationModule for name
+     * 
+     * @param name
+     * @return a AuthenticationModule for name or null if there isn't a value for name
+     * @throws NullPointerException is name is null
+     */
+    public AuthenticationModule get(String name) {
+        return modules.get(name);
+    }
+    
+    /**
+     * Gets a AuthenticationModule for name
+     * 
+     * @param name
+     * @return a AuthenticationModule for name or null if there isn't a value for name
+     * @throws NullPointerException is name is null
+     */
+    public AuthenticationModule get(String name, Activity activity) {
+        return new ModernAuthenticationModuleAdapter(activity, modules.get(name));
+    }
+    
+    /**
+     * Gets a AuthenticationModule for name
+     * 
+     * @param name
+     * @return a AuthenticationModule for name or null if there isn't a value for name
+     * @throws NullPointerException is name is null
+     */
+    public AuthenticationModule get(String name, Fragment fragment, Context applicationContext) {
+        return new ModernAuthenticationModuleAdapter(fragment, applicationContext, modules.get(name));
+    }
+    
 }
