@@ -22,6 +22,8 @@ import android.app.LoaderManager;
 import android.content.Context;
 import android.content.Loader;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import com.google.common.base.Objects;
 import com.google.common.collect.Multimap;
@@ -52,6 +54,9 @@ public class ModernLoaderAdapter<T> implements LoaderPipe<T>, LoaderManager.Load
     private static final String FILTER = "org.jboss.aerogear.android.impl.pipeline.ModernClassLoader.FILTER";
     private static final String ITEM = "org.jboss.aerogear.android.impl.pipeline.ModernClassLoader.ITEM";
     private static final String REMOVE_ID = "org.jboss.aerogear.android.impl.pipeline.ModernClassLoader.REMOVIE_ID";
+    
+    private final Handler handler;
+    
     private Multimap<String, Integer> idsForNamedPipes;
 
     private static enum Methods {
@@ -70,6 +75,7 @@ public class ModernLoaderAdapter<T> implements LoaderPipe<T>, LoaderManager.Load
         this.manager = activity.getLoaderManager();
         this.applicationContext = activity.getApplicationContext();
         this.name = name;
+        this.handler = new Handler(Looper.getMainLooper());
     }
 
     public ModernLoaderAdapter(Fragment fragment, Context applicationContext, Pipe<T> pipe, Gson gson, String name) {
@@ -78,6 +84,7 @@ public class ModernLoaderAdapter<T> implements LoaderPipe<T>, LoaderManager.Load
         this.gson = gson;
         this.applicationContext = applicationContext;
         this.name = name;
+        this.handler = new Handler(Looper.getMainLooper());
     }
 
     @Override
@@ -173,27 +180,40 @@ public class ModernLoaderAdapter<T> implements LoaderPipe<T>, LoaderManager.Load
     }
 
     @Override
-    public void onLoadFinished(Loader<T> loader, T data) {
+    public void onLoadFinished(Loader<T> loader, final T data) {
         if (!(loader instanceof AbstractModernPipeLoader)) {
             Log.e(TAG, "Adapter is listening to loaders which it doesn't support");
             throw new IllegalStateException("Adapter is listening to loaders which it doesn't support");
         } else {
-            AbstractModernPipeLoader<T> modernLoader = (AbstractModernPipeLoader<T>) loader;
+            final AbstractModernPipeLoader<T> modernLoader = (AbstractModernPipeLoader<T>) loader;
             if (modernLoader.hasException()) {
-                Exception exception = modernLoader.getException();
+                final Exception exception = modernLoader.getException();
                 Log.e(TAG, exception.getMessage(), exception);
-                modernLoader.callback.onFailure(exception);
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        modernLoader.callback.onFailure(exception);
+                    }
+                });
+                
             } else {
-                modernLoader.callback.onSuccess(data);
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        modernLoader.callback.onSuccess(data);
+                    }
+                });
+                
             }
         }
     }
 
     @Override
     public void onLoaderReset(Loader<T> loader) {
-        //Gotta do something, though I don't know what
+        Log.e(TAG, loader.toString());
+        
     }
-
+    
     @Override
     public void reset() {
         for (Integer id : idsForNamedPipes.get(name)) {

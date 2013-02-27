@@ -21,6 +21,8 @@ import android.support.v4.app.LoaderManager;
 import android.content.Context;
 import android.support.v4.content.Loader;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import com.google.common.base.Objects;
@@ -52,6 +54,8 @@ public class SupportLoaderAdapter<T> implements LoaderPipe<T>, LoaderManager.Loa
     private static final String REMOVE_ID = "org.jboss.aerogear.android.impl.pipeline.ModernClassLoader.REMOVIE_ID";
     private Multimap<String, Integer> idsForNamedPipes;
 
+    private final Handler handler;
+
 
     private static enum Methods {
 
@@ -73,6 +77,7 @@ public class SupportLoaderAdapter<T> implements LoaderPipe<T>, LoaderManager.Loa
         this.manager = activity.getSupportLoaderManager();
         this.applicationContext = activity.getApplicationContext();
         this.name = name;
+        this.handler = new Handler(Looper.getMainLooper());
     }
 
     public SupportLoaderAdapter(Fragment fragment, Context applicationContext, Pipe<T> pipe, Gson gson, String name) {
@@ -81,6 +86,7 @@ public class SupportLoaderAdapter<T> implements LoaderPipe<T>, LoaderManager.Loa
         this.gson = gson;
         this.applicationContext = applicationContext;
         this.name = name;
+        this.handler = new Handler(Looper.getMainLooper());        
     }
 
     @Override
@@ -177,18 +183,30 @@ public class SupportLoaderAdapter<T> implements LoaderPipe<T>, LoaderManager.Loa
     }
 
     @Override
-    public void onLoadFinished(Loader<T> loader, T data) {
+    public void onLoadFinished(Loader<T> loader, final T data) {
         if (!(loader instanceof AbstractSupportPipeLoader)) {
             Log.e(TAG, "Adapter is listening to loaders which it doesn't support");
             throw new IllegalStateException("Adapter is listening to loaders which it doesn't support");
         } else {
-            AbstractSupportPipeLoader modernLoader = (AbstractSupportPipeLoader) loader;
-            if (modernLoader.hasException()) {
-                Exception exception = modernLoader.getException();
+            final AbstractSupportPipeLoader<T> supportLoader = (AbstractSupportPipeLoader<T>) loader;
+            if (supportLoader.hasException()) {
+                final Exception exception = supportLoader.getException();
                 Log.e(TAG, exception.getMessage(), exception);
-                modernLoader.callback.onFailure(exception);
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        supportLoader.callback.onFailure(exception);
+                    }
+                });
+                
             } else {
-                modernLoader.callback.onSuccess(data);
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        supportLoader.callback.onSuccess(data);
+                    }
+                });
+                
             }
         }
     }
