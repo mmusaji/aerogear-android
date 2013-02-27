@@ -394,6 +394,9 @@ public class RestRunner<T> implements PipeHandler<T> {
     private JsonElement getResultElement(JsonElement element, String dataRoot) {
         String[] identifiers = dataRoot.split("\\.");
         for (String identifier : identifiers) {
+            if (identifier.equals("")) {
+                return element;
+            }
             JsonElement newElement = element.getAsJsonObject().get(identifier);
             if (newElement == null) {
                 return element;

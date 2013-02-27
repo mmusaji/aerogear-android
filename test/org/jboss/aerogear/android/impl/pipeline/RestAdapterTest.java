@@ -77,6 +77,7 @@ public class RestAdapterTest {
 
     private static final String TAG = RestAdapterTest.class.getSimpleName();
     private static final String SERIALIZED_POINTS = "{\"points\":[{\"x\":0,\"y\":0},{\"x\":1,\"y\":2},{\"x\":2,\"y\":4},{\"x\":3,\"y\":6},{\"x\":4,\"y\":8},{\"x\":5,\"y\":10},{\"x\":6,\"y\":12},{\"x\":7,\"y\":14},{\"x\":8,\"y\":16},{\"x\":9,\"y\":18}],\"id\":\"1\"}";
+    private static final String POINTS_ARRAY = "[{\"x\":0,\"y\":0},{\"x\":1,\"y\":2},{\"x\":2,\"y\":4},{\"x\":3,\"y\":6},{\"x\":4,\"y\":8},{\"x\":5,\"y\":10},{\"x\":6,\"y\":12},{\"x\":7,\"y\":14},{\"x\":8,\"y\":16},{\"x\":9,\"y\":18}]";
     private URL url;
     private final Provider<HttpProvider> stubHttpProviderFactory = new Provider<HttpProvider>() {
         @Override
@@ -223,6 +224,32 @@ public class RestAdapterTest {
 
     }
 
+    @Test
+    public void testReadArray() throws Exception {
+        GsonBuilder builder = new GsonBuilder().registerTypeAdapter(Point.class, new RestAdapterTest.PointTypeAdapter());
+        HeaderAndBody response = new HeaderAndBody((POINTS_ARRAY).getBytes(), new HashMap<String, Object>());
+        final HttpStubProvider provider = new HttpStubProvider(url, response);
+        
+        PipeConfig config = new PipeConfig(url, ListClassId.class);
+        config.setGsonBuilder(builder);
+        config.setDataRoot("");
+        
+        RestAdapter<Point> restPipe = new RestAdapter<Point>(Point.class, url, config);
+        
+        Object restRunner = UnitTestUtils.getPrivateField(restPipe, "restRunner");
+        UnitTestUtils.setPrivateField(restRunner, "httpProviderFactory", new Provider<HttpProvider>() {
+            @Override
+            public HttpProvider get(Object... in) {
+                return provider;
+            }
+        });
+        List<Point> result = runRead(restPipe);
+
+        
+        assertEquals(10, result.size());
+
+    }
+    
     @Test
     public void testGsonBuilderProperty() throws Exception {
         GsonBuilder builder = new GsonBuilder().registerTypeAdapter(Point.class, new RestAdapterTest.PointTypeAdapter());
