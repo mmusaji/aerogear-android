@@ -36,8 +36,6 @@ import org.jboss.aerogear.android.impl.pipeline.loader.support.AbstractSupportPi
 import org.jboss.aerogear.android.impl.pipeline.loader.support.SupportReadLoader;
 import org.jboss.aerogear.android.impl.pipeline.loader.support.SupportRemoveLoader;
 import org.jboss.aerogear.android.impl.pipeline.loader.support.SupportSaveLoader;
-import org.jboss.aerogear.android.pipeline.AbstractActivityCallback;
-import org.jboss.aerogear.android.pipeline.AbstractFragmentCallback;
 import org.jboss.aerogear.android.pipeline.LoaderPipe;
 import org.jboss.aerogear.android.pipeline.Pipe;
 import org.jboss.aerogear.android.pipeline.PipeHandler;
@@ -218,7 +216,7 @@ public class SupportLoaderAdapter<T> implements LoaderPipe<T>, LoaderManager.Loa
                     public void run() {
                         if (supportLoader.callback instanceof AbstractSupportFragmentCallback) {
                             fragmentSuccess(supportLoader.callback, data);
-                        } else if (supportLoader.callback instanceof AbstractActivityCallback) {
+                        } else if (supportLoader.callback instanceof AbstractFragmentActivityCallback) {
                             activitySuccess(supportLoader.callback, data);
                         } else {
                             supportLoader.callback.onSuccess(data);
