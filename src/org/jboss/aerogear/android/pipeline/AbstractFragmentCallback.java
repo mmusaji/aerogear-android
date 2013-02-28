@@ -16,32 +16,22 @@
  */
 package org.jboss.aerogear.android.pipeline;
 
-import com.google.common.base.Objects;
-import org.jboss.aerogear.android.Callback;
+import android.app.Fragment;
 
-/**
- * This class provides a hashcode method for a callback based on constructor parameters.
- * This callback is meant to be used in conjuction with Activities/Fragments and LoaderPipes.
- * 
- * Using this class instead of an anonymous Callback will allow your application to 
- * persist results from loaders through configuration changes.
- */
-public abstract class AbstractCallback<T> implements Callback<T> {
+public abstract class AbstractFragmentCallback<T> extends AbstractCallback<T> {
     
-    /**
-	 * 
-	 */
-	private static final long serialVersionUID = 2336090029150712942L;
-	
-	final int hashcode;
-    
-    public AbstractCallback(Object... params) {
-        hashcode = Objects.hashCode(params);
+    private transient Fragment fragment;
+
+    public AbstractFragmentCallback(Fragment fragment,Object... params) {
+        super(params);
     }
 
-    @Override
-    public int hashCode() {
-        return hashcode;
+    public Fragment getFragment() {
+        return fragment;
+    }
+
+    public void setFragment(Fragment fragment) {
+        this.fragment = fragment;
     }
     
     

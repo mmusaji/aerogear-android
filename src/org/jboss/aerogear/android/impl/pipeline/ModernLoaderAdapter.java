@@ -38,6 +38,7 @@ import org.jboss.aerogear.android.impl.pipeline.loader.AbstractModernPipeLoader;
 import org.jboss.aerogear.android.impl.pipeline.loader.ModernReadLoader;
 import org.jboss.aerogear.android.impl.pipeline.loader.ModernRemoveLoader;
 import org.jboss.aerogear.android.impl.pipeline.loader.ModernSaveLoader;
+import org.jboss.aerogear.android.pipeline.AbstractFragmentCallback;
 import org.jboss.aerogear.android.pipeline.LoaderPipe;
 import org.jboss.aerogear.android.pipeline.Pipe;
 import org.jboss.aerogear.android.pipeline.PipeHandler;
@@ -64,6 +65,7 @@ public class ModernLoaderAdapter<T> implements LoaderPipe<T>, LoaderManager.Load
         READ, SAVE, REMOVE
     };
     private final Context applicationContext;
+    private Fragment fragment;
     private final Pipe<T> pipe;
     private final LoaderManager manager;
     private final Gson gson;
@@ -85,6 +87,7 @@ public class ModernLoaderAdapter<T> implements LoaderPipe<T>, LoaderManager.Load
         this.applicationContext = applicationContext;
         this.name = name;
         this.handler = new Handler(Looper.getMainLooper());
+        this.fragment = fragment;
     }
 
     @Override
@@ -192,7 +195,14 @@ public class ModernLoaderAdapter<T> implements LoaderPipe<T>, LoaderManager.Load
                 handler.post(new Runnable() {
                     @Override
                     public void run() {
-                        modernLoader.callback.onFailure(exception);
+                        if (modernLoader.callback instanceof AbstractFragmentCallback) {
+                            AbstractFragmentCallback callback = (AbstractFragmentCallback) modernLoader.callback;
+                            callback.setFragment(fragment);
+                            callback.onFailure(exception);
+                            callback.setFragment(null);
+                        } else {
+                        	modernLoader.callback.onFailure(exception);
+                        }
                     }
                 });
                 
@@ -200,7 +210,14 @@ public class ModernLoaderAdapter<T> implements LoaderPipe<T>, LoaderManager.Load
                 handler.post(new Runnable() {
                     @Override
                     public void run() {
-                        modernLoader.callback.onSuccess(data);
+                        if (modernLoader.callback instanceof AbstractFragmentCallback) {
+                            AbstractFragmentCallback callback = (AbstractFragmentCallback) modernLoader.callback;
+                            callback.setFragment(fragment);
+                            callback.onSuccess(data);
+                            callback.setFragment(null);
+                        } else {
+                        	modernLoader.callback.onSuccess(data);
+                        }
                     }
                 });
                 

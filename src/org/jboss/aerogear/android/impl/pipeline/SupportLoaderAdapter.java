@@ -36,6 +36,7 @@ import org.jboss.aerogear.android.impl.pipeline.loader.support.AbstractSupportPi
 import org.jboss.aerogear.android.impl.pipeline.loader.support.SupportReadLoader;
 import org.jboss.aerogear.android.impl.pipeline.loader.support.SupportRemoveLoader;
 import org.jboss.aerogear.android.impl.pipeline.loader.support.SupportSaveLoader;
+import org.jboss.aerogear.android.pipeline.AbstractFragmentCallback;
 import org.jboss.aerogear.android.pipeline.LoaderPipe;
 import org.jboss.aerogear.android.pipeline.Pipe;
 import org.jboss.aerogear.android.pipeline.PipeHandler;
