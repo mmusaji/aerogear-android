@@ -58,23 +58,26 @@ public class SupportAuthenticationModuleAdapter implements AuthenticationModule,
     private final FragmentActivity activity;
     private final Fragment fragment;
     private final Handler handler;
-    
-    public SupportAuthenticationModuleAdapter(FragmentActivity activity, AuthenticationModule module) {
+    private final String name;
+
+    public SupportAuthenticationModuleAdapter(FragmentActivity activity, AuthenticationModule module, String name) {
         this.module = module;
         this.manager = activity.getSupportLoaderManager();
         this.applicationContext = activity.getApplicationContext();
         this.fragment = null;
         this.activity = activity;
         this.handler = new Handler(Looper.getMainLooper());
+        this.name = name;
     }
 
-    public SupportAuthenticationModuleAdapter(Fragment fragment, Context applicationContext, AuthenticationModule module) {
+    public SupportAuthenticationModuleAdapter(Fragment fragment, Context applicationContext, AuthenticationModule module, String name) {
         this.module = module;
         this.manager = fragment.getLoaderManager();
         this.applicationContext = applicationContext;
         this.fragment = fragment;
         this.activity = null;
         this.handler = new Handler(Looper.getMainLooper());
+        this.name = name;
     }
     
     @Override
@@ -99,7 +102,7 @@ public class SupportAuthenticationModuleAdapter implements AuthenticationModule,
 
     @Override
     public void enroll(Map<String, String> userData, Callback<HeaderAndBody> callback) {
-        int id = Objects.hashCode(userData, callback);
+        int id = Objects.hashCode(name, userData, callback);
         Bundle bundle = new Bundle();
         bundle.putSerializable(CALLBACK, callback);
         bundle.putSerializable(PARAMS, new HashMap(userData));
@@ -109,7 +112,7 @@ public class SupportAuthenticationModuleAdapter implements AuthenticationModule,
 
     @Override
     public void login(String username, String password, Callback<HeaderAndBody> callback) {
-        int id = Objects.hashCode(username, password, callback);
+        int id = Objects.hashCode(name, username, password, callback);
         Bundle bundle = new Bundle();
         bundle.putSerializable(CALLBACK, callback);
         bundle.putSerializable(USERNAME, username);
@@ -120,7 +123,7 @@ public class SupportAuthenticationModuleAdapter implements AuthenticationModule,
 
     @Override
     public void logout(Callback<Void> callback) {
-        int id = Objects.hashCode(callback);
+        int id = Objects.hashCode(name, callback);
         Bundle bundle = new Bundle();
         bundle.putSerializable(CALLBACK, callback);
         bundle.putSerializable(METHOD, SupportAuthenticationModuleAdapter.Methods.LOGOUT);
