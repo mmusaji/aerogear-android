@@ -20,6 +20,8 @@ package org.jboss.aerogear.android.authentication.impl.loader.support;
 import android.content.Context;
 
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.LoaderManager;
@@ -33,6 +35,8 @@ import org.jboss.aerogear.android.Callback;
 import org.jboss.aerogear.android.authentication.AuthenticationModule;
 import org.jboss.aerogear.android.authentication.AuthorizationFields;
 import org.jboss.aerogear.android.http.HeaderAndBody;
+import org.jboss.aerogear.android.pipeline.support.AbstractFragmentActivityCallback;
+import org.jboss.aerogear.android.pipeline.support.AbstractSupportFragmentCallback;
 
 public class SupportAuthenticationModuleAdapter implements AuthenticationModule, LoaderManager.LoaderCallbacks<HeaderAndBody>{
 
@@ -51,17 +55,26 @@ public class SupportAuthenticationModuleAdapter implements AuthenticationModule,
     private final Context applicationContext;
     private final AuthenticationModule module;
     private final LoaderManager manager;
+    private final FragmentActivity activity;
+    private final Fragment fragment;
+    private final Handler handler;
     
     public SupportAuthenticationModuleAdapter(FragmentActivity activity, AuthenticationModule module) {
         this.module = module;
         this.manager = activity.getSupportLoaderManager();
         this.applicationContext = activity.getApplicationContext();
+        this.fragment = null;
+        this.activity = activity;
+        this.handler = new Handler(Looper.getMainLooper());
     }
 
     public SupportAuthenticationModuleAdapter(Fragment fragment, Context applicationContext, AuthenticationModule module) {
         this.module = module;
         this.manager = fragment.getLoaderManager();
         this.applicationContext = applicationContext;
+        this.fragment = fragment;
+        this.activity = null;
+        this.handler = new Handler(Looper.getMainLooper());
     }
     
     @Override
@@ -150,18 +163,43 @@ public class SupportAuthenticationModuleAdapter implements AuthenticationModule,
     }
 
     @Override
-    public void onLoadFinished(Loader<HeaderAndBody> loader, HeaderAndBody data) {
+    public void onLoadFinished(Loader<HeaderAndBody> loader, final HeaderAndBody data) {
         if (!(loader instanceof AbstractSupportAuthenticationLoader)) {
             Log.e(TAG, "Adapter is listening to loaders which it doesn't support");
             throw new IllegalStateException("Adapter is listening to loaders which it doesn't support");
         } else {
-            AbstractSupportAuthenticationLoader modernLoader = (AbstractSupportAuthenticationLoader) loader;
-            if (modernLoader.hasException()) {
-            	Exception exception = modernLoader.getException();
+            final AbstractSupportAuthenticationLoader supportLoader = (AbstractSupportAuthenticationLoader) loader;
+            
+           
+            
+            if (supportLoader.hasException()) {
+            	final Exception exception = supportLoader.getException();
             	Log.e(TAG, exception.getMessage(), exception);
-                modernLoader.getCallback().onFailure(exception);
+                 handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (supportLoader.getCallback() instanceof AbstractSupportFragmentCallback) {
+                            fragmentFailure(supportLoader.getCallback(), exception);
+                        } else if (supportLoader.getCallback() instanceof AbstractFragmentActivityCallback) {
+                            activityFailure(supportLoader.getCallback(), exception);
+                        } else {
+                            supportLoader.getCallback().onFailure(exception);
+                        }
+                    }
+                });
             } else {
-                modernLoader.getCallback().onSuccess(data);
+                 handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (supportLoader.getCallback() instanceof AbstractSupportFragmentCallback) {
+                            fragmentSuccess(supportLoader.getCallback(), data);
+                        } else if (supportLoader.getCallback() instanceof AbstractFragmentActivityCallback) {
+                            activitySuccess(supportLoader.getCallback(), data);
+                        } else {
+                            supportLoader.getCallback().onSuccess(data);
+                        }
+                    }
+                });
             }
         }
     }
@@ -169,6 +207,35 @@ public class SupportAuthenticationModuleAdapter implements AuthenticationModule,
     @Override
     public void onLoaderReset(Loader<HeaderAndBody> loader) {
         //Do nothing, should call logout on module manually.
+    }
+    
+    
+    private void fragmentSuccess(Callback<HeaderAndBody> typelessCallback, HeaderAndBody data) {
+        AbstractSupportFragmentCallback callback = (AbstractSupportFragmentCallback) typelessCallback;
+        callback.setFragment(fragment);
+        callback.onSuccess(data);
+        callback.setFragment(null);
+    }
+
+    private void fragmentFailure(Callback<HeaderAndBody> typelessCallback, Exception exception) {
+        AbstractSupportFragmentCallback callback = (AbstractSupportFragmentCallback) typelessCallback;
+        callback.setFragment(fragment);
+        callback.onFailure(exception);
+        callback.setFragment(null);
+    }
+
+    private void activitySuccess(Callback<HeaderAndBody> typelessCallback, HeaderAndBody data) {
+        AbstractFragmentActivityCallback callback = (AbstractFragmentActivityCallback) typelessCallback;
+        callback.setFragmentActivity(activity);
+        callback.onSuccess(data);
+        callback.setFragmentActivity(null);
+    }
+
+    private void activityFailure(Callback<HeaderAndBody> typelessCallback, Exception exception) {
+        AbstractFragmentActivityCallback callback = (AbstractFragmentActivityCallback) typelessCallback;
+        callback.setFragmentActivity(activity);
+        callback.onFailure(exception);
+        callback.setFragmentActivity(null);
     }
     
 }
