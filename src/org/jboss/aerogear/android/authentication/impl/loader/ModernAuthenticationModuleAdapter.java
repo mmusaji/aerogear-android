@@ -22,6 +22,8 @@ import android.app.LoaderManager;
 import android.content.Context;
 import android.content.Loader;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import com.google.common.base.Objects;
 import java.net.URL;
@@ -31,6 +33,10 @@ import org.jboss.aerogear.android.Callback;
 import org.jboss.aerogear.android.authentication.AuthenticationModule;
 import org.jboss.aerogear.android.authentication.AuthorizationFields;
 import org.jboss.aerogear.android.http.HeaderAndBody;
+import org.jboss.aerogear.android.pipeline.AbstractActivityCallback;
+import org.jboss.aerogear.android.pipeline.AbstractFragmentCallback;
+import org.jboss.aerogear.android.pipeline.support.AbstractFragmentActivityCallback;
+import org.jboss.aerogear.android.pipeline.support.AbstractSupportFragmentCallback;
 
 public class ModernAuthenticationModuleAdapter implements AuthenticationModule, LoaderManager.LoaderCallbacks<HeaderAndBody>{
 
@@ -52,7 +58,7 @@ public class ModernAuthenticationModuleAdapter implements AuthenticationModule, 
     private final Activity activity;
     private final Fragment fragment;
     private final String name;
-    
+    private final Handler handler;
     
     public ModernAuthenticationModuleAdapter(Activity activity, AuthenticationModule module, String name) {
         this.module = module;
@@ -61,6 +67,7 @@ public class ModernAuthenticationModuleAdapter implements AuthenticationModule, 
         this.activity = activity;
         this.fragment = null;
         this.name = name;
+        this.handler = new Handler(Looper.getMainLooper());
     }
 
     public ModernAuthenticationModuleAdapter(Fragment fragment, Context applicationContext, AuthenticationModule module, String name) {
@@ -70,6 +77,7 @@ public class ModernAuthenticationModuleAdapter implements AuthenticationModule, 
         this.activity = null;
         this.fragment = fragment;
         this.name = name;
+        this.handler = new Handler(Looper.getMainLooper());
     }
     
     @Override
@@ -158,18 +166,40 @@ public class ModernAuthenticationModuleAdapter implements AuthenticationModule, 
     }
 
     @Override
-    public void onLoadFinished(Loader<HeaderAndBody> loader, HeaderAndBody data) {
+    public void onLoadFinished(Loader<HeaderAndBody> loader, final HeaderAndBody data) {
         if (!(loader instanceof AbstractModernAuthenticationLoader)) {
             Log.e(TAG, "Adapter is listening to loaders which it doesn't support");
             throw new IllegalStateException("Adapter is listening to loaders which it doesn't support");
         } else {
-            AbstractModernAuthenticationLoader modernLoader = (AbstractModernAuthenticationLoader) loader;
+            final AbstractModernAuthenticationLoader modernLoader = (AbstractModernAuthenticationLoader) loader;
             if (modernLoader.hasException()) {
-            	Exception exception = modernLoader.getException();
+            	final Exception exception = modernLoader.getException();
             	Log.e(TAG, exception.getMessage(), exception);
-                modernLoader.getCallback().onFailure(exception);
+                 handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (modernLoader.getCallback() instanceof AbstractSupportFragmentCallback) {
+                            fragmentFailure(modernLoader.getCallback(), exception);
+                        } else if (modernLoader.getCallback() instanceof AbstractFragmentActivityCallback) {
+                            activityFailure(modernLoader.getCallback(), exception);
+                        } else {
+                            modernLoader.getCallback().onFailure(exception);
+                        }
+                    }
+                });
             } else {
-                modernLoader.getCallback().onSuccess(data);
+                 handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (modernLoader.getCallback() instanceof AbstractSupportFragmentCallback) {
+                            fragmentSuccess(modernLoader.getCallback(), data);
+                        } else if (modernLoader.getCallback() instanceof AbstractFragmentActivityCallback) {
+                            activitySuccess(modernLoader.getCallback(), data);
+                        } else {
+                            modernLoader.getCallback().onSuccess(data);
+                        }
+                    }
+                });
             }
         }
     }
@@ -177,6 +207,34 @@ public class ModernAuthenticationModuleAdapter implements AuthenticationModule, 
     @Override
     public void onLoaderReset(Loader<HeaderAndBody> loader) {
         //Do nothing, should call logout on module manually.
+    }
+    
+    private void fragmentSuccess(Callback<HeaderAndBody> typelessCallback, HeaderAndBody data) {
+        AbstractFragmentCallback callback = (AbstractFragmentCallback) typelessCallback;
+        callback.setFragment(fragment);
+        callback.onSuccess(data);
+        callback.setFragment(null);
+    }
+
+    private void fragmentFailure(Callback<HeaderAndBody> typelessCallback, Exception exception) {
+        AbstractFragmentCallback callback = (AbstractFragmentCallback) typelessCallback;
+        callback.setFragment(fragment);
+        callback.onFailure(exception);
+        callback.setFragment(null);
+    }
+
+    private void activitySuccess(Callback<HeaderAndBody> typelessCallback, HeaderAndBody data) {
+        AbstractActivityCallback callback = (AbstractActivityCallback) typelessCallback;
+        callback.setActivity(activity);
+        callback.onSuccess(data);
+        callback.setActivity(null);
+    }
+
+    private void activityFailure(Callback<HeaderAndBody> typelessCallback, Exception exception) {
+        AbstractActivityCallback callback = (AbstractActivityCallback) typelessCallback;
+        callback.setActivity(activity);
+        callback.onFailure(exception);
+        callback.setActivity(null);
     }
     
 }
