@@ -108,7 +108,7 @@ public class SupportLoaderAdapter<T> implements LoaderPipe<T>, LoaderManager.Loa
 
     @Override
     public void read(Callback<List<T>> callback) {
-        int id = Objects.hashCode(callback);
+        int id = Objects.hashCode(name, callback);
 
         Bundle bundle = new Bundle();
         bundle.putSerializable(CALLBACK, callback);
@@ -119,7 +119,7 @@ public class SupportLoaderAdapter<T> implements LoaderPipe<T>, LoaderManager.Loa
 
     @Override
     public void readWithFilter(ReadFilter filter, Callback<List<T>> callback) {
-        int id = Objects.hashCode(filter, callback);
+        int id = Objects.hashCode(name, filter, callback);
         Bundle bundle = new Bundle();
         bundle.putSerializable(CALLBACK, callback);
         bundle.putSerializable(FILTER, filter);
@@ -129,7 +129,7 @@ public class SupportLoaderAdapter<T> implements LoaderPipe<T>, LoaderManager.Loa
 
     @Override
     public void save(T item, Callback<T> callback) {
-        int id = Objects.hashCode(item, callback);
+        int id = Objects.hashCode(name, item, callback);
         Bundle bundle = new Bundle();
         bundle.putSerializable(CALLBACK, callback);
         bundle.putSerializable(ITEM, gson.toJson(item));//item may not be serializable, but it has to be gsonable
@@ -139,7 +139,7 @@ public class SupportLoaderAdapter<T> implements LoaderPipe<T>, LoaderManager.Loa
 
     @Override
     public void remove(String toRemoveId, Callback<Void> callback) {
-        int id = Objects.hashCode(toRemoveId, callback);
+        int id = Objects.hashCode(name, toRemoveId, callback);
         Bundle bundle = new Bundle();
         bundle.putSerializable(CALLBACK, callback);
         bundle.putSerializable(REMOVE_ID, toRemoveId);
