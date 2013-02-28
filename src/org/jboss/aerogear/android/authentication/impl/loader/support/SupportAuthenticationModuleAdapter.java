@@ -154,20 +154,20 @@ public class SupportAuthenticationModuleAdapter implements AuthenticationModule,
         Callback callback = (Callback) bundle.get(CALLBACK);
         Loader loader = null;
         switch (method) {
-            case LOGIN: {
-                String username = bundle.getString(USERNAME);
-                String password = bundle.getString(PASSWORD);
-                loader = new SupportLoginLoader(applicationContext, callback, module, username, password);
-            }
+        case LOGIN: {
+            String username = bundle.getString(USERNAME);
+            String password = bundle.getString(PASSWORD);
+            loader = new SupportLoginLoader(applicationContext, callback, module, username, password);
+        }
             break;
-            case LOGOUT: {
-                loader = new SupportLogoutLoader(applicationContext, callback, module);
-            }
+        case LOGOUT: {
+            loader = new SupportLogoutLoader(applicationContext, callback, module);
+        }
             break;
-            case ENROLL: {
-                Map<String, String> params = (Map<String, String>) bundle.getSerializable(PARAMS);
-                loader= new SupportEnrollLoader(applicationContext, callback, module, params);
-            }
+        case ENROLL: {
+            Map<String, String> params = (Map<String, String>) bundle.getSerializable(PARAMS);
+            loader = new SupportEnrollLoader(applicationContext, callback, module, params);
+        }
             break;
         }
         return loader;

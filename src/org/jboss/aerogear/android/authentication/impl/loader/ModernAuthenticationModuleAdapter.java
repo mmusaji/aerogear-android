@@ -153,20 +153,20 @@ public class ModernAuthenticationModuleAdapter implements AuthenticationModule, 
         Callback callback = (Callback) bundle.get(CALLBACK);
         Loader loader = null;
         switch (method) {
-            case LOGIN: {
-                String username = bundle.getString(USERNAME);
-                String password = bundle.getString(PASSWORD);
-                loader = new ModernLoginLoader(applicationContext, callback, module, username, password);
-            }
+        case LOGIN: {
+            String username = bundle.getString(USERNAME);
+            String password = bundle.getString(PASSWORD);
+            loader = new ModernLoginLoader(applicationContext, callback, module, username, password);
+        }
             break;
-            case LOGOUT: {
-                loader = new ModernLogoutLoader(applicationContext, callback, module);
-            }
+        case LOGOUT: {
+            loader = new ModernLogoutLoader(applicationContext, callback, module);
+        }
             break;
-            case ENROLL: {
-                Map<String, String> params = (Map<String, String>) bundle.getSerializable(PARAMS);
-                loader= new ModernEnrollLoader(applicationContext, callback, module, params);
-            }
+        case ENROLL: {
+            Map<String, String> params = (Map<String, String>) bundle.getSerializable(PARAMS);
+            loader = new ModernEnrollLoader(applicationContext, callback, module, params);
+        }
             break;
         }
         return loader;

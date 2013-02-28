@@ -43,7 +43,7 @@ public abstract class AbstractSupportAuthenticationLoader extends AsyncTaskLoade
         this.module = module;
     }
 
-    public Callback getCallback() {
+    public Callback<HeaderAndBody> getCallback() {
         return callback;
     }
 
