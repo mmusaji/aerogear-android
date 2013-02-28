@@ -36,11 +36,14 @@ import org.jboss.aerogear.android.impl.pipeline.loader.support.AbstractSupportPi
 import org.jboss.aerogear.android.impl.pipeline.loader.support.SupportReadLoader;
 import org.jboss.aerogear.android.impl.pipeline.loader.support.SupportRemoveLoader;
 import org.jboss.aerogear.android.impl.pipeline.loader.support.SupportSaveLoader;
+import org.jboss.aerogear.android.pipeline.AbstractActivityCallback;
 import org.jboss.aerogear.android.pipeline.AbstractFragmentCallback;
 import org.jboss.aerogear.android.pipeline.LoaderPipe;
 import org.jboss.aerogear.android.pipeline.Pipe;
 import org.jboss.aerogear.android.pipeline.PipeHandler;
 import org.jboss.aerogear.android.pipeline.PipeType;
+import org.jboss.aerogear.android.pipeline.support.AbstractFragmentActivityCallback;
+import org.jboss.aerogear.android.pipeline.support.AbstractSupportFragmentCallback;
 
 /**
  * This class wraps a Pipe in an asynchronous Loader.
@@ -54,9 +57,9 @@ public class SupportLoaderAdapter<T> implements LoaderPipe<T>, LoaderManager.Loa
     private static final String ITEM = "org.jboss.aerogear.android.impl.pipeline.ModernClassLoader.ITEM";
     private static final String REMOVE_ID = "org.jboss.aerogear.android.impl.pipeline.ModernClassLoader.REMOVIE_ID";
     private Multimap<String, Integer> idsForNamedPipes;
-
+    private final Fragment fragment;
+    private final FragmentActivity activity;
     private final Handler handler;
-
 
     private static enum Methods {
 
@@ -66,12 +69,11 @@ public class SupportLoaderAdapter<T> implements LoaderPipe<T>, LoaderManager.Loa
     private final Pipe<T> pipe;
     private final LoaderManager manager;
     private final Gson gson;
-    
     /**
      * The name referred to in the idsForNamedPipes
      */
     private final String name;
-    
+
     public SupportLoaderAdapter(FragmentActivity activity, Pipe<T> pipe, Gson gson, String name) {
         this.pipe = pipe;
         this.gson = gson;
@@ -79,6 +81,8 @@ public class SupportLoaderAdapter<T> implements LoaderPipe<T>, LoaderManager.Loa
         this.applicationContext = activity.getApplicationContext();
         this.name = name;
         this.handler = new Handler(Looper.getMainLooper());
+        this.activity = activity;
+        this.fragment = null;
     }
 
     public SupportLoaderAdapter(Fragment fragment, Context applicationContext, Pipe<T> pipe, Gson gson, String name) {
@@ -87,7 +91,9 @@ public class SupportLoaderAdapter<T> implements LoaderPipe<T>, LoaderManager.Loa
         this.gson = gson;
         this.applicationContext = applicationContext;
         this.name = name;
-        this.handler = new Handler(Looper.getMainLooper());        
+        this.handler = new Handler(Looper.getMainLooper());
+        this.activity = null;
+        this.fragment = fragment;
     }
 
     @Override
@@ -196,18 +202,30 @@ public class SupportLoaderAdapter<T> implements LoaderPipe<T>, LoaderManager.Loa
                 handler.post(new Runnable() {
                     @Override
                     public void run() {
-                        supportLoader.callback.onFailure(exception);
+                        if (supportLoader.callback instanceof AbstractSupportFragmentCallback) {
+                            fragmentFailure(supportLoader.callback, exception);
+                        } else if (supportLoader.callback instanceof AbstractFragmentActivityCallback) {
+                            activityFailure(supportLoader.callback, exception);
+                        } else {
+                            supportLoader.callback.onFailure(exception);
+                        }
                     }
                 });
-                
+
             } else {
                 handler.post(new Runnable() {
                     @Override
                     public void run() {
-                        supportLoader.callback.onSuccess(data);
+                        if (supportLoader.callback instanceof AbstractSupportFragmentCallback) {
+                            fragmentSuccess(supportLoader.callback, data);
+                        } else if (supportLoader.callback instanceof AbstractActivityCallback) {
+                            activitySuccess(supportLoader.callback, data);
+                        } else {
+                            supportLoader.callback.onSuccess(data);
+                        }
                     }
                 });
-                
+
             }
         }
     }
@@ -216,10 +234,10 @@ public class SupportLoaderAdapter<T> implements LoaderPipe<T>, LoaderManager.Loa
     public void onLoaderReset(Loader<T> loader) {
         //Gotta do something, though I don't know what
     }
-        
+
     @Override
     public void reset() {
-        for (Integer id: this.idsForNamedPipes.get(name)) {
+        for (Integer id : this.idsForNamedPipes.get(name)) {
             Loader l = manager.getLoader(id);
             if (l != null) {
                 manager.destroyLoader(id);
@@ -233,5 +251,31 @@ public class SupportLoaderAdapter<T> implements LoaderPipe<T>, LoaderManager.Loa
         this.idsForNamedPipes = idsForNamedPipes;
     }
 
-    
+    private void fragmentSuccess(Callback<T> typelessCallback, T data) {
+        AbstractSupportFragmentCallback callback = (AbstractSupportFragmentCallback) typelessCallback;
+        callback.setFragment(fragment);
+        callback.onSuccess(data);
+        callback.setFragment(null);
+    }
+
+    private void fragmentFailure(Callback<T> typelessCallback, Exception exception) {
+        AbstractSupportFragmentCallback callback = (AbstractSupportFragmentCallback) typelessCallback;
+        callback.setFragment(fragment);
+        callback.onFailure(exception);
+        callback.setFragment(null);
+    }
+
+    private void activitySuccess(Callback<T> typelessCallback, T data) {
+        AbstractFragmentActivityCallback callback = (AbstractFragmentActivityCallback) typelessCallback;
+        callback.setFragmentActivity(activity);
+        callback.onSuccess(data);
+        callback.setFragmentActivity(null);
+    }
+
+    private void activityFailure(Callback<T> typelessCallback, Exception exception) {
+        AbstractFragmentActivityCallback callback = (AbstractFragmentActivityCallback) typelessCallback;
+        callback.setFragmentActivity(activity);
+        callback.onFailure(exception);
+        callback.setFragmentActivity(null);
+    }
 }

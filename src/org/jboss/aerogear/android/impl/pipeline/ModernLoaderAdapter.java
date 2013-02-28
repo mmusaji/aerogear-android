@@ -38,6 +38,7 @@ import org.jboss.aerogear.android.impl.pipeline.loader.AbstractModernPipeLoader;
 import org.jboss.aerogear.android.impl.pipeline.loader.ModernReadLoader;
 import org.jboss.aerogear.android.impl.pipeline.loader.ModernRemoveLoader;
 import org.jboss.aerogear.android.impl.pipeline.loader.ModernSaveLoader;
+import org.jboss.aerogear.android.pipeline.AbstractActivityCallback;
 import org.jboss.aerogear.android.pipeline.AbstractFragmentCallback;
 import org.jboss.aerogear.android.pipeline.LoaderPipe;
 import org.jboss.aerogear.android.pipeline.Pipe;
@@ -55,9 +56,7 @@ public class ModernLoaderAdapter<T> implements LoaderPipe<T>, LoaderManager.Load
     private static final String FILTER = "org.jboss.aerogear.android.impl.pipeline.ModernClassLoader.FILTER";
     private static final String ITEM = "org.jboss.aerogear.android.impl.pipeline.ModernClassLoader.ITEM";
     private static final String REMOVE_ID = "org.jboss.aerogear.android.impl.pipeline.ModernClassLoader.REMOVIE_ID";
-    
     private final Handler handler;
-    
     private Multimap<String, Integer> idsForNamedPipes;
 
     private static enum Methods {
@@ -66,11 +65,12 @@ public class ModernLoaderAdapter<T> implements LoaderPipe<T>, LoaderManager.Load
     };
     private final Context applicationContext;
     private Fragment fragment;
+    private Activity activity;
     private final Pipe<T> pipe;
     private final LoaderManager manager;
     private final Gson gson;
     private final String name;
-    
+
     public ModernLoaderAdapter(Activity activity, Pipe<T> pipe, Gson gson, String name) {
         this.pipe = pipe;
         this.gson = gson;
@@ -78,6 +78,7 @@ public class ModernLoaderAdapter<T> implements LoaderPipe<T>, LoaderManager.Load
         this.applicationContext = activity.getApplicationContext();
         this.name = name;
         this.handler = new Handler(Looper.getMainLooper());
+        this.activity = activity;
     }
 
     public ModernLoaderAdapter(Fragment fragment, Context applicationContext, Pipe<T> pipe, Gson gson, String name) {
@@ -196,31 +197,29 @@ public class ModernLoaderAdapter<T> implements LoaderPipe<T>, LoaderManager.Load
                     @Override
                     public void run() {
                         if (modernLoader.callback instanceof AbstractFragmentCallback) {
-                            AbstractFragmentCallback callback = (AbstractFragmentCallback) modernLoader.callback;
-                            callback.setFragment(fragment);
-                            callback.onFailure(exception);
-                            callback.setFragment(null);
+                            fragmentFailure(modernLoader.callback, exception);
+                        } else if (modernLoader.callback instanceof AbstractActivityCallback) {
+                            activityFailure(modernLoader.callback, exception);
                         } else {
-                        	modernLoader.callback.onFailure(exception);
+                            modernLoader.callback.onFailure(exception);
                         }
                     }
                 });
-                
+
             } else {
                 handler.post(new Runnable() {
                     @Override
                     public void run() {
                         if (modernLoader.callback instanceof AbstractFragmentCallback) {
-                            AbstractFragmentCallback callback = (AbstractFragmentCallback) modernLoader.callback;
-                            callback.setFragment(fragment);
-                            callback.onSuccess(data);
-                            callback.setFragment(null);
+                            fragmentSuccess(modernLoader.callback, data);
+                        } else if (modernLoader.callback instanceof AbstractActivityCallback) {
+                            activitySuccess(modernLoader.callback, data);
                         } else {
-                        	modernLoader.callback.onSuccess(data);
+                            modernLoader.callback.onSuccess(data);
                         }
                     }
                 });
-                
+
             }
         }
     }
@@ -228,9 +227,9 @@ public class ModernLoaderAdapter<T> implements LoaderPipe<T>, LoaderManager.Load
     @Override
     public void onLoaderReset(Loader<T> loader) {
         Log.e(TAG, loader.toString());
-        
+
     }
-    
+
     @Override
     public void reset() {
         for (Integer id : idsForNamedPipes.get(name)) {
@@ -241,10 +240,37 @@ public class ModernLoaderAdapter<T> implements LoaderPipe<T>, LoaderManager.Load
         }
         idsForNamedPipes.removeAll(name);
     }
-    
+
     @Override
     public void setLoaderIds(Multimap<String, Integer> idsForNamedPipes) {
         this.idsForNamedPipes = idsForNamedPipes;
     }
+
+    private void fragmentSuccess(Callback<T> typelessCallback, T data) {
+        AbstractFragmentCallback callback = (AbstractFragmentCallback) typelessCallback;
+        callback.setFragment(fragment);
+        callback.onSuccess(data);
+        callback.setFragment(null);
+    }
     
+    private void fragmentFailure(Callback<T> typelessCallback, Exception exception) {
+        AbstractFragmentCallback callback = (AbstractFragmentCallback) typelessCallback;
+        callback.setFragment(fragment);
+        callback.onFailure(exception);
+        callback.setFragment(null);
+    }
+    
+    private void activitySuccess(Callback<T> typelessCallback, T data) {
+        AbstractActivityCallback callback = (AbstractActivityCallback) typelessCallback;
+        callback.setActivity(activity);
+        callback.onSuccess(data);
+        callback.setActivity(null);
+    }
+    
+    private void activityFailure(Callback<T> typelessCallback, Exception exception) {
+        AbstractActivityCallback callback = (AbstractActivityCallback) typelessCallback;
+        callback.setActivity(activity);
+        callback.onFailure(exception);
+        callback.setActivity(null);
+    }
 }
