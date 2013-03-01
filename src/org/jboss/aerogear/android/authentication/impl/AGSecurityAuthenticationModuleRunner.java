@@ -27,7 +27,7 @@ import org.jboss.aerogear.android.http.HttpProvider;
 import org.jboss.aerogear.android.impl.core.HttpProviderFactory;
 import org.json.JSONObject;
 
-public class AGSecurityAuthenticationModuleRunner {
+class AGSecurityAuthenticationModuleRunner {
 
     private static final String TAG = AGSecurityAuthenticationModuleRunner.class.getSimpleName();
     private final Provider<HttpProvider> httpProviderFactory = new HttpProviderFactory();
@@ -40,7 +40,6 @@ public class AGSecurityAuthenticationModuleRunner {
     private final URL enrollURL;
 
     /**
-     *
      * @param baseURL
      * @param config
      * @throws IllegalArgumentException if an endpoint can not be appended to
