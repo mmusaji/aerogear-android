@@ -139,8 +139,9 @@ public class MemoryStorage<T> implements Store<T> {
     private void filterData(Collection<T> data, JSONObject where) {
         String filterPropertyName;
         Object filterValue;
-        Iterator keys = where.keys();
+        Iterator keys = where.keys();        
         while (keys.hasNext()) {
+            ArrayList toRemove = new ArrayList(data.size()); // We will not remove more items than are in data
             filterPropertyName = keys.next().toString();
             filterValue = where.opt(filterPropertyName);
 
@@ -149,10 +150,11 @@ public class MemoryStorage<T> implements Store<T> {
                 Object propertyValue = objectProperty.getValue(objectInStorage);
                 if (propertyValue != null && filterValue != null) {
                     if (!propertyValue.equals(filterValue)) {
-                        data.remove(objectInStorage);
+                        toRemove.add(objectInStorage);
                     }
                 }
             }
+            data.removeAll(toRemove);
         }
     }
 
