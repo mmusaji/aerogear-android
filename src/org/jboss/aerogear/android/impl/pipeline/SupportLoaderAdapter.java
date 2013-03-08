@@ -15,20 +15,9 @@
  */
 package org.jboss.aerogear.android.impl.pipeline;
 
-import android.support.v4.app.Fragment;
-import android.support.v4.app.LoaderManager;
-import android.content.Context;
-import android.support.v4.content.Loader;
-import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
-import android.support.v4.app.FragmentActivity;
-import android.util.Log;
-import com.google.common.base.Objects;
-import com.google.common.collect.Multimap;
-import com.google.gson.Gson;
 import java.net.URL;
 import java.util.List;
+
 import org.jboss.aerogear.android.Callback;
 import org.jboss.aerogear.android.ReadFilter;
 import org.jboss.aerogear.android.impl.pipeline.loader.support.AbstractSupportPipeLoader;
@@ -41,6 +30,20 @@ import org.jboss.aerogear.android.pipeline.PipeHandler;
 import org.jboss.aerogear.android.pipeline.PipeType;
 import org.jboss.aerogear.android.pipeline.support.AbstractFragmentActivityCallback;
 import org.jboss.aerogear.android.pipeline.support.AbstractSupportFragmentCallback;
+
+import android.content.Context;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.Loader;
+import android.util.Log;
+
+import com.google.common.base.Objects;
+import com.google.common.collect.Multimap;
+import com.google.gson.Gson;
 
 /**
  * This class wraps a Pipe in an asynchronous Loader.
@@ -198,40 +201,51 @@ public class SupportLoaderAdapter<T> implements LoaderPipe<T>, LoaderManager.Loa
             throw new IllegalStateException("Adapter is listening to loaders which it doesn't support");
         } else {
             final AbstractSupportPipeLoader<T> supportLoader = (AbstractSupportPipeLoader<T>) loader;
-            if (supportLoader.hasException()) {
-                final Exception exception = supportLoader.getException();
-                Log.e(TAG, exception.getMessage(), exception);
-                handler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (supportLoader.callback instanceof AbstractSupportFragmentCallback) {
-                            fragmentFailure(supportLoader.callback, exception);
-                        } else if (supportLoader.callback instanceof AbstractFragmentActivityCallback) {
-                            activityFailure(supportLoader.callback, exception);
-                        } else {
-                            supportLoader.callback.onFailure(exception);
-                        }
-                    }
-                });
-
-            } else {
-                handler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (supportLoader.callback instanceof AbstractSupportFragmentCallback) {
-                            fragmentSuccess(supportLoader.callback, data);
-                        } else if (supportLoader.callback instanceof AbstractFragmentActivityCallback) {
-                            activitySuccess(supportLoader.callback, data);
-                        } else {
-                            supportLoader.callback.onSuccess(data);
-                        }
-                    }
-                });
-
-            }
+			handler.post(new CallbackHandler<T>(this, supportLoader, data));
         }
     }
 
+	static class CallbackHandler<T> implements Runnable {
+
+		private final SupportLoaderAdapter<T> adapter;
+		private final AbstractSupportPipeLoader<T> modernLoader;
+		private final T data;
+		
+		public CallbackHandler(SupportLoaderAdapter<T> adapter,
+				AbstractSupportPipeLoader<T> loader, T data) {
+			super();
+			this.adapter = adapter;
+			this.modernLoader = loader;
+			this.data = data;
+		}
+
+		@Override
+		public void run() {
+			if (modernLoader.hasException()) {
+				final Exception exception = modernLoader.getException();
+				Log.e(TAG, exception.getMessage(), exception);
+				if (modernLoader.getCallback() instanceof AbstractSupportFragmentCallback) {
+					adapter.fragmentFailure(modernLoader.getCallback(), exception);
+				} else if (modernLoader.getCallback() instanceof AbstractFragmentActivityCallback) {
+					adapter.activityFailure(modernLoader.getCallback(), exception);
+				} else {
+					modernLoader.getCallback().onFailure(exception);
+				}
+
+			} else {
+				
+				if (modernLoader.getCallback() instanceof AbstractSupportFragmentCallback) {
+					adapter.fragmentSuccess(modernLoader.getCallback(), data);
+				} else if (modernLoader.getCallback() instanceof AbstractFragmentActivityCallback) {
+					adapter.activitySuccess(modernLoader.getCallback(), data);
+				} else {
+					modernLoader.getCallback().onSuccess(data);
+				}
+			}
+
+		}
+	}
+    
     @Override
     public void onLoaderReset(Loader<T> loader) {
         //Gotta do something, though I don't know what

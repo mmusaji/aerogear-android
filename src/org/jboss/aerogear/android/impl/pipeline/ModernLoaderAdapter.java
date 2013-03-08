@@ -44,236 +44,261 @@ import org.jboss.aerogear.android.pipeline.PipeType;
 
 /**
  * This class wraps a Pipe in an asynchronous Loader.
- *
+ * 
  * This classes uses Loaders from android.conent. It will not work on pre
  * Honeycomb devices. If you do need to support Android devices &lt; version
  * 3.0, consider using {@link SupportLoaderAdapter}
- *
+ * 
  */
-public class ModernLoaderAdapter<T> implements LoaderPipe<T>, LoaderManager.LoaderCallbacks<T> {
+public class ModernLoaderAdapter<T> implements LoaderPipe<T>,
+		LoaderManager.LoaderCallbacks<T> {
 
-    private static final String TAG = ModernLoaderAdapter.class.getSimpleName();
-    private static final String CALLBACK = "org.jboss.aerogear.android.impl.pipeline.ModernClassLoader.CALLBACK";
-    private static final String METHOD = "org.jboss.aerogear.android.impl.pipeline.ModernClassLoader.METHOD";
-    private static final String FILTER = "org.jboss.aerogear.android.impl.pipeline.ModernClassLoader.FILTER";
-    private static final String ITEM = "org.jboss.aerogear.android.impl.pipeline.ModernClassLoader.ITEM";
-    private static final String REMOVE_ID = "org.jboss.aerogear.android.impl.pipeline.ModernClassLoader.REMOVIE_ID";
-    private final Handler handler;
-    private Multimap<String, Integer> idsForNamedPipes;
+	private static final String TAG = ModernLoaderAdapter.class.getSimpleName();
+	private static final String CALLBACK = "org.jboss.aerogear.android.impl.pipeline.ModernClassLoader.CALLBACK";
+	private static final String METHOD = "org.jboss.aerogear.android.impl.pipeline.ModernClassLoader.METHOD";
+	private static final String FILTER = "org.jboss.aerogear.android.impl.pipeline.ModernClassLoader.FILTER";
+	private static final String ITEM = "org.jboss.aerogear.android.impl.pipeline.ModernClassLoader.ITEM";
+	private static final String REMOVE_ID = "org.jboss.aerogear.android.impl.pipeline.ModernClassLoader.REMOVIE_ID";
+	private final Handler handler;
+	private Multimap<String, Integer> idsForNamedPipes;
 
-    private static enum Methods {
+	private static enum Methods {
 
-        READ, SAVE, REMOVE
-    };
+		READ, SAVE, REMOVE
+	};
 
-    private final Context applicationContext;
-    private Fragment fragment;
-    private Activity activity;
-    private final Pipe<T> pipe;
-    private final LoaderManager manager;
-    private final Gson gson;
-    private final String name;
+	private final Context applicationContext;
+	private Fragment fragment;
+	private Activity activity;
+	private final Pipe<T> pipe;
+	private final LoaderManager manager;
+	private final Gson gson;
+	private final String name;
 
-    public ModernLoaderAdapter(Activity activity, Pipe<T> pipe, Gson gson, String name) {
-        this.pipe = pipe;
-        this.gson = gson;
-        this.manager = activity.getLoaderManager();
-        this.applicationContext = activity.getApplicationContext();
-        this.name = name;
-        this.handler = new Handler(Looper.getMainLooper());
-        this.activity = activity;
-    }
+	public ModernLoaderAdapter(Activity activity, Pipe<T> pipe, Gson gson,
+			String name) {
+		this.pipe = pipe;
+		this.gson = gson;
+		this.manager = activity.getLoaderManager();
+		this.applicationContext = activity.getApplicationContext();
+		this.name = name;
+		this.handler = new Handler(Looper.getMainLooper());
+		this.activity = activity;
+	}
 
-    public ModernLoaderAdapter(Fragment fragment, Context applicationContext, Pipe<T> pipe, Gson gson, String name) {
-        this.pipe = pipe;
-        this.manager = fragment.getLoaderManager();
-        this.gson = gson;
-        this.applicationContext = applicationContext;
-        this.name = name;
-        this.handler = new Handler(Looper.getMainLooper());
-        this.fragment = fragment;
-    }
+	public ModernLoaderAdapter(Fragment fragment, Context applicationContext,
+			Pipe<T> pipe, Gson gson, String name) {
+		this.pipe = pipe;
+		this.manager = fragment.getLoaderManager();
+		this.gson = gson;
+		this.applicationContext = applicationContext;
+		this.name = name;
+		this.handler = new Handler(Looper.getMainLooper());
+		this.fragment = fragment;
+	}
 
-    @Override
-    public PipeType getType() {
-        return pipe.getType();
-    }
+	@Override
+	public PipeType getType() {
+		return pipe.getType();
+	}
 
-    @Override
-    public URL getUrl() {
-        return pipe.getUrl();
-    }
+	@Override
+	public URL getUrl() {
+		return pipe.getUrl();
+	}
 
-    @Override
-    public void read(Callback<List<T>> callback) {
-        int id = Objects.hashCode(name, callback);
-        Bundle bundle = new Bundle();
-        bundle.putSerializable(CALLBACK, callback);
-        bundle.putSerializable(FILTER, null);
-        bundle.putSerializable(METHOD, Methods.READ);
-        manager.initLoader(id, bundle, this);
-    }
+	@Override
+	public void read(Callback<List<T>> callback) {
+		int id = Objects.hashCode(name, callback);
+		Bundle bundle = new Bundle();
+		bundle.putSerializable(CALLBACK, callback);
+		bundle.putSerializable(FILTER, null);
+		bundle.putSerializable(METHOD, Methods.READ);
+		manager.initLoader(id, bundle, this);
+	}
 
-    @Override
-    public void readWithFilter(ReadFilter filter, Callback<List<T>> callback) {
-        int id = Objects.hashCode(name, filter, callback);
-        Bundle bundle = new Bundle();
-        bundle.putSerializable(CALLBACK, callback);
-        bundle.putSerializable(FILTER, filter);
-        bundle.putSerializable(METHOD, Methods.READ);
-        manager.initLoader(id, bundle, this);
-    }
+	@Override
+	public void readWithFilter(ReadFilter filter, Callback<List<T>> callback) {
+		int id = Objects.hashCode(name, filter, callback);
+		Bundle bundle = new Bundle();
+		bundle.putSerializable(CALLBACK, callback);
+		bundle.putSerializable(FILTER, filter);
+		bundle.putSerializable(METHOD, Methods.READ);
+		manager.initLoader(id, bundle, this);
+	}
 
-    @Override
-    public void save(T item, Callback<T> callback) {
-        int id = Objects.hashCode(name, item, callback);
-        Bundle bundle = new Bundle();
-        bundle.putSerializable(CALLBACK, callback);
-        bundle.putSerializable(ITEM, gson.toJson(item));//item may not be serializable, but it has to be gsonable
-        bundle.putSerializable(METHOD, Methods.SAVE);
-        manager.initLoader(id, bundle, this);
-    }
+	@Override
+	public void save(T item, Callback<T> callback) {
+		int id = Objects.hashCode(name, item, callback);
+		Bundle bundle = new Bundle();
+		bundle.putSerializable(CALLBACK, callback);
+		bundle.putSerializable(ITEM, gson.toJson(item));// item may not be
+														// serializable, but it
+														// has to be gsonable
+		bundle.putSerializable(METHOD, Methods.SAVE);
+		manager.initLoader(id, bundle, this);
+	}
 
-    @Override
-    public void remove(String toRemoveId, Callback<Void> callback) {
-        int id = Objects.hashCode(name, toRemoveId, callback);
-        Bundle bundle = new Bundle();
-        bundle.putSerializable(CALLBACK, callback);
-        bundle.putSerializable(REMOVE_ID, toRemoveId);
-        bundle.putSerializable(METHOD, Methods.REMOVE);
-        manager.initLoader(id, bundle, this);
-    }
+	@Override
+	public void remove(String toRemoveId, Callback<Void> callback) {
+		int id = Objects.hashCode(name, toRemoveId, callback);
+		Bundle bundle = new Bundle();
+		bundle.putSerializable(CALLBACK, callback);
+		bundle.putSerializable(REMOVE_ID, toRemoveId);
+		bundle.putSerializable(METHOD, Methods.REMOVE);
+		manager.initLoader(id, bundle, this);
+	}
 
-    @Override
-    public PipeHandler<T> getHandler() {
-        return pipe.getHandler();
-    }
+	@Override
+	public PipeHandler<T> getHandler() {
+		return pipe.getHandler();
+	}
 
-    @Override
-    public Gson getGson() {
-        return gson;
-    }
+	@Override
+	public Gson getGson() {
+		return gson;
+	}
 
-    @Override
-    public Class<T> getKlass() {
-        return pipe.getKlass();
-    }
+	@Override
+	public Class<T> getKlass() {
+		return pipe.getKlass();
+	}
 
-    @Override
-    public Loader<T> onCreateLoader(int id, Bundle bundle) {
-        this.idsForNamedPipes.put(name, id);
-        Methods method = (Methods) bundle.get(METHOD);
-        Callback callback = (Callback) bundle.get(CALLBACK);
-        Loader loader = null;
-        switch (method) {
-        case READ: {
-            ReadFilter filter = (ReadFilter) bundle.get(FILTER);
-            loader = new ModernReadLoader(applicationContext, callback, pipe.getRunner(), filter, this);
-        }
-            break;
-        case REMOVE: {
-            String toRemove = bundle.getString(REMOVE_ID, "-1");
-            loader = new ModernRemoveLoader(applicationContext, callback, pipe.getRunner(), toRemove);
-        }
-            break;
-        case SAVE: {
-            String json = bundle.getString(ITEM);
-            T item = gson.fromJson(json, pipe.getKlass());
-            loader = new ModernSaveLoader(applicationContext, callback, pipe.getRunner(), item);
-        }
-            break;
-        }
-        return loader;
-    }
+	@Override
+	public Loader<T> onCreateLoader(int id, Bundle bundle) {
+		this.idsForNamedPipes.put(name, id);
+		Methods method = (Methods) bundle.get(METHOD);
+		Callback callback = (Callback) bundle.get(CALLBACK);
+		Loader loader = null;
+		switch (method) {
+		case READ: {
+			ReadFilter filter = (ReadFilter) bundle.get(FILTER);
+			loader = new ModernReadLoader(applicationContext, callback,
+					pipe.getHandler(), filter, this);
+		}
+			break;
+		case REMOVE: {
+			String toRemove = bundle.getString(REMOVE_ID, "-1");
+			loader = new ModernRemoveLoader(applicationContext, callback,
+					pipe.getHandler(), toRemove);
+		}
+			break;
+		case SAVE: {
+			String json = bundle.getString(ITEM);
+			T item = gson.fromJson(json, pipe.getKlass());
+			loader = new ModernSaveLoader(applicationContext, callback,
+					pipe.getHandler(), item);
+		}
+			break;
+		}
+		return loader;
+	}
 
-    @Override
-    public void onLoadFinished(Loader<T> loader, final T data) {
-        if (!(loader instanceof AbstractModernPipeLoader)) {
-            Log.e(TAG, "Adapter is listening to loaders which it doesn't support");
-            throw new IllegalStateException("Adapter is listening to loaders which it doesn't support");
-        } else {
-            final AbstractModernPipeLoader<T> modernLoader = (AbstractModernPipeLoader<T>) loader;
-            if (modernLoader.hasException()) {
-                final Exception exception = modernLoader.getException();
-                Log.e(TAG, exception.getMessage(), exception);
-                handler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (modernLoader.callback instanceof AbstractFragmentCallback) {
-                            fragmentFailure(modernLoader.callback, exception);
-                        } else if (modernLoader.callback instanceof AbstractActivityCallback) {
-                            activityFailure(modernLoader.callback, exception);
-                        } else {
-                            modernLoader.callback.onFailure(exception);
-                        }
-                    }
-                });
+	@Override
+	public void onLoadFinished(Loader<T> loader, final T data) {
+		if (!(loader instanceof AbstractModernPipeLoader)) {
+			Log.e(TAG,
+					"Adapter is listening to loaders which it doesn't support");
+			throw new IllegalStateException(
+					"Adapter is listening to loaders which it doesn't support");
+		} else {
+			final AbstractModernPipeLoader<T> modernLoader = (AbstractModernPipeLoader<T>) loader;
+			handler.post(new CallbackHandler<T>(this, modernLoader, data));
+		}
+	}
 
-            } else {
-                handler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (modernLoader.callback instanceof AbstractFragmentCallback) {
-                            fragmentSuccess(modernLoader.callback, data);
-                        } else if (modernLoader.callback instanceof AbstractActivityCallback) {
-                            activitySuccess(modernLoader.callback, data);
-                        } else {
-                            modernLoader.callback.onSuccess(data);
-                        }
-                    }
-                });
+	@Override
+	public void onLoaderReset(Loader<T> loader) {
+		Log.e(TAG, loader.toString());
 
-            }
-        }
-    }
+	}
 
-    @Override
-    public void onLoaderReset(Loader<T> loader) {
-        Log.e(TAG, loader.toString());
+	@Override
+	public void reset() {
+		for (Integer id : idsForNamedPipes.get(name)) {
+			Loader loader = manager.getLoader(id);
+			if (loader != null) {
+				manager.destroyLoader(id);
+			}
+		}
+		idsForNamedPipes.removeAll(name);
+	}
 
-    }
+	@Override
+	public void setLoaderIds(Multimap<String, Integer> idsForNamedPipes) {
+		this.idsForNamedPipes = idsForNamedPipes;
+	}
 
-    @Override
-    public void reset() {
-        for (Integer id : idsForNamedPipes.get(name)) {
-            Loader loader = manager.getLoader(id);
-            if (loader != null) {
-                manager.destroyLoader(id);
-            }
-        }
-        idsForNamedPipes.removeAll(name);
-    }
+	private void fragmentSuccess(Callback<T> typelessCallback, T data) {
+		AbstractFragmentCallback callback = (AbstractFragmentCallback) typelessCallback;
+		callback.setFragment(fragment);
+		callback.onSuccess(data);
+		callback.setFragment(null);
+	}
 
-    @Override
-    public void setLoaderIds(Multimap<String, Integer> idsForNamedPipes) {
-        this.idsForNamedPipes = idsForNamedPipes;
-    }
+	private void fragmentFailure(Callback<T> typelessCallback,
+			Exception exception) {
+		AbstractFragmentCallback callback = (AbstractFragmentCallback) typelessCallback;
+		callback.setFragment(fragment);
+		callback.onFailure(exception);
+		callback.setFragment(null);
+	}
 
-    private void fragmentSuccess(Callback<T> typelessCallback, T data) {
-        AbstractFragmentCallback callback = (AbstractFragmentCallback) typelessCallback;
-        callback.setFragment(fragment);
-        callback.onSuccess(data);
-        callback.setFragment(null);
-    }
+	private void activitySuccess(Callback<T> typelessCallback, T data) {
+		AbstractActivityCallback callback = (AbstractActivityCallback) typelessCallback;
+		callback.setActivity(activity);
+		callback.onSuccess(data);
+		callback.setActivity(null);
+	}
 
-    private void fragmentFailure(Callback<T> typelessCallback, Exception exception) {
-        AbstractFragmentCallback callback = (AbstractFragmentCallback) typelessCallback;
-        callback.setFragment(fragment);
-        callback.onFailure(exception);
-        callback.setFragment(null);
-    }
+	private void activityFailure(Callback<T> typelessCallback,
+			Exception exception) {
+		AbstractActivityCallback callback = (AbstractActivityCallback) typelessCallback;
+		callback.setActivity(activity);
+		callback.onFailure(exception);
+		callback.setActivity(null);
+	}
 
-    private void activitySuccess(Callback<T> typelessCallback, T data) {
-        AbstractActivityCallback callback = (AbstractActivityCallback) typelessCallback;
-        callback.setActivity(activity);
-        callback.onSuccess(data);
-        callback.setActivity(null);
-    }
+	@SuppressWarnings("rawtypes")
+	static class CallbackHandler<T> implements Runnable {
 
-    private void activityFailure(Callback<T> typelessCallback, Exception exception) {
-        AbstractActivityCallback callback = (AbstractActivityCallback) typelessCallback;
-        callback.setActivity(activity);
-        callback.onFailure(exception);
-        callback.setActivity(null);
-    }
+		private final ModernLoaderAdapter<T> adapter;
+		private final AbstractModernPipeLoader<T> modernLoader;
+		private final T data;
+		
+		public CallbackHandler(ModernLoaderAdapter<T> adapter,
+				AbstractModernPipeLoader<T> loader, T data) {
+			super();
+			this.adapter = adapter;
+			this.modernLoader = loader;
+			this.data = data;
+		}
+
+		@Override
+		public void run() {
+			if (modernLoader.hasException()) {
+				final Exception exception = modernLoader.getException();
+				Log.e(TAG, exception.getMessage(), exception);
+				if (modernLoader.getCallback() instanceof AbstractFragmentCallback) {
+					adapter.fragmentFailure(modernLoader.getCallback(), exception);
+				} else if (modernLoader.getCallback() instanceof AbstractActivityCallback) {
+					adapter.activityFailure(modernLoader.getCallback(), exception);
+				} else {
+					modernLoader.getCallback().onFailure(exception);
+				}
+
+			} else {
+				
+				if (modernLoader.getCallback() instanceof AbstractFragmentCallback) {
+					adapter.fragmentSuccess(modernLoader.getCallback(), data);
+				} else if (modernLoader.getCallback() instanceof AbstractActivityCallback) {
+					adapter.activitySuccess(modernLoader.getCallback(), data);
+				} else {
+					modernLoader.getCallback().onSuccess(data);
+				}
+			}
+
+		}
+	}
+
 }

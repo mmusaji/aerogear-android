@@ -31,7 +31,7 @@ import org.jboss.aerogear.android.impl.pipeline.loader.support.AbstractSupportPi
  */
 public abstract class AbstractModernPipeLoader<T> extends AsyncTaskLoader<T> {
 
-    public final Callback<T> callback;
+    private final Callback<T> callback;
     protected Exception exception;
 
     public AbstractModernPipeLoader(Context context, Callback<T> callback) {
@@ -52,4 +52,9 @@ public abstract class AbstractModernPipeLoader<T> extends AsyncTaskLoader<T> {
         super.onReset();
         exception = null;
     }
+    
+    public Callback<T> getCallback() {
+    	return callback;
+    }
+    
 }

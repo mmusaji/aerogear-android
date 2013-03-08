@@ -30,7 +30,7 @@ import org.jboss.aerogear.android.Callback;
  */
 public abstract class AbstractSupportPipeLoader<T> extends AsyncTaskLoader<T> {
 
-    public final Callback<T> callback;
+    private final Callback<T> callback;
     protected Exception exception;
 
     public AbstractSupportPipeLoader(Context context, Callback<T> callback) {
@@ -51,4 +51,10 @@ public abstract class AbstractSupportPipeLoader<T> extends AsyncTaskLoader<T> {
         super.onReset();
         exception = null;
     }
+
+	public Callback<T> getCallback() {
+		return callback;
+	}
+    
+    
 }
