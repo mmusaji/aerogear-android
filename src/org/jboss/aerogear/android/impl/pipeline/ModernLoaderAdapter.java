@@ -259,7 +259,7 @@ public class ModernLoaderAdapter<T> implements LoaderPipe<T>,
 		callback.setActivity(null);
 	}
 
-	@SuppressWarnings("rawtypes")
+
 	static class CallbackHandler<T> implements Runnable {
 
 		private final ModernLoaderAdapter<T> adapter;
