@@ -36,7 +36,7 @@ public class SupportLoginLoader extends AbstractSupportAuthenticationLoader {
     private final String username;
     private final String password;
 
-    SupportLoginLoader(Context context, Callback callback, AuthenticationModule module, String username, String password) {
+    public SupportLoginLoader(Context context, Callback callback, AuthenticationModule module, String username, String password) {
         super(context, module, callback);
         this.username = username;
         this.password = password;
