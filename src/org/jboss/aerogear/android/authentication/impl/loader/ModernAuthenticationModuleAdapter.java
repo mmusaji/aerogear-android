@@ -186,35 +186,7 @@ public class ModernAuthenticationModuleAdapter implements AuthenticationModule, 
             throw new IllegalStateException("Adapter is listening to loaders which it doesn't support");
         } else {
             final AbstractModernAuthenticationLoader modernLoader = (AbstractModernAuthenticationLoader) loader;
-            if (modernLoader.hasException()) {
-                final Exception exception = modernLoader.getException();
-                Log.e(TAG, exception.getMessage(), exception);
-                handler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (modernLoader.getCallback() instanceof AbstractFragmentCallback) {
-                            fragmentFailure(modernLoader.getCallback(), exception);
-                        } else if (modernLoader.getCallback() instanceof AbstractActivityCallback) {
-                            activityFailure(modernLoader.getCallback(), exception);
-                        } else {
-                            modernLoader.getCallback().onFailure(exception);
-                        }
-                    }
-                });
-            } else {
-                handler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (modernLoader.getCallback() instanceof AbstractFragmentCallback) {
-                            fragmentSuccess(modernLoader.getCallback(), data);
-                        } else if (modernLoader.getCallback() instanceof AbstractActivityCallback) {
-                            activitySuccess(modernLoader.getCallback(), data);
-                        } else {
-                            modernLoader.getCallback().onSuccess(data);
-                        }
-                    }
-                });
-            }
+            handler.post(new CallbackHandler(this, modernLoader, data));
         }
     }
 
@@ -250,4 +222,46 @@ public class ModernAuthenticationModuleAdapter implements AuthenticationModule, 
         callback.onFailure(exception);
         callback.setActivity(null);
     }
+    
+    final static class CallbackHandler implements Runnable {
+
+		private final ModernAuthenticationModuleAdapter adapter;
+		private final AbstractModernAuthenticationLoader modernLoader;
+		private final HeaderAndBody data;
+		
+		public CallbackHandler(ModernAuthenticationModuleAdapter adapter,
+				AbstractModernAuthenticationLoader loader, HeaderAndBody data) {
+			super();
+			this.adapter = adapter;
+			this.modernLoader = loader;
+			this.data = data;
+		}
+
+		@Override
+		public void run() {
+			if (modernLoader.hasException()) {
+				final Exception exception = modernLoader.getException();
+				Log.e(TAG, exception.getMessage(), exception);
+				if (modernLoader.getCallback() instanceof AbstractFragmentCallback) {
+					adapter.fragmentFailure(modernLoader.getCallback(), exception);
+				} else if (modernLoader.getCallback() instanceof AbstractActivityCallback) {
+					adapter.activityFailure(modernLoader.getCallback(), exception);
+				} else {
+					modernLoader.getCallback().onFailure(exception);
+				}
+
+			} else {
+				
+				if (modernLoader.getCallback() instanceof AbstractFragmentCallback) {
+					adapter.fragmentSuccess(modernLoader.getCallback(), data);
+				} else if (modernLoader.getCallback() instanceof AbstractActivityCallback) {
+					adapter.activitySuccess(modernLoader.getCallback(), data);
+				} else {
+					modernLoader.getCallback().onSuccess(data);
+				}
+			}
+
+		}
+	}
+    
 }

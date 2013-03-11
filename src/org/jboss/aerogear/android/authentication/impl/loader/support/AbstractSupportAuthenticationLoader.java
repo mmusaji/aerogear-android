@@ -51,7 +51,7 @@ public abstract class AbstractSupportAuthenticationLoader extends AsyncTaskLoade
         return module;
     }
 
-    boolean hasException() {
+    public boolean hasException() {
         return exception != null;
     }
 

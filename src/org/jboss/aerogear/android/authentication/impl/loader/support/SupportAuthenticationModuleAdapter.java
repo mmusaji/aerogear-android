@@ -32,7 +32,6 @@ import java.util.Map;
 import org.jboss.aerogear.android.Callback;
 import org.jboss.aerogear.android.authentication.AuthenticationModule;
 import org.jboss.aerogear.android.authentication.AuthorizationFields;
-import org.jboss.aerogear.android.authentication.impl.loader.ModernAuthenticationModuleAdapter;
 import org.jboss.aerogear.android.http.HeaderAndBody;
 import org.jboss.aerogear.android.pipeline.support.AbstractFragmentActivityCallback;
 import org.jboss.aerogear.android.pipeline.support.AbstractSupportFragmentCallback;
@@ -55,7 +54,7 @@ public class SupportAuthenticationModuleAdapter implements AuthenticationModule,
     private static final String PASSWORD = "org.jboss.aerogear.android.authentication.loader.ModernAuthenticationModuleAdapter.PASSWORD";
     private static final String PARAMS = "org.jboss.aerogear.android.authentication.loader.ModernAuthenticationModuleAdapter.PARAMS";
 
-    private static enum Methods {
+    static enum Methods {
 
         LOGIN, LOGOUT, ENROLL
     };
@@ -188,36 +187,7 @@ public class SupportAuthenticationModuleAdapter implements AuthenticationModule,
             throw new IllegalStateException("Adapter is listening to loaders which it doesn't support");
         } else {
             final AbstractSupportAuthenticationLoader supportLoader = (AbstractSupportAuthenticationLoader) loader;
-
-            if (supportLoader.hasException()) {
-                final Exception exception = supportLoader.getException();
-                Log.e(TAG, exception.getMessage(), exception);
-                handler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (supportLoader.getCallback() instanceof AbstractSupportFragmentCallback) {
-                            fragmentFailure(supportLoader.getCallback(), exception);
-                        } else if (supportLoader.getCallback() instanceof AbstractFragmentActivityCallback) {
-                            activityFailure(supportLoader.getCallback(), exception);
-                        } else {
-                            supportLoader.getCallback().onFailure(exception);
-                        }
-                    }
-                });
-            } else {
-                handler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (supportLoader.getCallback() instanceof AbstractSupportFragmentCallback) {
-                            fragmentSuccess(supportLoader.getCallback(), data);
-                        } else if (supportLoader.getCallback() instanceof AbstractFragmentActivityCallback) {
-                            activitySuccess(supportLoader.getCallback(), data);
-                        } else {
-                            supportLoader.getCallback().onSuccess(data);
-                        }
-                    }
-                });
-            }
+            handler.post(new CallbackHandler(this, supportLoader, data));
         }
     }
 
@@ -253,4 +223,45 @@ public class SupportAuthenticationModuleAdapter implements AuthenticationModule,
         callback.onFailure(exception);
         callback.setFragmentActivity(null);
     }
+    
+    final static class CallbackHandler implements Runnable {
+
+		private final SupportAuthenticationModuleAdapter adapter;
+		private final AbstractSupportAuthenticationLoader supportLoader;
+		private final HeaderAndBody data;
+		
+		public CallbackHandler(SupportAuthenticationModuleAdapter adapter,
+				AbstractSupportAuthenticationLoader loader, HeaderAndBody data) {
+			super();
+			this.adapter = adapter;
+			this.supportLoader = loader;
+			this.data = data;
+		}
+
+		@Override
+		public void run() {
+			if (supportLoader.hasException()) {
+				final Exception exception = supportLoader.getException();
+				Log.e(TAG, exception.getMessage(), exception);
+				if (supportLoader.getCallback() instanceof AbstractSupportFragmentCallback) {
+					adapter.fragmentFailure(supportLoader.getCallback(), exception);
+				} else if (supportLoader.getCallback() instanceof AbstractFragmentActivityCallback) {
+					adapter.activityFailure(supportLoader.getCallback(), exception);
+				} else {
+					supportLoader.getCallback().onFailure(exception);
+				}
+
+			} else {
+				
+				if (supportLoader.getCallback() instanceof AbstractSupportFragmentCallback) {
+					adapter.fragmentSuccess(supportLoader.getCallback(), data);
+				} else if (supportLoader.getCallback() instanceof AbstractFragmentActivityCallback) {
+					adapter.activitySuccess(supportLoader.getCallback(), data);
+				} else {
+					supportLoader.getCallback().onSuccess(data);
+				}
+			}
+
+		}
+	}
 }
