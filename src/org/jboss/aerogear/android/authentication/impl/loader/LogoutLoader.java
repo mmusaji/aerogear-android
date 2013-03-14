@@ -25,57 +25,44 @@ import org.jboss.aerogear.android.authentication.AuthenticationModule;
 import org.jboss.aerogear.android.http.HeaderAndBody;
 
 /**
- * This class is a {@link Loader} which performs an login operation on behalf 
+ * This class is a {@link Loader} which performs an logout operation on behalf 
  * of an {@link AuthenticationModule}.
  */
-public class ModernLoginLoader extends AbstractModernAuthenticationLoader {
+public class LogoutLoader extends AbstractAuthenticationLoader {
 
-    private static final String TAG = ModernLoginLoader.class.getSimpleName();
+    private static final String TAG = LogoutLoader.class.getSimpleName();
 
-    private HeaderAndBody result = null;
-    private final String username;
-    private final String password;
-
-    ModernLoginLoader(Context context, Callback callback, AuthenticationModule module, String username, String password) {
+    public LogoutLoader(Context context, Callback callback, AuthenticationModule module) {
         super(context, module, callback);
-        this.username = username;
-        this.password = password;
     }
 
     @Override
     public HeaderAndBody loadInBackground() {
         final CountDownLatch latch = new CountDownLatch(1);
-        module.login(username, password, new Callback<HeaderAndBody>() {
+        module.logout(new Callback<Void>() {
 
             @Override
-            public void onSuccess(HeaderAndBody data) {
-                result = data;
+            public void onSuccess(Void data) {
                 latch.countDown();
             }
 
             @Override
             public void onFailure(Exception e) {
-                ModernLoginLoader.super.setException(e);
+                LogoutLoader.super.setException(e);
                 latch.countDown();
             }
         });
-
         try {
             latch.await();
         } catch (InterruptedException ex) {
             Log.e(TAG, ex.getMessage(), ex);
         }
-
-        return result;
+        return null;
     }
 
     @Override
     protected void onStartLoading() {
-        if (!module.isLoggedIn() && result == null) {
-            forceLoad();
-        } else {
-            deliverResult(result);
-        }
+        forceLoad();
     }
 
 }

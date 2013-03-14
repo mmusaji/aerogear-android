@@ -31,10 +31,10 @@ import java.net.URL;
 import java.util.List;
 import org.jboss.aerogear.android.Callback;
 import org.jboss.aerogear.android.ReadFilter;
-import org.jboss.aerogear.android.impl.pipeline.loader.AbstractModernPipeLoader;
-import org.jboss.aerogear.android.impl.pipeline.loader.ModernReadLoader;
-import org.jboss.aerogear.android.impl.pipeline.loader.ModernRemoveLoader;
-import org.jboss.aerogear.android.impl.pipeline.loader.ModernSaveLoader;
+import org.jboss.aerogear.android.impl.pipeline.loader.AbstractPipeLoader;
+import org.jboss.aerogear.android.impl.pipeline.loader.ReadLoader;
+import org.jboss.aerogear.android.impl.pipeline.loader.RemoveLoader;
+import org.jboss.aerogear.android.impl.pipeline.loader.SaveLoader;
 import org.jboss.aerogear.android.pipeline.AbstractActivityCallback;
 import org.jboss.aerogear.android.pipeline.AbstractFragmentCallback;
 import org.jboss.aerogear.android.pipeline.LoaderPipe;
@@ -50,10 +50,10 @@ import org.jboss.aerogear.android.pipeline.PipeType;
  * 3.0, consider using {@link SupportLoaderAdapter}
  * 
  */
-public class ModernLoaderAdapter<T> implements LoaderPipe<T>,
+public class LoaderAdapter<T> implements LoaderPipe<T>,
 		LoaderManager.LoaderCallbacks<T> {
 
-	private static final String TAG = ModernLoaderAdapter.class.getSimpleName();
+	private static final String TAG = LoaderAdapter.class.getSimpleName();
 	private static final String CALLBACK = "org.jboss.aerogear.android.impl.pipeline.ModernClassLoader.CALLBACK";
 	private static final String METHOD = "org.jboss.aerogear.android.impl.pipeline.ModernClassLoader.METHOD";
 	private static final String FILTER = "org.jboss.aerogear.android.impl.pipeline.ModernClassLoader.FILTER";
@@ -75,7 +75,7 @@ public class ModernLoaderAdapter<T> implements LoaderPipe<T>,
 	private final Gson gson;
 	private final String name;
 
-	public ModernLoaderAdapter(Activity activity, Pipe<T> pipe, Gson gson,
+	public LoaderAdapter(Activity activity, Pipe<T> pipe, Gson gson,
 			String name) {
 		this.pipe = pipe;
 		this.gson = gson;
@@ -86,7 +86,7 @@ public class ModernLoaderAdapter<T> implements LoaderPipe<T>,
 		this.activity = activity;
 	}
 
-	public ModernLoaderAdapter(Fragment fragment, Context applicationContext,
+	public LoaderAdapter(Fragment fragment, Context applicationContext,
 			Pipe<T> pipe, Gson gson, String name) {
 		this.pipe = pipe;
 		this.manager = fragment.getLoaderManager();
@@ -173,20 +173,20 @@ public class ModernLoaderAdapter<T> implements LoaderPipe<T>,
 		switch (method) {
 		case READ: {
 			ReadFilter filter = (ReadFilter) bundle.get(FILTER);
-			loader = new ModernReadLoader(applicationContext, callback,
+			loader = new ReadLoader(applicationContext, callback,
 					pipe.getHandler(), filter, this);
 		}
 			break;
 		case REMOVE: {
 			String toRemove = bundle.getString(REMOVE_ID, "-1");
-			loader = new ModernRemoveLoader(applicationContext, callback,
+			loader = new RemoveLoader(applicationContext, callback,
 					pipe.getHandler(), toRemove);
 		}
 			break;
 		case SAVE: {
 			String json = bundle.getString(ITEM);
 			T item = gson.fromJson(json, pipe.getKlass());
-			loader = new ModernSaveLoader(applicationContext, callback,
+			loader = new SaveLoader(applicationContext, callback,
 					pipe.getHandler(), item);
 		}
 			break;
@@ -196,13 +196,13 @@ public class ModernLoaderAdapter<T> implements LoaderPipe<T>,
 
 	@Override
 	public void onLoadFinished(Loader<T> loader, final T data) {
-		if (!(loader instanceof AbstractModernPipeLoader)) {
+		if (!(loader instanceof AbstractPipeLoader)) {
 			Log.e(TAG,
 					"Adapter is listening to loaders which it doesn't support");
 			throw new IllegalStateException(
 					"Adapter is listening to loaders which it doesn't support");
 		} else {
-			final AbstractModernPipeLoader<T> modernLoader = (AbstractModernPipeLoader<T>) loader;
+			final AbstractPipeLoader<T> modernLoader = (AbstractPipeLoader<T>) loader;
 			handler.post(new CallbackHandler<T>(this, modernLoader, data));
 		}
 	}
@@ -262,12 +262,12 @@ public class ModernLoaderAdapter<T> implements LoaderPipe<T>,
 
 	static class CallbackHandler<T> implements Runnable {
 
-		private final ModernLoaderAdapter<T> adapter;
-		private final AbstractModernPipeLoader<T> modernLoader;
+		private final LoaderAdapter<T> adapter;
+		private final AbstractPipeLoader<T> modernLoader;
 		private final T data;
 		
-		public CallbackHandler(ModernLoaderAdapter<T> adapter,
-				AbstractModernPipeLoader<T> loader, T data) {
+		public CallbackHandler(LoaderAdapter<T> adapter,
+				AbstractPipeLoader<T> loader, T data) {
 			super();
 			this.adapter = adapter;
 			this.modernLoader = loader;

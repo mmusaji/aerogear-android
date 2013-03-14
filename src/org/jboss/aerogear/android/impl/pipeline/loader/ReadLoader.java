@@ -30,14 +30,14 @@ import org.jboss.aerogear.android.pipeline.PipeHandler;
  * As a Loader it will retain a reference it its result until reset() is called.
  *
  */
-public class ModernReadLoader<T> extends AbstractModernPipeLoader<List<T>> {
+public class ReadLoader<T> extends AbstractPipeLoader<List<T>> {
 
     private final PipeHandler<T> runner;
     private List<T> result;
     private final ReadFilter filter;
     private final Pipe<T> requestingPipe;
 
-    public ModernReadLoader(Context context, Callback<List<T>> callback, PipeHandler<T> runner, ReadFilter filter, Pipe<T> pipe) {
+    public ReadLoader(Context context, Callback<List<T>> callback, PipeHandler<T> runner, ReadFilter filter, Pipe<T> pipe) {
         super(context, callback);
         this.filter = filter;
         this.runner = runner;

@@ -31,13 +31,13 @@ import org.jboss.aerogear.android.http.HeaderAndBody;
  * This class and its subclasses use the Loaders from android.content and will not work on devices
  * &lt; Android 3.0.  For these devices see {@link AbstractSupportAuthenticationLoader}
  */
-public abstract class AbstractModernAuthenticationLoader extends AsyncTaskLoader<HeaderAndBody> {
+public abstract class AbstractAuthenticationLoader extends AsyncTaskLoader<HeaderAndBody> {
 
     protected final Callback callback;
     protected final AuthenticationModule module;
     private Exception exception;
 
-    public AbstractModernAuthenticationLoader(Context context, AuthenticationModule module, Callback callback) {
+    public AbstractAuthenticationLoader(Context context, AuthenticationModule module, Callback callback) {
         super(context);
         this.callback = callback;
         this.module = module;

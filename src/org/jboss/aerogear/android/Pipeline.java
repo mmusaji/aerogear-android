@@ -28,7 +28,7 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import org.jboss.aerogear.android.impl.pipeline.DefaultPipeFactory;
-import org.jboss.aerogear.android.impl.pipeline.ModernLoaderAdapter;
+import org.jboss.aerogear.android.impl.pipeline.LoaderAdapter;
 import org.jboss.aerogear.android.impl.pipeline.PipeConfig;
 import org.jboss.aerogear.android.impl.pipeline.SupportLoaderAdapter;
 import org.jboss.aerogear.android.pipeline.LoaderPipe;
@@ -143,7 +143,7 @@ public class Pipeline {
      */
     public LoaderPipe get(String name, Activity activity) {
         Pipe pipe = pipes.get(name);
-        ModernLoaderAdapter adapter = new ModernLoaderAdapter(activity, pipe, pipe.getGson(), name);
+        LoaderAdapter adapter = new LoaderAdapter(activity, pipe, pipe.getGson(), name);
         adapter.setLoaderIds(loaderIdsForNamed);
         return adapter;
     }
@@ -160,7 +160,7 @@ public class Pipeline {
      */
     public LoaderPipe get(String name, Fragment fragment, Context applicationContext) {
         Pipe pipe = pipes.get(name);
-        ModernLoaderAdapter adapter = new ModernLoaderAdapter(fragment, applicationContext, pipe, pipe.getGson(), name);
+        LoaderAdapter adapter = new LoaderAdapter(fragment, applicationContext, pipe, pipe.getGson(), name);
         adapter.setLoaderIds(loaderIdsForNamed);
         return adapter;
     }

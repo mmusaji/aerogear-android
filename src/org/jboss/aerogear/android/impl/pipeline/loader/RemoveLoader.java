@@ -28,13 +28,13 @@ import org.jboss.aerogear.android.pipeline.PipeHandler;
  * is called unless reset() is called.
  *
  */
-public class ModernRemoveLoader<T> extends AbstractModernPipeLoader<T> {
+public class RemoveLoader<T> extends AbstractPipeLoader<T> {
 
     private final PipeHandler<T> runner;
     private final String id;
     private boolean isFinished = false;
 
-    public ModernRemoveLoader(Context context, Callback<T> callback, PipeHandler<T> runner, String id) {
+    public RemoveLoader(Context context, Callback<T> callback, PipeHandler<T> runner, String id) {
         super(context, callback);
         this.runner = runner;
         this.id = id;

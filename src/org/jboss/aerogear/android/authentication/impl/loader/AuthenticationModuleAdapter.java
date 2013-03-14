@@ -45,9 +45,9 @@ import org.jboss.aerogear.android.pipeline.AbstractFragmentCallback;
  * devices &lt; Android 3.0. For these devices see
  * {@link SupportAuthenticationModuleAdapter }
  */
-public class ModernAuthenticationModuleAdapter implements AuthenticationModule, LoaderManager.LoaderCallbacks<HeaderAndBody> {
+public class AuthenticationModuleAdapter implements AuthenticationModule, LoaderManager.LoaderCallbacks<HeaderAndBody> {
 
-    private static final String TAG = ModernAuthenticationModuleAdapter.class.getSimpleName();
+    private static final String TAG = AuthenticationModuleAdapter.class.getSimpleName();
     private static final String CALLBACK = "org.jboss.aerogear.android.authentication.loader.ModernAuthenticationModuleAdapter.CALLBACK";
     private static final String METHOD = "org.jboss.aerogear.android.authentication.loader.ModernAuthenticationModuleAdapter.METHOD";
     private static final String USERNAME = "org.jboss.aerogear.android.authentication.loader.ModernAuthenticationModuleAdapter.USERNAME";
@@ -67,7 +67,7 @@ public class ModernAuthenticationModuleAdapter implements AuthenticationModule, 
     private final String name;
     private final Handler handler;
 
-    public ModernAuthenticationModuleAdapter(Activity activity, AuthenticationModule module, String name) {
+    public AuthenticationModuleAdapter(Activity activity, AuthenticationModule module, String name) {
         this.module = module;
         this.manager = activity.getLoaderManager();
         this.applicationContext = activity.getApplicationContext();
@@ -77,7 +77,7 @@ public class ModernAuthenticationModuleAdapter implements AuthenticationModule, 
         this.handler = new Handler(Looper.getMainLooper());
     }
 
-    public ModernAuthenticationModuleAdapter(Fragment fragment, Context applicationContext, AuthenticationModule module, String name) {
+    public AuthenticationModuleAdapter(Fragment fragment, Context applicationContext, AuthenticationModule module, String name) {
         this.module = module;
         this.manager = fragment.getLoaderManager();
         this.applicationContext = applicationContext;
@@ -113,7 +113,7 @@ public class ModernAuthenticationModuleAdapter implements AuthenticationModule, 
         Bundle bundle = new Bundle();
         bundle.putSerializable(CALLBACK, callback);
         bundle.putSerializable(PARAMS, new HashMap(userData));
-        bundle.putSerializable(METHOD, ModernAuthenticationModuleAdapter.Methods.ENROLL);
+        bundle.putSerializable(METHOD, AuthenticationModuleAdapter.Methods.ENROLL);
         manager.initLoader(id, bundle, this);
     }
 
@@ -124,7 +124,7 @@ public class ModernAuthenticationModuleAdapter implements AuthenticationModule, 
         bundle.putSerializable(CALLBACK, callback);
         bundle.putSerializable(USERNAME, username);
         bundle.putSerializable(PASSWORD, password);
-        bundle.putSerializable(METHOD, ModernAuthenticationModuleAdapter.Methods.LOGIN);
+        bundle.putSerializable(METHOD, AuthenticationModuleAdapter.Methods.LOGIN);
         manager.initLoader(id, bundle, this);
     }
 
@@ -133,7 +133,7 @@ public class ModernAuthenticationModuleAdapter implements AuthenticationModule, 
         int id = Objects.hashCode(name, callback);
         Bundle bundle = new Bundle();
         bundle.putSerializable(CALLBACK, callback);
-        bundle.putSerializable(METHOD, ModernAuthenticationModuleAdapter.Methods.LOGOUT);
+        bundle.putSerializable(METHOD, AuthenticationModuleAdapter.Methods.LOGOUT);
         manager.initLoader(id, bundle, this);
     }
 
@@ -149,23 +149,23 @@ public class ModernAuthenticationModuleAdapter implements AuthenticationModule, 
 
     @Override
     public Loader<HeaderAndBody> onCreateLoader(int id, Bundle bundle) {
-        ModernAuthenticationModuleAdapter.Methods method = (ModernAuthenticationModuleAdapter.Methods) bundle.get(METHOD);
+        AuthenticationModuleAdapter.Methods method = (AuthenticationModuleAdapter.Methods) bundle.get(METHOD);
         Callback callback = (Callback) bundle.get(CALLBACK);
         Loader loader = null;
         switch (method) {
         case LOGIN: {
             String username = bundle.getString(USERNAME);
             String password = bundle.getString(PASSWORD);
-            loader = new ModernLoginLoader(applicationContext, callback, module, username, password);
+            loader = new LoginLoader(applicationContext, callback, module, username, password);
         }
             break;
         case LOGOUT: {
-            loader = new ModernLogoutLoader(applicationContext, callback, module);
+            loader = new LogoutLoader(applicationContext, callback, module);
         }
             break;
         case ENROLL: {
             Map<String, String> params = (Map<String, String>) bundle.getSerializable(PARAMS);
-            loader = new ModernEnrollLoader(applicationContext, callback, module, params);
+            loader = new EnrollLoader(applicationContext, callback, module, params);
         }
             break;
         }
@@ -181,11 +181,11 @@ public class ModernAuthenticationModuleAdapter implements AuthenticationModule, 
      */
     @Override
     public void onLoadFinished(Loader<HeaderAndBody> loader, final HeaderAndBody data) {
-        if (!(loader instanceof AbstractModernAuthenticationLoader)) {
+        if (!(loader instanceof AbstractAuthenticationLoader)) {
             Log.e(TAG, "Adapter is listening to loaders which it doesn't support");
             throw new IllegalStateException("Adapter is listening to loaders which it doesn't support");
         } else {
-            final AbstractModernAuthenticationLoader modernLoader = (AbstractModernAuthenticationLoader) loader;
+            final AbstractAuthenticationLoader modernLoader = (AbstractAuthenticationLoader) loader;
             handler.post(new CallbackHandler(this, modernLoader, data));
         }
     }
@@ -225,12 +225,12 @@ public class ModernAuthenticationModuleAdapter implements AuthenticationModule, 
     
     final static class CallbackHandler implements Runnable {
 
-		private final ModernAuthenticationModuleAdapter adapter;
-		private final AbstractModernAuthenticationLoader modernLoader;
+		private final AuthenticationModuleAdapter adapter;
+		private final AbstractAuthenticationLoader modernLoader;
 		private final HeaderAndBody data;
 		
-		public CallbackHandler(ModernAuthenticationModuleAdapter adapter,
-				AbstractModernAuthenticationLoader loader, HeaderAndBody data) {
+		public CallbackHandler(AuthenticationModuleAdapter adapter,
+				AbstractAuthenticationLoader loader, HeaderAndBody data) {
 			super();
 			this.adapter = adapter;
 			this.modernLoader = loader;

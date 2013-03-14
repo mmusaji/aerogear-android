@@ -19,36 +19,42 @@ package org.jboss.aerogear.android.authentication.impl.loader;
 import android.content.Context;
 import android.content.Loader;
 import android.util.Log;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import org.jboss.aerogear.android.Callback;
 import org.jboss.aerogear.android.authentication.AuthenticationModule;
 import org.jboss.aerogear.android.http.HeaderAndBody;
 
 /**
- * This class is a {@link Loader} which performs an logout operation on behalf 
+ * This class is a {@link Loader} which performs an enroll operation on behalf 
  * of an {@link AuthenticationModule}.
  */
-public class ModernLogoutLoader extends AbstractModernAuthenticationLoader {
+public class EnrollLoader extends AbstractAuthenticationLoader {
 
-    private static final String TAG = ModernLogoutLoader.class.getSimpleName();
+    private static final String TAG = EnrollLoader.class.getSimpleName();
 
-    public ModernLogoutLoader(Context context, Callback callback, AuthenticationModule module) {
+    private HeaderAndBody result = null;
+    private final Map<String, String> params;
+
+    public EnrollLoader(Context context, Callback callback, AuthenticationModule module, Map<String, String> params) {
         super(context, module, callback);
+        this.params = params;
     }
 
     @Override
     public HeaderAndBody loadInBackground() {
         final CountDownLatch latch = new CountDownLatch(1);
-        module.logout(new Callback<Void>() {
+        module.enroll(params, new Callback<HeaderAndBody>() {
 
             @Override
-            public void onSuccess(Void data) {
+            public void onSuccess(HeaderAndBody data) {
+                result = data;
                 latch.countDown();
             }
 
             @Override
             public void onFailure(Exception e) {
-                ModernLogoutLoader.super.setException(e);
+                EnrollLoader.super.setException(e);
                 latch.countDown();
             }
         });
@@ -57,12 +63,16 @@ public class ModernLogoutLoader extends AbstractModernAuthenticationLoader {
         } catch (InterruptedException ex) {
             Log.e(TAG, ex.getMessage(), ex);
         }
-        return null;
+        return result;
     }
 
     @Override
     protected void onStartLoading() {
-        forceLoad();
+        if (result == null) {
+            forceLoad();
+        } else {
+            deliverResult(result);
+        }
     }
 
 }

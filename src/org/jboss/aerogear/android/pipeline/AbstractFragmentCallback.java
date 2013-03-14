@@ -18,8 +18,8 @@ package org.jboss.aerogear.android.pipeline;
 import android.app.Activity;
 import android.app.Fragment;
 import org.jboss.aerogear.android.authentication.AuthenticationModule;
-import org.jboss.aerogear.android.authentication.impl.loader.AbstractModernAuthenticationLoader;
-import org.jboss.aerogear.android.impl.pipeline.loader.AbstractModernPipeLoader;
+import org.jboss.aerogear.android.authentication.impl.loader.AbstractAuthenticationLoader;
+import org.jboss.aerogear.android.impl.pipeline.loader.AbstractPipeLoader;
 
 /**
  *

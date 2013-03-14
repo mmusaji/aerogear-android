@@ -18,7 +18,7 @@ package org.jboss.aerogear.android.pipeline;
 
 import android.app.Activity;
 import org.jboss.aerogear.android.authentication.AuthenticationModule;
-import org.jboss.aerogear.android.impl.pipeline.loader.AbstractModernPipeLoader;
+import org.jboss.aerogear.android.impl.pipeline.loader.AbstractPipeLoader;
 
 /**
  * 

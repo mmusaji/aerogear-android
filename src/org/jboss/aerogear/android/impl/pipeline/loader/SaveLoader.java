@@ -29,13 +29,13 @@ import org.jboss.aerogear.android.pipeline.PipeHandler;
  * called.
  *
  */
-public class ModernSaveLoader<T> extends AbstractModernPipeLoader<T> {
+public class SaveLoader<T> extends AbstractPipeLoader<T> {
 
     private final PipeHandler<T> runner;
     private final T data;
     private T result;
 
-    public ModernSaveLoader(Context context, Callback<T> callback, PipeHandler<T> runner, T data) {
+    public SaveLoader(Context context, Callback<T> callback, PipeHandler<T> runner, T data) {
         super(context, callback);
         this.runner = runner;
         this.data = data;

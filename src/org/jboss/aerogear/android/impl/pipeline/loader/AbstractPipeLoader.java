@@ -29,12 +29,12 @@ import org.jboss.aerogear.android.impl.pipeline.loader.support.AbstractSupportPi
  * NOT work on devices &lt; Android 3.0. If your application needs to support
  * these devices see {@link AbstractSupportPipeLoader}
  */
-public abstract class AbstractModernPipeLoader<T> extends AsyncTaskLoader<T> {
+public abstract class AbstractPipeLoader<T> extends AsyncTaskLoader<T> {
 
     private final Callback<T> callback;
     protected Exception exception;
 
-    public AbstractModernPipeLoader(Context context, Callback<T> callback) {
+    public AbstractPipeLoader(Context context, Callback<T> callback) {
         super(context);
         this.callback = callback;
     }
