@@ -132,7 +132,25 @@ public final class RestAdapter<T> implements Pipe<T> {
      */
     @Override
     public void read(final Callback<List<T>> callback) {
-        readWithFilter(null, callback);
+    	THREAD_POOL_EXECUTOR.execute(new Runnable() {
+            List<T> result = null;
+            Exception exception = null;
+
+            @Override
+            public void run() {
+                try {
+                    this.result = restRunner.onRead(RestAdapter.this);
+                } catch (Exception e) {
+                    Log.e(TAG, e.getMessage(), e);
+                    this.exception = e;
+                }
+                if (exception == null) {
+                    callback.onSuccess(this.result);
+                } else {
+                    callback.onFailure(exception);
+                }
+            }
+        });
     }
 
     @Override
