@@ -22,7 +22,6 @@ import java.net.URL;
 import java.util.List;
 import org.jboss.aerogear.android.Callback;
 import org.jboss.aerogear.android.ReadFilter;
-import org.jboss.aerogear.android.authentication.AuthenticationModule;
 
 /**
  * A {@link Pipe} represents a server connection. An object of this class is responsible to communicate
@@ -80,7 +79,7 @@ public interface Pipe<T> {
     /**
      * Returns the GSON serializer used to serialized instances of objects.
      * 
-     * @return 
+     * @return the gson instance servicing this pipe.
      */
     Gson getGson();
 
@@ -91,7 +90,8 @@ public interface Pipe<T> {
 
     /**
      * Returns the instance which is responsible for handling read, save, and remove.
-     * @return 
+     *
+     * @return the handler performing operations for this Pipe.  May be the Pipe itself.
      */
     PipeHandler<T> getHandler();
 

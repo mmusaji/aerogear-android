@@ -22,7 +22,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import org.jboss.aerogear.android.Callback;
 import org.jboss.aerogear.android.ReadFilter;
-import org.jboss.aerogear.android.authentication.AuthenticationModule;
 import org.jboss.aerogear.android.pipeline.Pipe;
 import org.jboss.aerogear.android.pipeline.PipeFactory;
 import org.jboss.aerogear.android.pipeline.PipeHandler;

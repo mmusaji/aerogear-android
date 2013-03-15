@@ -17,28 +17,31 @@
 package org.jboss.aerogear.android.authentication.impl.loader.support;
 
 import android.content.Context;
+import android.support.v4.content.Loader;
 import android.util.Log;
 import java.util.concurrent.CountDownLatch;
 import org.jboss.aerogear.android.Callback;
 import org.jboss.aerogear.android.authentication.AuthenticationModule;
 import org.jboss.aerogear.android.http.HeaderAndBody;
 
+/**
+ * This class is a {@link Loader} which performs an login operation on behalf 
+ * of an {@link AuthenticationModule}.
+ */
 public class SupportLoginLoader extends AbstractSupportAuthenticationLoader {
-    
+
     private static final String TAG = SupportLoginLoader.class.getSimpleName();
-    
+
     private HeaderAndBody result = null;
     private final String username;
     private final String password;
-    
+
     SupportLoginLoader(Context context, Callback callback, AuthenticationModule module, String username, String password) {
         super(context, module, callback);
         this.username = username;
         this.password = password;
     }
 
-    
-    
     @Override
     public HeaderAndBody loadInBackground() {
         final CountDownLatch latch = new CountDownLatch(1);
@@ -56,16 +59,16 @@ public class SupportLoginLoader extends AbstractSupportAuthenticationLoader {
                 latch.countDown();
             }
         });
-        
+
         try {
             latch.await();
         } catch (InterruptedException ex) {
             Log.e(TAG, ex.getMessage(), ex);
         }
-        
+
         return result;
     }
-    
+
     @Override
     protected void onStartLoading() {
         if (!module.isLoggedIn() && result == null) {
@@ -74,5 +77,5 @@ public class SupportLoginLoader extends AbstractSupportAuthenticationLoader {
             deliverResult(result);
         }
     }
-    
+
 }

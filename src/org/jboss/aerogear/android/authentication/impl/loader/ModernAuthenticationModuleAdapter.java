@@ -1,18 +1,17 @@
 /**
- * JBoss, Home of Professional Open Source
- * Copyright Red Hat, Inc., and individual contributors
- * by the @authors tag. See the copyright.txt in the distribution for a
- * full listing of individual contributors.
+ * JBoss, Home of Professional Open Source Copyright Red Hat, Inc., and
+ * individual contributors by the
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * http://www.apache.org/licenses/LICENSE-2.0
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * @authors tag. See the copyright.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required by
+ * applicable law or agreed to in writing, software distributed under the
+ * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS
+ * OF ANY KIND, either express or implied. See the License for the specific
+ * language governing permissions and limitations under the License.
  */
 package org.jboss.aerogear.android.authentication.impl.loader;
 
@@ -32,14 +31,19 @@ import java.util.Map;
 import org.jboss.aerogear.android.Callback;
 import org.jboss.aerogear.android.authentication.AuthenticationModule;
 import org.jboss.aerogear.android.authentication.AuthorizationFields;
+import org.jboss.aerogear.android.authentication.impl.loader.support.SupportAuthenticationModuleAdapter;
 import org.jboss.aerogear.android.http.HeaderAndBody;
 import org.jboss.aerogear.android.pipeline.AbstractActivityCallback;
 import org.jboss.aerogear.android.pipeline.AbstractFragmentCallback;
 
 /**
- * This class manages the relationship between Android's Loader framework and 
- * requests to Authentication.  This class acts as a proxy for an 
+ * This class manages the relationship between Android's Loader framework and
+ * requests to Authentication. This class acts as a proxy for an
  * {@link AuthenticationModule} instance.
+ *
+ * This class instantiates the Loaders from android.content and will not work on
+ * devices &lt; Android 3.0. For these devices see
+ * {@link SupportAuthenticationModuleAdapter }
  */
 public class ModernAuthenticationModuleAdapter implements AuthenticationModule, LoaderManager.LoaderCallbacks<HeaderAndBody> {
 
@@ -51,6 +55,7 @@ public class ModernAuthenticationModuleAdapter implements AuthenticationModule, 
     private static final String PARAMS = "org.jboss.aerogear.android.authentication.loader.ModernAuthenticationModuleAdapter.PARAMS";
 
     private static enum Methods {
+
         LOGIN, LOGOUT, ENROLL
     };
 
@@ -169,10 +174,10 @@ public class ModernAuthenticationModuleAdapter implements AuthenticationModule, 
 
     /**
      * This method will call the Callback for a enroll, login, or logout method
-     * on the main thread of the application.  If a callback is an instance of 
-     * {@link AbstractFragmentCallback} or {@link AbstractActivityCallback}
-     * then it will also configure the reference to {@link Fragment} or {@link FragmentActivity} 
-     * for the callback.
+     * on the main thread of the application. If a callback is an instance of
+     * {@link AbstractFragmentCallback} or {@link AbstractActivityCallback} then
+     * it will also configure the reference to {@link Fragment} or
+     * {@link FragmentActivity} for the callback.
      */
     @Override
     public void onLoadFinished(Loader<HeaderAndBody> loader, final HeaderAndBody data) {
@@ -245,5 +250,4 @@ public class ModernAuthenticationModuleAdapter implements AuthenticationModule, 
         callback.onFailure(exception);
         callback.setActivity(null);
     }
-
 }

@@ -1,25 +1,34 @@
 /**
- * JBoss, Home of Professional Open Source
- * Copyright Red Hat, Inc., and individual contributors
- * by the @authors tag. See the copyright.txt in the distribution for a
- * full listing of individual contributors.
+ * JBoss, Home of Professional Open Source Copyright Red Hat, Inc., and
+ * individual contributors by the
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * http://www.apache.org/licenses/LICENSE-2.0
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * @authors tag. See the copyright.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required by
+ * applicable law or agreed to in writing, software distributed under the
+ * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS
+ * OF ANY KIND, either express or implied. See the License for the specific
+ * language governing permissions and limitations under the License.
  */
 package org.jboss.aerogear.android.impl.pipeline.loader;
 
 import android.content.AsyncTaskLoader;
 import android.content.Context;
 import org.jboss.aerogear.android.Callback;
+import org.jboss.aerogear.android.impl.pipeline.loader.support.AbstractSupportPipeLoader;
 
+/**
+ * This class maintains references to the callback to be called when a Loader
+ * supporting a Pipe's operation completes. It also contains a reference to any
+ * exception which may have been thrown.
+ *
+ * This class and its subclasses use the Loaders from android.content and will
+ * NOT work on devices &lt; Android 3.0. If your application needs to support
+ * these devices see {@link AbstractSupportPipeLoader}
+ */
 public abstract class AbstractModernPipeLoader<T> extends AsyncTaskLoader<T> {
 
     public final Callback<T> callback;
@@ -43,5 +52,4 @@ public abstract class AbstractModernPipeLoader<T> extends AsyncTaskLoader<T> {
         super.onReset();
         exception = null;
     }
-
 }

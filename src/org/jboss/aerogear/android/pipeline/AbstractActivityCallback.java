@@ -17,19 +17,53 @@
 package org.jboss.aerogear.android.pipeline;
 
 import android.app.Activity;
+import org.jboss.aerogear.android.authentication.AuthenticationModule;
+import org.jboss.aerogear.android.impl.pipeline.loader.AbstractModernPipeLoader;
 
+/**
+ * 
+ * {@link LoaderPipe} and {@link AuthenticationModule} instances which consume
+ * callbacks of this type will supply it with a {@link Activity} instance before
+ * onSuccess or onFailure are called.  This should not be done by the user.
+ * 
+ * These calls are not guaranteed to be thread safe.  Instances of the callback
+ * should not be shared among Activities and Fragments.
+ * 
+ * After onSuccess or onFailure have been called, the activity will be set to null.
+ * 
+ * @param <T> 
+ */
 public abstract class AbstractActivityCallback<T> extends AbstractCallback<T> {
 
     private transient Activity activity;
 
-    public AbstractActivityCallback(Activity activity, Object... params) {
+    /**
+     * This accepts an arbitrary list of Object and uses {@link Objects} to 
+     * generate a hashcode.  This code is used to provided the loader manager
+     * with a unique value to determine uniqueness of calls to read, etc.
+     * 
+     * @param params 
+     */
+    public AbstractActivityCallback(Object... params) {
         super(params);
     }
 
-    public Activity getActivity() {
+    /**
+     * This method should be called in the onSuccess or onFailure methods of 
+     * subclasses.
+     * 
+     * @return the activity instance 
+     */
+    protected Activity getActivity() {
         return activity;
     }
 
+    /**
+     * This method is called by {@link AbstractModernPipeLoader}
+     * during the onLoadComplete method before onSuccess or onFailure are called.
+     * 
+     * @param activity 
+     */
     public void setActivity(Activity activity) {
         this.activity = activity;
     }

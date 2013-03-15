@@ -20,6 +20,15 @@ import android.content.Context;
 import org.jboss.aerogear.android.Callback;
 import org.jboss.aerogear.android.pipeline.PipeHandler;
 
+/**
+ * This class performs a save operation on behalf of a Pipe using the Loader
+ * infrastructure.
+ *
+ * As a Loader it will only call the save once regardless of how many times it
+ * is called and retain an instance to the result of the save unless reset() is
+ * called.
+ *
+ */
 public class ModernSaveLoader<T> extends AbstractModernPipeLoader<T> {
 
     private final PipeHandler<T> runner;

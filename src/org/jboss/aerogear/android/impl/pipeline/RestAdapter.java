@@ -16,8 +16,6 @@
 package org.jboss.aerogear.android.impl.pipeline;
 
 import org.jboss.aerogear.android.impl.pipeline.paging.DefaultParameterProvider;
-import org.jboss.aerogear.android.impl.pipeline.paging.URIPageHeaderParser;
-import org.jboss.aerogear.android.impl.pipeline.paging.URIBodyPageParser;
 import android.util.Log;
 import com.google.common.base.Objects;
 import com.google.gson.Gson;
@@ -35,7 +33,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import org.jboss.aerogear.android.pipeline.PipeHandler;
-import org.jboss.aerogear.android.pipeline.paging.PageConfig;
 import org.jboss.aerogear.android.pipeline.paging.ParameterProvider;
 
 /**

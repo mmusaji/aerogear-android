@@ -22,7 +22,6 @@ import android.app.Fragment;
 import android.content.Context;
 import android.support.v4.app.FragmentActivity;
 import com.google.common.collect.HashMultimap;
-import com.google.common.collect.MapMaker;
 import com.google.common.collect.Multimap;
 import java.net.MalformedURLException;
 import java.net.URL;

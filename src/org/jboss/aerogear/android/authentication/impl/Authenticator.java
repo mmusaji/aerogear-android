@@ -20,6 +20,7 @@ package org.jboss.aerogear.android.authentication.impl;
 import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
+import android.support.v4.app.FragmentActivity;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
@@ -27,6 +28,7 @@ import java.util.Map;
 import org.jboss.aerogear.android.authentication.AuthenticationConfig;
 import org.jboss.aerogear.android.authentication.AuthenticationModule;
 import org.jboss.aerogear.android.authentication.impl.loader.ModernAuthenticationModuleAdapter;
+import org.jboss.aerogear.android.authentication.impl.loader.support.SupportAuthenticationModuleAdapter;
 
 /**
  * This is the default implementation of Authenticator.
@@ -93,7 +95,11 @@ public class Authenticator {
     /**
      * Gets a AuthenticationModule for name
      * 
+     * This method should NOT be called by Activities or Fragments.  
+     * This method is safe for Services, tests, etc.
+     * 
      * @param name
+     * 
      * @return a AuthenticationModule for name or null if there isn't a value for name
      * @throws NullPointerException is name is null
      */
@@ -102,10 +108,12 @@ public class Authenticator {
     }
 
     /**
-     * Gets a AuthenticationModule for name
+     * Gets a AuthenticationModule for name. This will wrap the module in a Loader.
      * 
      * @param name
-     * @return a AuthenticationModule for name or null if there isn't a value for name
+     * @param activity the activity which the Loaders should be bound against.
+     * 
+     * @return a ModernAuthenticationModuleAdapter for name
      * @throws NullPointerException is name is null
      */
     public AuthenticationModule get(String name, Activity activity) {
@@ -113,14 +121,44 @@ public class Authenticator {
     }
 
     /**
-     * Gets a AuthenticationModule for name
+     * Gets a AuthenticationModule for name. This will wrap the module in a Loader.
      * 
      * @param name
-     * @return a AuthenticationModule for name or null if there isn't a value for name
+     * @param fragment the fragment the Loaders will be bound against.
+     * @param applicationContext 
+     * 
+     * @return a ModernAuthenticationModuleAdapter for name
      * @throws NullPointerException is name is null
      */
     public AuthenticationModule get(String name, Fragment fragment, Context applicationContext) {
         return new ModernAuthenticationModuleAdapter(fragment, applicationContext, modules.get(name), name);
+    }
+
+    /**
+     * Gets a AuthenticationModule for name. This will wrap the module in a Loader.
+     * 
+     * @param name
+     * @param activity the activity which the Loaders should be bound against.
+     * 
+     * @return a SupportAuthenticationModuleAdapter for name
+     * @throws NullPointerException is name is null
+     */
+    public AuthenticationModule get(String name, FragmentActivity activity) {
+        return new SupportAuthenticationModuleAdapter(activity, modules.get(name), name);
+    }
+
+    /**
+     * Gets a AuthenticationModule for name.  This will wrap the module in a Loader.
+     * 
+     * @param name
+     * @param fragment the fragment the Loaders will be bound against.
+     * @param applicationContext 
+     *
+     * @return a SupportAuthenticationModuleAdapter for name
+     * @throws NullPointerException is name is null
+     */
+    public AuthenticationModule get(String name, android.support.v4.app.Fragment fragment, Context applicationContext) {
+        return new SupportAuthenticationModuleAdapter(fragment, applicationContext, modules.get(name), name);
     }
 
 }

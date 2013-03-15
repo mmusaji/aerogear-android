@@ -17,8 +17,6 @@
 
 package org.jboss.aerogear.android.authentication;
 
-import android.os.AsyncTask;
-import java.net.URL;
 import org.jboss.aerogear.android.Callback;
 import org.jboss.aerogear.android.http.HeaderAndBody;
 
