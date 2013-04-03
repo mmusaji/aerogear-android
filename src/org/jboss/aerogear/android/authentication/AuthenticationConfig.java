@@ -28,9 +28,11 @@ public class AuthenticationConfig {
     private String loginEndpoint = "/auth/login";
     private String logoutEndpoint = "/auth/logout";
     private String enrollEndpoint = "/auth/enroll";
-
+    
     private AuthType authType = AuthTypes.AG_SECURITY;
 
+    private Integer timeout = Integer.MAX_VALUE;
+    
     public String getLoginEndpoint() {
         return loginEndpoint;
     }
@@ -63,4 +65,24 @@ public class AuthenticationConfig {
         this.authType = authType;
     }
 
+    /**
+     * Timeout is the length of time in milliseconds that a Pipe will wait for a
+     * response from a call to read, readWithfilter, save or remove
+     *
+     * @return the current timeout.
+     */
+    public Integer getTimeout() {
+        return timeout;
+    }
+
+    /**
+     * Timeout is the length of time in milliseconds that a Pipe will wait for a
+     * response from a call to read, readWithfilter, save or remove
+     *
+     * @param timeout a new
+     */
+    public void setTimeout(Integer timeout) {
+        this.timeout = timeout;
+    }
+    
 }

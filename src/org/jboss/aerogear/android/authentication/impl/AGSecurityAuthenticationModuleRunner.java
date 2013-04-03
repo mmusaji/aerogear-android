@@ -38,6 +38,7 @@ class AGSecurityAuthenticationModuleRunner {
     private final URL logoutURL;
     private final String enrollEndpoint;
     private final URL enrollURL;
+    private final Integer timeout;
 
     /**
      * @param baseURL
@@ -54,22 +55,25 @@ class AGSecurityAuthenticationModuleRunner {
         this.loginURL = appendToBaseURL(loginEndpoint);
         this.logoutURL = appendToBaseURL(logoutEndpoint);
         this.enrollURL = appendToBaseURL(enrollEndpoint);
+        
+        this.timeout = config.getTimeout();
+        
     }
 
     public HeaderAndBody onEnroll(final Map<String, String> userData) {
-        HttpProvider provider = httpProviderFactory.get(enrollURL);
+        HttpProvider provider = httpProviderFactory.get(enrollURL, timeout);
         String enrollData = new JSONObject(userData).toString();
         return provider.post(enrollData);
     }
 
     public HeaderAndBody onLogin(final String username, final String password) {
-        HttpProvider provider = httpProviderFactory.get(loginURL);
+        HttpProvider provider = httpProviderFactory.get(loginURL, timeout);
         String loginData = buildLoginData(username, password);
         return provider.post(loginData);
     }
 
     public void onLogout() {
-        HttpProvider provider = httpProviderFactory.get(logoutURL);
+        HttpProvider provider = httpProviderFactory.get(logoutURL, timeout);
         provider.post("");
     }
 
