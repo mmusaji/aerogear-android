@@ -49,6 +49,7 @@ public final class RestAdapter<T> implements Pipe<T> {
     public static final Executor THREAD_POOL_EXECUTOR = new ThreadPoolExecutor(CORE_POOL_SIZE, MAX_POOL_SIZE, KEEP_ALIVE,
             TimeUnit.SECONDS, WORK_QUEUE);
     private ParameterProvider parameterProvider = new DefaultParameterProvider();
+    
     /**
      * A class of the Generic type this pipe wraps. This is used by GSON for
      * deserializing.

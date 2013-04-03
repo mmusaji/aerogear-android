@@ -27,6 +27,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
+import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.RobolectricTestRunner;
 import junit.framework.Assert;
 import org.jboss.aerogear.android.http.HeaderAndBody;
@@ -306,6 +307,8 @@ public class RestAdapterTest {
         assertEquals(listClass.points, returnedPoints);
     }
 
+
+    
     @Test
     public void runReadWithFilterUsingUri() throws Exception {
 
@@ -334,7 +337,7 @@ public class RestAdapterTest {
         });
         latch.await(500, TimeUnit.MILLISECONDS);
 
-        verify(factory).get(eq(new URL(url.toString() + "?limit=10&where=%7B%22model%22:%22BMW%22%7D&token=token")));
+        verify(factory).get(eq(new URL(url.toString() + "?limit=10&where=%7B%22model%22:%22BMW%22%7D&token=token")), eq(Integer.MAX_VALUE));
     }
 
     @Test
@@ -378,7 +381,7 @@ public class RestAdapterTest {
         });
         latch.await(500, TimeUnit.MILLISECONDS);
 
-        verify(factory).get(new URL(url.toString() + "?limit=10&where=%7B%22model%22:%22BMW%22%7D&token=token"));
+        verify(factory).get(new URL(url.toString() + "?limit=10&where=%7B%22model%22:%22BMW%22%7D&token=token"), Integer.MAX_VALUE);
     }
 
     /**

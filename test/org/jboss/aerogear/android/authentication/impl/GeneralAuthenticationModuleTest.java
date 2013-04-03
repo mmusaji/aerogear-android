@@ -90,7 +90,7 @@ public class GeneralAuthenticationModuleTest implements AuthenticationModuleTest
         });
 
         latch.await(1, TimeUnit.SECONDS);
-        verify(factory).get(new URL(SIMPLE_URL.toString() + "?token=" + TOKEN));
+        verify(factory).get(new URL(SIMPLE_URL.toString() + "?token=" + TOKEN), Integer.MAX_VALUE);
     }
 
     @Test(timeout = 1000l)
