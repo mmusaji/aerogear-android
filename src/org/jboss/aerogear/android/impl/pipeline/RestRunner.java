@@ -74,6 +74,7 @@ public class RestRunner<T> implements PipeHandler<T> {
     private final Class<T[]> arrayKlass;
     private final URL baseURL;
     private final Provider<HttpProvider> httpProviderFactory = new HttpProviderFactory();
+    private final Integer timeout;
     private AuthenticationModule authModule;
     private Charset encoding = Charset.forName("UTF-8");
 
@@ -85,6 +86,7 @@ public class RestRunner<T> implements PipeHandler<T> {
         this.gson = new Gson();
         this.pageConfig = null;
         this.parameterProvider = new DefaultParameterProvider();
+        this.timeout = Integer.MAX_VALUE;
     }
 
     public RestRunner(Class<T> klass, URL baseURL,
@@ -92,7 +94,8 @@ public class RestRunner<T> implements PipeHandler<T> {
         this.klass = klass;
         this.arrayKlass = asArrayClass(klass);
         this.baseURL = baseURL;
-
+        this.timeout = config.getTimeout();
+        
         if (config.getGsonBuilder() != null) {
             this.gson = config.getGsonBuilder().create();
         } else {
@@ -269,7 +272,7 @@ public class RestRunner<T> implements PipeHandler<T> {
 
             URL authorizedURL = addAuthorization(fields.getQueryParameters(), URIUtils.resolve(baseURL.toURI(), relativeUri).toURL());
 
-            final HttpProvider httpProvider = httpProviderFactory.get(authorizedURL);
+            final HttpProvider httpProvider = httpProviderFactory.get(authorizedURL, timeout);
             addAuthHeaders(httpProvider, fields);
             return httpProvider;
         } catch (MalformedURLException ex) {

@@ -39,6 +39,7 @@ public final class PipeConfig {
     private GsonBuilder gsonBuilder;
     private AuthenticationModule authModule;
     private PipeHandler handler;
+    private Integer timeout = Integer.MAX_VALUE;
     /**
      * Where the data elements the pipe wants to extract are found in the
      * response from the server. Defaults to the root of the data structure
@@ -159,7 +160,7 @@ public final class PipeConfig {
 
     /**
      * The Encoding is the String encoding to expect from the server.
-     * 
+     *
      * @return the current encoding, will not be null.
      */
     public Charset getEncoding() {
@@ -187,6 +188,7 @@ public final class PipeConfig {
 
     /**
      * PageConfig is the configuration information for Paging.
+     *
      * @see PageConfig
      */
     public PageConfig getPageConfig() {
@@ -195,8 +197,9 @@ public final class PipeConfig {
 
     /**
      * PageConfig is the configuration information for Paging.
-     * @param pageConfig 
-     * @see PageConfig 
+     *
+     * @param pageConfig
+     * @see PageConfig
      */
     public void setPageConfig(PageConfig pageConfig) {
         this.pageConfig = pageConfig;
@@ -246,24 +249,46 @@ public final class PipeConfig {
      * A DataRoot of "speakers.data" would make the pipe pass a List using the
      * array of speakers to the onSuccess method of callback.
      *
-     * @param dataRoot 
+     * @param dataRoot
      */
     public void setDataRoot(String dataRoot) {
         this.dataRoot = dataRoot;
     }
 
     /**
-     * 
-     * @return the current {@link PipeHandler} for Pipes build using this configuration
+     *
+     * @return the current {@link PipeHandler} for Pipes build using this
+     * configuration
      */
     public PipeHandler getHandler() {
         return handler;
     }
 
     /**
-     * @param handler a new {@link PipeHandler} for Pipes build using this configuration
+     * @param handler a new {@link PipeHandler} for Pipes build using this
+     * configuration
      */
     public void setHandler(PipeHandler handler) {
         this.handler = handler;
+    }
+
+    /**
+     * Timeout is the length of time in milliseconds that a Pipe will wait for a
+     * response from a call to read, readWithfilter, save or remove
+     *
+     * @return the current timeout.
+     */
+    public Integer getTimeout() {
+        return timeout;
+    }
+
+    /**
+     * Timeout is the length of time in milliseconds that a Pipe will wait for a
+     * response from a call to read, readWithfilter, save or remove
+     *
+     * @param timeout a new
+     */
+    public void setTimeout(Integer timeout) {
+        this.timeout = timeout;
     }
 }

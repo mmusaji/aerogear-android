@@ -42,7 +42,7 @@ public final class HttpRestProvider implements HttpProvider {
     private static final String TAG = HttpRestProvider.class.getSimpleName();
     private final URL url;
     private final Map<String, String> defaultHeaders = new HashMap<String, String>();
-
+    private final Integer timeout;
     /**
      * The get method of this provider optionally takes a String which is the id 
      * in a restful URL
@@ -52,7 +52,6 @@ public final class HttpRestProvider implements HttpProvider {
         @Override
         public HttpURLConnection get(Object... in) {
             String id = null;
-
             if (in != null) {
                 id = (String) in[0];
             }
@@ -74,6 +73,7 @@ public final class HttpRestProvider implements HttpProvider {
             try {
                 urlConnection = (HttpURLConnection) resourceURL
                         .openConnection();
+                
             } catch (IOException ex) {
                 Log.e(TAG, String.format("Failed to open %s", resourceURL
                         .toString()), ex);
@@ -95,6 +95,12 @@ public final class HttpRestProvider implements HttpProvider {
 
     public HttpRestProvider(URL url) {
         this.url = url;
+        this.timeout = 0;
+    }
+
+    public HttpRestProvider(URL url, Integer timeout) {
+        this.url = url;
+        this.timeout = timeout;
     }
 
     /**
@@ -211,7 +217,10 @@ public final class HttpRestProvider implements HttpProvider {
     }
 
     private HttpURLConnection prepareConnection(String id) {
-        return connectionPreparer.get(id);
+        HttpURLConnection connection = connectionPreparer.get(id);
+        connection.setReadTimeout(timeout);
+        connection.setConnectTimeout(timeout);
+        return connection;        
     }
 
     private String appendIdToURL(String id) {
